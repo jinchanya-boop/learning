@@ -1,0 +1,1637 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบส่งระบบเรียนรู้ – โรงเรียนสา (เทอม 1 & 2)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #515ada;
+            --secondary-color: #efd5ff;
+            --white-color: #ffffff;
+            --text-color: #333;
+            --light-gray: #f4f4f4;
+            --medium-gray: #e0e0e0;
+            --dark-gray: #666;
+            --danger-color: #e74c3c;
+            --border-radius: 15px;
+            --font-family: 'Prompt', sans-serif;
+            --box-shadow: 0 4px 15px rgba(0,0,0,.1);
+        }
+        
+        *, *:before, *:after {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: var(--font-family);
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 15px auto;
+            padding: 15px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 15px 0;
+            background-color: rgba(255,255,255,.1);
+            backdrop-filter: blur(5px);
+            border-bottom-left-radius: var(--border-radius);
+            border-bottom-right-radius: var(--border-radius);
+            margin-bottom: 0;
+        }
+        
+        header img.logo {
+            width: 120px;
+            margin-bottom: 10px;
+        }
+        
+        header h1 {
+            font-size: 1.6em;
+            color: var(--white-color);
+            margin: 0;
+            font-weight: 500;
+        }
+        
+        .term-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        
+        .term-btn {
+            padding: 10px 20px;
+            border: 2px solid rgba(0,0,0,.2);
+            background-color: rgba(255,255,255,.3);
+            color: var(--white-color);
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1em;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+        }
+        
+        .term-btn:hover {
+            background-color: rgba(255,255,255,.5);
+            transform: translateY(-2px);
+        }
+        
+        .term-btn.active {
+            background-color: var(--white-color);
+            color: var(--primary-color);
+            border-color: var(--white-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,.2);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        nav a {
+            text-decoration: none;
+            color: var(--white-color);
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            background-color: rgba(0,0,0,.2);
+            transition: background-color .3s ease;
+            font-weight: 500;
+            margin: 5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        nav a:hover {
+            background-color: rgba(0,0,0,.4);
+        }
+        
+        .section {
+            background-color: var(--white-color);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+        }
+        
+        .heading-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        
+        .heading-wrapper .icon-bubble {
+            color: #fff;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .heading-wrapper h2, .heading-wrapper h3, .heading-wrapper h4 {
+            margin: 0;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .heading-wrapper h2 {
+            font-size: 1.5em;
+        }
+        
+        .heading-wrapper h3 {
+            font-size: 1.3em;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .heading-wrapper h4 {
+            font-size: 1.1em;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: var(--dark-gray);
+        }
+        
+        input[type=text], input[type=url], input[type=password], input[type=number], select, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 12px;
+            border: 1px solid var(--medium-gray);
+            border-radius: var(--border-radius);
+            font-family: var(--font-family);
+            font-size: 1em;
+        }
+        
+        input[type=file] {
+            margin-bottom: 12px;
+            font-family: var(--font-family);
+            display: block;
+            width: 100%;
+        }
+        
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        button, .custom-button {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 10px 18px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            font-size: 1em;
+            font-family: var(--font-family);
+            font-weight: 500;
+            transition: background-color .3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover, .custom-button:hover {
+            background-color: #3d43b3;
+        }
+        
+        .delete-button {
+            background-color: var(--danger-color);
+            margin-left: 8px;
+        }
+        
+        .delete-button:hover {
+            background-color: #c0392b;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 15px;
+            color: #fff;
+            font-size: .9em;
+            background-color: rgba(0,0,0,.1);
+            backdrop-filter: blur(5px);
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            margin-top: 0;
+        }
+        
+        #admin-section-content, #submission-detail-view, #pdf-summary-section {
+            display: none;
+        }
+        
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            table-layout: auto;
+        }
+        
+        .admin-table th, .admin-table td {
+            border: 1px solid var(--medium-gray);
+            padding: 10px;
+            text-align: left;
+            vertical-align: top;
+            word-wrap: break-word;
+        }
+        
+        .admin-table th {
+            background-color: var(--light-gray);
+            font-weight: 700;
+            color: var(--primary-color);
+            white-space: nowrap;
+        }
+        
+        .admin-table td:last-child {
+            white-space: normal;
+            min-width: 250px;
+            max-width: 500px;
+        }
+        
+        .status-pending {
+            color: #f39c12;
+            font-weight: 700;
+        }
+        
+        .status-revision {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+        
+        .status-approved {
+            color: #27ae60;
+            font-weight: 700;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .dashboard-card {
+            background-color: var(--light-gray);
+            padding: 20px;
+            border-radius: var(--border-radius);
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,.05);
+        }
+        
+        .dashboard-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.1em;
+        }
+        
+        .dashboard-card p {
+            font-size: 1.8em;
+            font-weight: 700;
+            margin: 10px 0 0;
+        }
+        
+        .chart-container-wrapper {
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            text-align: center;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .course-block {
+            border: 2px dashed var(--medium-gray);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+        
+        .course-block-header {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--medium-gray);
+        }
+        
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .search-container input {
+            flex: 1;
+            min-width: 200px;
+            margin-bottom: 0;
+        }
+        
+        .search-container button {
+            margin-bottom: 0;
+        }
+        
+        .search-result-info {
+            background-color: #e7f3ff;
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-weight: 500;
+            border: 1px solid #bee5ff;
+        }
+        
+        .summary-form-group {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: var(--border-radius);
+        }
+        
+        .summary-stats-display {
+            background-color: #e8f5e9;
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin: 15px 0;
+            border: 2px solid #4caf50;
+        }
+        
+        .summary-stats-display h4 {
+            color: #2e7d32;
+            margin-top: 0;
+        }
+        
+        .summary-detail-item {
+            padding: 8px;
+            margin: 5px 0;
+            background-color: white;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .summary-detail-item strong {
+            color: var(--primary-color);
+        }
+        
+        .term-stats-badge {
+            display: inline-block;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+        
+        @media (max-width:768px) {
+            header h1 {
+                font-size: 1.5em;
+            }
+            nav {
+                flex-direction: column;
+                gap: 10px;
+            }
+            nav a {
+                display: block;
+            }
+            .section h2 {
+                font-size: 1.3em;
+            }
+            .search-container {
+                flex-direction: column;
+            }
+            .search-container input {
+                width: 100%;
+            }
+            .container {
+                max-width: 100%;
+                padding: 10px;
+            }
+            .term-selector {
+                flex-direction: column;
+            }
+            .term-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <img src="https://img2.pic.in.th/pic/sa1.png" alt="โรงเรียนสา โลโก้" class="logo">
+        <h1>ระบบส่งระบบเรียนรู้ – โรงเรียนสา</h1>
+        
+        <!-- 🎯 Term Selector Menu -->
+        <div class="term-selector">
+            <button class="term-btn active" data-term="1" onclick="switchTerm(1)">
+                <i class="fa-solid fa-calendar-days"></i> ภาคเรียนที่ 1
+            </button>
+            <button class="term-btn" data-term="2" onclick="switchTerm(2)">
+                <i class="fa-solid fa-calendar-days"></i> ภาคเรียนที่ 2
+            </button>
+        </div>
+        
+        <nav>
+            <a href="#form-section">📝 ส่งงาน</a>
+            <a href="#admin-section">👑 ผู้บริหาร</a>
+            <a href="#dashboard-section">📊 สถิติ</a>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <section id="form-section" class="section">
+            <div class="heading-wrapper">
+                <span class="icon-bubble"><i class="fa-solid fa-star"></i></span>
+                <h2>ส่งระบบเรียนรู้ <span class="term-stats-badge" id="formTermBadge">ภาคเรียนที่ 1</span></h2>
+            </div>
+            <form id="submissionForm">
+                <label for="submissionTimestamp">วันเวลาที่ส่ง:</label>
+                <input type="text" id="submissionTimestamp" name="submissionTimestamp" readonly>
+                
+                <label for="fullName">ชื่อ-นามสกุล (พร้อมคำนำหน้า):</label>
+                <input type="text" id="fullName" name="fullName" placeholder="เช่น นายสมชาย ใจดี" required>
+                
+                <label for="learningArea">กลุ่มสาระการเรียนรู้:</label>
+                <select id="learningArea" name="learningArea" required>
+                    <option value="">เลือกกลุ่มสาระฯ</option>
+                    <option value="วิทยาศาสตร์และเทคโนโลยี">วิทยาศาสตร์และเทคโนโลยี</option>
+                    <option value="คณิตศาสตร์">คณิตศาสตร์</option>
+                    <option value="ศิลปะ">ศิลปะ</option>
+                    <option value="ภาษาไทย">ภาษาไทย</option>
+                    <option value="ภาษาต่างประเทศ">ภาษาต่างประเทศ</option>
+                    <option value="สังคมศึกษา ศาสนาและวัฒนธรรม">สังคมศึกษา ศาสนาและวัฒนธรรม</option>
+                    <option value="การงานอาชีพ">การงานอาชีพ</option>
+                    <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
+                    <option value="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</option>
+                </select>
+                
+                <p style="text-align: center; color: var(--dark-gray); background-color: #f0f0f0; padding: 10px; border-radius: var(--border-radius); margin-top: 20px; margin-bottom: 20px;">กรอกข้อมูลเฉพาะวิชาที่ต้องการส่ง ไม่จำเป็นต้องกรอกครบทุกช่อง</p>
+                
+                <div id="course-blocks-container"></div>
+                
+                <label for="additionalLink">ลิงก์ URL เพิ่มเติม (ถ้ามี):</label>
+                <input type="url" id="additionalLink" name="additionalLink" placeholder="เช่น https://www.example.com/บทเรียน">
+                
+                <button type="submit"><i class="fa-solid fa-paper-plane"></i>ส่งข้อมูล</button>
+            </form>
+        </section>
+        
+        <section id="admin-section" class="section">
+            <div class="heading-wrapper">
+                <span class="icon-bubble"><i class="fa-solid fa-user-shield"></i></span>
+                <h2>ส่วนผู้บริหาร <span class="term-stats-badge" id="adminTermBadge">ภาคเรียนที่ 1</span></h2>
+            </div>
+            <div id="admin-login">
+                <label for="adminPassword">รหัสผ่านผู้บริหาร:</label>
+                <input type="password" id="adminPassword" name="adminPassword" placeholder="กรอกรหัสผ่าน">
+                <button type="button" id="loginButton"><i class="fa-solid fa-wand-magic-sparkles"></i>เข้าสู่ระบบ</button>
+            </div>
+            <div id="admin-section-content">
+                <div style="margin-bottom: 20px;">
+                    <button type="button" id="createPdfSummaryBtn" class="custom-button" style="background-color: #ff6b6b;">
+                        <i class="fa-solid fa-file-pdf"></i>สร้าง PDF สรุปการส่งงาน
+                    </button>
+                </div>
+                
+                <div class="heading-wrapper">
+                    <span class="icon-bubble"><i class="fa-solid fa-list-check"></i></span>
+                    <h3>รายการระบบเรียนรู้รอตรวจสอบ</h3>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label for="statusFilter">กรองตามสถานะ:</label>
+                    <select id="statusFilter">
+                        <option value="ทั้งหมด">ทั้งหมด</option>
+                        <option value="รอตรวจ">รอตรวจ ⭐</option>
+                        <option value="รอแก้ไข">รอแก้ไข ❗</option>
+                        <option value="ตรวจแล้ว">ตรวจแล้ว ✅</option>
+                    </select>
+                    <button type="button" id="refreshAdminList"><i class="fa-solid fa-arrows-rotate"></i>โหลดข้อมูล</button>
+                </div>
+                <div id="admin-dashboard" style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>วันที่ส่ง</th>
+                                <th>ชื่อผู้ส่ง</th>
+                                <th>วิชาที่ส่ง (วิชาแรก)</th>
+                                <th>สถานะ</th>
+                                <th>ดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminSubmissionsTableBody"></tbody>
+                    </table>
+                </div>
+                <div id="submission-detail-view" style="overflow-x:auto;"></div>
+                
+                <div id="pdf-summary-section" style="margin-top: 30px;">
+                    <div class="heading-wrapper">
+                        <span class="icon-bubble"><i class="fa-solid fa-file-pdf"></i></span>
+                        <h3>สร้างเอกสารสรุปการส่งงาน PDF</h3>
+                    </div>
+                    
+                    <div class="summary-form-group">
+                        <label for="summaryTerm">ภาคเรียนที่:</label>
+                        <input type="number" id="summaryTerm" min="1" max="2" placeholder="เช่น 1" required>
+                        
+                        <label for="summaryYear">ปีการศึกษา:</label>
+                        <input type="number" id="summaryYear" placeholder="เช่น 2567" required>
+                        
+                        <label for="summaryCheckNumber">ตรวจระบบเรียนรู้ ครั้งที่:</label>
+                        <input type="number" id="summaryCheckNumber" min="1" placeholder="เช่น 1" required>
+                    </div>
+                    
+                    <div class="summary-form-group">
+                        <label><strong>สรุปการทำงานของคณะครู (กรอกได้สูงสุด 10 ข้อ):</strong></label>
+                        <div id="summaryPointsContainer"></div>
+                        <button type="button" id="addSummaryPointBtn" class="custom-button" style="background-color: #4caf50; margin-top: 10px;">
+                            <i class="fa-solid fa-plus"></i>เพิ่มข้อสรุป
+                        </button>
+                    </div>
+                    
+                    <div id="autoStatsDisplay" class="summary-stats-display">
+                        <h4><i class="fa-solid fa-chart-bar"></i> สถิติการส่งงานแยกตามกลุ่มสาระ (คำนวณอัตโนมัติ)</h4>
+                        <div id="statsContent">กำลังโหลดข้อมูล...</div>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                        <button type="button" id="generatePdfBtn" class="custom-button" style="background-color: #2196f3;">
+                            <i class="fa-solid fa-download"></i>สร้างและดาวน์โหลด PDF
+                        </button>
+                        <button type="button" id="cancelPdfBtn" class="custom-button" style="background-color: #757575;">
+                            <i class="fa-solid fa-times"></i>ยกเลิก
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <section id="dashboard-section" class="section">
+            <div class="heading-wrapper">
+                <span class="icon-bubble"><i class="fa-solid fa-chart-line"></i></span>
+                <h2>แดชบอร์ดสถิติ <span class="term-stats-badge" id="dashboardTermBadge">ภาคเรียนที่ 1</span></h2>
+            </div>
+            <button type="button" id="refreshDashboardButton" style="margin-bottom: 20px;"><i class="fa-solid fa-arrows-rotate"></i>รีเฟรชสถิติ</button>
+            
+            <div id="statsDashboard" class="dashboard-grid">
+                <div class="dashboard-card">
+                    <h3>ทั้งหมด</h3>
+                    <p id="totalSubmissions">0</p>
+                </div>
+                <div class="dashboard-card">
+                    <h3>รอตรวจ ⭐</h3>
+                    <p id="pendingSubmissions">0</p>
+                </div>
+                <div class="dashboard-card">
+                    <h3>รอแก้ไข ❗</h3>
+                    <p id="revisionSubmissions">0</p>
+                </div>
+                <div class="dashboard-card">
+                    <h3>ตรวจแล้ว ✅</h3>
+                    <p id="approvedSubmissions">0</p>
+                </div>
+            </div>
+            
+            <div class="chart-container-wrapper" style="margin-top: 30px; margin-bottom: 30px; max-width: 550px; margin-left: auto; margin-right: auto;">
+                <div class="heading-wrapper">
+                    <span class="icon-bubble"><i class="fa-solid fa-chart-pie"></i></span>
+                    <h3>สัดส่วนการส่งตามกลุ่มสาระ</h3>
+                </div>
+                <div class="chart-container" style="height: 380px;">
+                    <canvas id="learningSystemAreaStatsChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="heading-wrapper">
+                <span class="icon-bubble"><i class="fa-solid fa-magnifying-glass"></i></span>
+                <h3>ค้นหาผู้ส่งงาน</h3>
+            </div>
+            <div class="search-container">
+                <input type="text" id="searchNameInput" placeholder="ค้นหาชื่อผู้ส่งงาน..." />
+                <button type="button" id="searchButton"><i class="fa-solid fa-search"></i>ค้นหา</button>
+                <button type="button" id="clearSearchButton"><i class="fa-solid fa-times"></i>ล้างการค้นหา</button>
+            </div>
+            <div id="searchResultInfo" class="search-result-info" style="display: none;"></div>
+            
+            <div class="heading-wrapper">
+                <span class="icon-bubble"><i class="fa-solid fa-table-list"></i></span>
+                <h3>รายการส่งล่าสุด</h3>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="admin-table" id="recentSubmissionsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 140px;">วันที่ส่ง</th>
+                            <th style="width: 180px;">ชื่อผู้ส่ง</th>
+                            <th style="width: 200px;">ชื่อวิชา (วิชาแรก)</th>
+                            <th style="width: 150px;">กลุ่มสาระฯ</th>
+                            <th style="width: 100px;">สถานะ</th>
+                            <th style="min-width: 300px;">ความคิดเห็นผู้บริหาร</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentSubmissionsTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+    
+    <footer>
+        <p>พัฒนาโดย งานเทคโนโลยี :: โรงเรียนสา | Saschool</p>
+        <p>© <span id="currentYear"></span> ระบบเรียนรู้ออนไลน์</p>
+    </footer>
+
+    <script>
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHoyk3oqHJWY5QzFpZ6PFxnsjnCJDyrAJpAx-dDFq45ZfnODyQvO2zfBJb3NWDzYWy/exec';
+        const ADMIN_PASSWORD_HASH = 'admin999';
+        
+        let currentTerm = 1;
+        let learningSystemAreaChartInstance = null;
+        let allRecentSubmissions = [];
+        let isSearchActive = false;
+        let summaryPointCount = 0;
+        let pdfSummaryData = null;
+        
+        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // ========== 🎯 TERM SWITCHING FUNCTION ==========
+        function switchTerm(term) {
+            currentTerm = term;
+            
+            // อัปเดตปุ่ม active
+            document.querySelectorAll('.term-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-term="${term}"]`).classList.add('active');
+            
+            // อัปเดต Badge
+            const termText = term === 1 ? 'ภาคเรียนที่ 1' : 'ภาคเรียนที่ 2';
+            document.getElementById('formTermBadge').textContent = termText;
+            document.getElementById('adminTermBadge').textContent = termText;
+            document.getElementById('dashboardTermBadge').textContent = termText;
+            
+            // Reload ข้อมูล
+            loadDashboardData();
+            loadAndDrawLearningSystemAreaChart();
+            
+            // Reset form
+            document.getElementById('submissionForm').reset();
+            setTimestamp();
+            createCourseBlocks();
+            
+            // ถ้าอยู่ใน admin mode ให้โหลด submissions ใหม่
+            if (document.getElementById('admin-section-content').style.display === 'block') {
+                loadAdminSubmissions();
+            }
+            
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: `เปลี่ยนเป็น ${termText}`,
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+        
+        // ========== ฟังก์ชันหลักอื่นๆ (ใช้ currentTerm) ==========
+        
+        function addSummaryPoint() {
+            if (summaryPointCount >= 10) {
+                Swal.fire('แจ้งเตือน', 'กรอกได้สูงสุด 10 ข้อเท่านั้น', 'warning');
+                return;
+            }
+            summaryPointCount++;
+            const container = document.getElementById('summaryPointsContainer');
+            const pointDiv = document.createElement('div');
+            pointDiv.className = 'summary-point-item';
+            pointDiv.style.marginBottom = '10px';
+            pointDiv.innerHTML = `
+                <label>ข้อที่ ${summaryPointCount}:</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="text" class="summary-point-input" placeholder="กรอกข้อสรุปการทำงาน" style="flex: 1;">
+                    <button type="button" class="remove-point-btn custom-button delete-button" onclick="removeSummaryPoint(this)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(pointDiv);
+        }
+        
+        function removeSummaryPoint(btn) {
+            btn.closest('.summary-point-item').remove();
+            summaryPointCount--;
+            updateSummaryPointNumbers();
+        }
+        
+        function updateSummaryPointNumbers() {
+            const points = document.querySelectorAll('.summary-point-item');
+            points.forEach((point, index) => {
+                point.querySelector('label').textContent = `ข้อที่ ${index + 1}:`;
+            });
+        }
+        
+        async function loadSummaryStats() {
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getSummaryStats&term=${currentTerm}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    pdfSummaryData = result.data;
+                    displaySummaryStats(result.data);
+                } else {
+                    throw new Error(result.message || 'ไม่สามารถโหลดสถิติได้');
+                }
+            } catch (error) {
+                console.error('Error loading summary stats:', error);
+                document.getElementById('statsContent').innerHTML = 
+                    `<p style="color: red;">เกิดข้อผิดพลาด: ${error.message}</p>`;
+            }
+        }
+        
+        function displaySummaryStats(data) {
+            const statsContent = document.getElementById('statsContent');
+            
+            if (!data || Object.keys(data).length === 0) {
+                statsContent.innerHTML = '<p style="text-align: center; color: #999;">ไม่มีข้อมูลสถิติ</p>';
+                return;
+            }
+            
+            let html = '';
+            
+            const learningAreas = [
+                { key: 'thai', name: 'ภาษาไทย' },
+                { key: 'math', name: 'คณิตศาสตร์' },
+                { key: 'science', name: 'วิทยาศาสตร์และเทคโนโลยี' },
+                { key: 'foreign', name: 'ภาษาต่างประเทศ' },
+                { key: 'social', name: 'สังคมศึกษา ศาสนาและวัฒนธรรม' },
+                { key: 'health', name: 'สุขศึกษาและพลศึกษา' },
+                { key: 'art', name: 'ศิลปะ' },
+                { key: 'career', name: 'การงานอาชีพ' },
+                { key: 'guidance', name: 'กิจกรรมพัฒนาผู้เรียน' }
+            ];
+            
+            learningAreas.forEach(area => {
+                const areaData = data[area.key];
+                
+                if (areaData && areaData.total > 0) {
+                    const total = parseInt(areaData.total) || 0;
+                    const submitted = parseInt(areaData.submitted) || 0;
+                    const notSubmitted = parseInt(areaData.notSubmitted) || 0;
+                    
+                    const percent = total > 0 ? ((submitted / total) * 100).toFixed(1) : '0.0';
+                    
+                    let statusColor = notSubmitted > 0 ? '#e74c3c' : '#27ae60';
+                    let statusIcon = notSubmitted > 0 ? '❌' : '✅';
+                    
+                    html += `
+                        <div class="summary-detail-item" style="border-left: 4px solid ${statusColor}; padding: 15px; margin-bottom: 12px; background-color: ${statusColor === '#27ae60' ? '#f0fdf4' : '#fef2f2'};">
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-weight: bold; font-size: 16px; color: #333;">
+                                    ${statusIcon} ${area.name}
+                                </span>
+                                <div style="margin-top: 5px; font-size: 14px; color: #555; line-height: 1.8;">
+                                    จำนวนครู ${total} คน | ส่งแล้ว ${submitted} คน (${percent}%)
+                                </div>
+                            </div>
+                    `;
+                    
+                    if (notSubmitted > 0 && areaData.notSubmittedNames && areaData.notSubmittedNames.length > 0) {
+                        html += `
+                            <div style="background-color: #fff3cd; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #e74c3c;">
+                                <span style="color: #e74c3c; font-weight: bold; display: block; margin-bottom: 5px;">
+                                    ❌ ยังไม่ส่ง (${notSubmitted} คน):
+                                </span>
+                                <span style="color: #666; font-size: 13px; display: block; word-wrap: break-word;">
+                                    ${areaData.notSubmittedNames.map(name => `<span style="display: inline-block; background: #fff; padding: 4px 8px; margin: 3px; border-radius: 4px; border: 1px solid #e74c3c; color: #c0392b;">• ${name}</span>`).join('')}
+                                </span>
+                            </div>
+                        `;
+                    } else if (notSubmitted === 0) {
+                        html += `
+                            <div style="background-color: #d4edda; padding: 10px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #27ae60;">
+                                <span style="color: #27ae60; font-weight: bold;">
+                                    ✅ ส่งครบทุกคน (${total}/${total})
+                                </span>
+                            </div>
+                        `;
+                    }
+                    
+                    html += `</div>`;
+                }
+            });
+            
+            if (html === '') {
+                html = '<p style="text-align: center; color: #999;">ไม่มีข้อมูลสถิติในกลุ่มสาระที่กำหนด</p>';
+            }
+            
+            statsContent.innerHTML = html;
+        }
+        
+        async function generatePDF() {
+    const term = document.getElementById('summaryTerm').value;
+    const year = document.getElementById('summaryYear').value;
+    const checkNumber = document.getElementById('summaryCheckNumber').value;
+    
+    if (!term || !year || !checkNumber) {
+        Swal.fire('กรุณากรอกข้อมูล', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+        return;
+    }
+    
+    const summaryPoints = [];
+    document.querySelectorAll('.summary-point-input').forEach(input => {
+        if (input.value.trim()) {
+            summaryPoints.push(input.value.trim());
+        }
+    });
+    
+    if (summaryPoints.length === 0) {
+        Swal.fire('กรุณากรอกข้อมูล', 'กรุณากรอกข้อสรุปอย่างน้อย 1 ข้อ', 'warning');
+        return;
+    }
+    
+    Swal.fire({
+        title: 'กำลังสร้าง PDF...',
+        text: 'กรุณารอสักครู่',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
+    try {
+        // ✅ CALL BACKEND API
+        const payload = new URLSearchParams();
+        payload.append('action', 'generatePdf');
+        payload.append('term', currentTerm);
+        payload.append('summaryTerm', term);
+        payload.append('summaryYear', year);
+        payload.append('summaryCheckNumber', checkNumber);
+        
+        summaryPoints.forEach((point, idx) => {
+            payload.append(`summaryPoint${idx + 1}`, point);
+        });
+        
+        const response = await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            body: payload
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // ✅ Download PDF
+            const link = document.createElement('a');
+            link.href = result.fileUrl;
+            link.download = result.fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            Swal.close();
+            Swal.fire('สำเร็จ!', 'สร้างและดาวน์โหลด PDF เรียบร้อยแล้ว', 'success');
+        } else {
+            throw new Error(result.message);
+        }
+        
+    } catch (error) {
+        Swal.close();
+        Swal.fire('เกิดข้อผิดพลาด!', error.message, 'error');
+    }
+}
+        
+        // Event Listeners
+        document.getElementById('createPdfSummaryBtn')?.addEventListener('click', () => {
+            document.getElementById('admin-dashboard').style.display = 'none';
+            document.getElementById('submission-detail-view').style.display = 'none';
+            document.getElementById('pdf-summary-section').style.display = 'block';
+            
+            const container = document.getElementById('summaryPointsContainer');
+            if (container) {
+                container.innerHTML = '';
+                summaryPointCount = 0;
+            }
+            
+            for (let i = 0; i < 3; i++) {
+                addSummaryPoint();
+            }
+            
+            loadSummaryStats();
+        });
+        
+        document.getElementById('addSummaryPointBtn')?.addEventListener('click', addSummaryPoint);
+        
+        document.getElementById('generatePdfBtn')?.addEventListener('click', () => {
+            generatePDF();
+        });
+        
+        document.getElementById('cancelPdfBtn')?.addEventListener('click', () => {
+            document.getElementById('pdf-summary-section').style.display = 'none';
+            document.getElementById('admin-dashboard').style.display = 'block';
+        });
+        
+        // Utility functions
+        function toBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => resolve(reader.result.split(',')[1]);
+                reader.onerror = error => reject(error);
+            });
+        }
+        
+        function setTimestamp() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false,
+                timeZone: 'Asia/Bangkok'
+            };
+            let ts = new Intl.DateTimeFormat('th-TH', options).format(now);
+            ts = ts.replace(',', '');
+            const timestampInput = document.getElementById('submissionTimestamp');
+            if(timestampInput) timestampInput.value = ts;
+        }
+        
+        function showSection(sectionIdToShow) {
+            const allSectionIds = ['form-section', 'admin-section', 'dashboard-section'];
+            allSectionIds.forEach(id => {
+                const section = document.getElementById(id);
+                if (section) section.style.display = 'none';
+            });
+            const sectionToShow = document.getElementById(sectionIdToShow);
+            if (sectionToShow) sectionToShow.style.display = 'block';
+        }
+        
+        document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').substring(1);
+                showSection(targetId);
+                document.body.scrollIntoView({ behavior: 'smooth' });
+            });
+        });
+        
+        function createCourseBlocks() {
+            const container = document.getElementById('course-blocks-container');
+            if (!container) return;
+            let html = '';
+            for (let i = 1; i <= 6; i++) {
+                html += `
+                    <div class="course-block">
+                        <div class="course-block-header">
+                            <i class="fa-solid fa-book"></i> ระบบเรียนรู้วิชาที่ ${i}
+                        </div>
+                        <label for="courseCode${i}">รหัสวิชา:</label>
+                        <input type="text" id="courseCode${i}" name="courseCode${i}" placeholder="เช่น ว21101 (ถ้ามี)">
+                        <label for="courseName${i}">ชื่อวิชา:</label>
+                        <input type="text" id="courseName${i}" name="courseName${i}" placeholder="เช่น วิทยาศาสตร์พื้นฐาน (ถ้ามี)">
+                        <label for="file${i}">ไฟล์แนบ (.pdf ไม่เกิน 10MB):</label>
+                        <input type="file" id="file${i}" name="file${i}" accept=".pdf">
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+        }
+        
+        const submissionForm = document.getElementById('submissionForm');
+        if (submissionForm) {
+            submissionForm.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                Swal.fire({
+                    title: 'กำลังส่งข้อมูล...',
+                    text: 'กรุณารอสักครู่',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+                
+                const formData = new URLSearchParams();
+                formData.append('action', 'submitForm');
+                formData.append('term', currentTerm);
+                formData.append('submissionTimestamp', document.getElementById('submissionTimestamp').value);
+                formData.append('fullName', document.getElementById('fullName').value.trim());
+                formData.append('learningArea', document.getElementById('learningArea').value);
+                formData.append('additionalLink', document.getElementById('additionalLink').value.trim());
+                
+                let hasAtLeastOneFileOrCourse = false;
+                for (let i = 1; i <= 6; i++) {
+                    const courseCode = document.getElementById(`courseCode${i}`).value.trim();
+                    const courseName = document.getElementById(`courseName${i}`).value.trim();
+                    const fileInput = document.getElementById(`file${i}`);
+                    
+                    formData.append(`courseCode${i}`, courseCode);
+                    formData.append(`courseName${i}`, courseName);
+                    
+                    if (fileInput.files.length > 0) {
+                        const file = fileInput.files[0];
+                        if (file.type !== 'application/pdf') {
+                            Swal.fire({text:`ไฟล์ ${file.name} ไม่ใช่ PDF`, icon:'error'});
+                            return;
+                        }
+                        if (file.size > 10 * 1024 * 1024) {
+                            Swal.fire({text:`ไฟล์ ${file.name} ใหญ่เกิน 10MB`, icon:'error'});
+                            return;
+                        }
+                        const base64File = await toBase64(file);
+                        formData.append(`file${i}Name`, file.name);
+                        formData.append(`file${i}MimeType`, file.type);
+                        formData.append(`file${i}Base64`, base64File);
+                        hasAtLeastOneFileOrCourse = true;
+                    } else {
+                        formData.append(`file${i}Name`, '');
+                        formData.append(`file${i}MimeType`, '');
+                        formData.append(`file${i}Base64`, '');
+                        if (courseCode || courseName) {
+                            hasAtLeastOneFileOrCourse = true;
+                        }
+                    }
+                }
+                
+                if (!hasAtLeastOneFileOrCourse) {
+                    Swal.fire('ข้อมูลไม่ครบถ้วน', 'กรุณากรอกข้อมูลวิชาและ/หรือแนบไฟล์อย่างน้อย 1 รายการ', 'warning');
+                    return;
+                }
+                
+                try {
+                    const response = await fetch(APPS_SCRIPT_URL, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        Swal.fire('สำเร็จ!', 'ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว!', 'success');
+                        submissionForm.reset();
+                        setTimestamp();
+                        createCourseBlocks();
+                        loadDashboardData();
+                        loadAndDrawLearningSystemAreaChart();
+                        
+                        if (document.getElementById('admin-section-content').style.display === 'block') {
+                            loadAdminSubmissions();
+                        }
+                    } else {
+                        throw new Error(result.message || 'เกิดข้อผิดพลาดในการบันทึกข้อมูล');
+                    }
+                } catch (error) {
+                    Swal.fire('เกิดข้อผิดพลาด!', error.message || 'ไม่สามารถเชื่อมต่อได้', 'error');
+                }
+            });
+        }
+        
+        const loginButton = document.getElementById('loginButton');
+        const adminPasswordInput = document.getElementById('adminPassword');
+        const adminLoginDiv = document.getElementById('admin-login');
+        const adminSectionContent = document.getElementById('admin-section-content');
+        const adminDashboardDiv = document.getElementById('admin-dashboard');
+        const submissionDetailViewDiv = document.getElementById('submission-detail-view');
+        const adminSubmissionsTableBody = document.getElementById('adminSubmissionsTableBody');
+        const statusFilter = document.getElementById('statusFilter');
+        const refreshAdminListButton = document.getElementById('refreshAdminList');
+        
+        let currentAdminSubmissions = [];
+        
+        if (loginButton) {
+            loginButton.addEventListener('click', () => {
+                if (adminPasswordInput.value === ADMIN_PASSWORD_HASH) {
+                    Swal.fire({
+                        title: 'เข้าสู่ระบบสำเร็จ!',
+                        icon: 'success',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    adminLoginDiv.style.display = 'none';
+                    adminSectionContent.style.display = 'block';
+                    adminDashboardDiv.style.display = 'block';
+                    loadAdminSubmissions();
+                } else {
+                    Swal.fire('รหัสผ่านไม่ถูกต้อง!', 'กรุณาลองใหม่อีกครั้ง', 'error');
+                }
+            });
+        }
+        
+        if(statusFilter) statusFilter.addEventListener('change', displayFilteredSubmissions);
+        if(refreshAdminListButton) refreshAdminListButton.addEventListener('click', loadAdminSubmissions);
+        
+        async function loadAdminSubmissions() {
+            Swal.fire({
+                title: 'กำลังโหลดข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getAdminSubmissions&term=${currentTerm}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentAdminSubmissions = result.data || [];
+                    displayFilteredSubmissions();
+                    Swal.close();
+                } else {
+                    throw new Error(result.message || "ไม่สามารถโหลดข้อมูลได้");
+                }
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด!', error.message, 'error');
+                adminSubmissionsTableBody.innerHTML = `<tr><td colspan="5">Error: ${error.message}</td></tr>`;
+            } finally {
+                Swal.close();
+            }
+        }
+        
+        function displayFilteredSubmissions() {
+            adminSubmissionsTableBody.innerHTML = '';
+            if(submissionDetailViewDiv) submissionDetailViewDiv.style.display = 'none';
+            if(adminDashboardDiv) adminDashboardDiv.style.display = 'block';
+            
+            const filterValue = statusFilter.value;
+            const filtered = currentAdminSubmissions.filter(submission => 
+                filterValue === "ทั้งหมด" || (submission && submission.status === filterValue)
+            );
+            
+            if (filtered.length === 0) {
+                adminSubmissionsTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ไม่พบรายการตามเงื่อนไข</td></tr>';
+                return;
+            }
+            
+            filtered.forEach(submission => {
+                const row = adminSubmissionsTableBody.insertRow();
+                row.dataset.id = submission.id;
+                row.insertCell().textContent = submission.submissionTimestamp || '';
+                row.insertCell().textContent = submission.fullName || '';
+                row.insertCell().textContent = (submission.courses && submission.courses.length > 0) ? (submission.courses[0].name || 'N/A') : 'N/A';
+                row.insertCell().innerHTML = formatStatus(submission.status || 'รอตรวจ');
+                
+                const actionCell = row.insertCell();
+                const viewButton = document.createElement('button');
+                viewButton.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ';
+                viewButton.classList.add('custom-button');
+                viewButton.onclick = () => showSubmissionDetail(submission.id);
+                actionCell.appendChild(viewButton);
+                
+                const deleteButton = document.createElement('button');
+                deleteButton.innerHTML = '<i class="fa-solid fa-trash-can"></i> ลบ';
+                deleteButton.classList.add('custom-button', 'delete-button');
+                deleteButton.onclick = () => confirmDeleteSubmission(submission.id);
+                actionCell.appendChild(deleteButton);
+            });
+        }
+        
+        function formatStatus(status) {
+            if (status === 'รอตรวจ') return `<span class="status-pending">รอตรวจ ⭐</span>`;
+            if (status === 'รอแก้ไข') return `<span class="status-revision">รอแก้ไข ❗</span>`;
+            if (status === 'ตรวจแล้ว') return `<span class="status-approved">ตรวจแล้ว ✅</span>`;
+            return status || 'รอตรวจ ⭐';
+        }
+        
+        function confirmDeleteSubmission(submissionId) {
+            Swal.fire({
+                title: 'คุณแน่ใจหรือไม่?',
+                text: "คุณจะไม่สามารถกู้คืนข้อมูลนี้ได้!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'ใช่, ลบเลย!',
+                cancelButtonText: 'ยกเลิก'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteSubmissionOnServer(submissionId);
+                }
+            });
+        }
+        
+        async function deleteSubmissionOnServer(submissionId) {
+            Swal.fire({
+                title: 'กำลังลบข้อมูล...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            const payload = new URLSearchParams();
+            payload.append('action', 'deleteSubmission');
+            payload.append('submissionId', submissionId);
+            payload.append('term', currentTerm);
+            
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: payload
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    Swal.fire('ลบแล้ว!', 'ข้อมูลการส่งงานถูกลบออกแล้ว', 'success');
+                    const rowToDelete = document.querySelector(`tr[data-id="${submissionId}"]`);
+                    if (rowToDelete) rowToDelete.remove();
+                    loadDashboardData();
+                    loadAndDrawLearningSystemAreaChart();
+                } else {
+                    throw new Error(result.message || 'ไม่สามารถลบข้อมูลได้');
+                }
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด!', error.message, 'error');
+            }
+        }
+        
+        function showSubmissionDetail(submissionId) {
+            const submission = currentAdminSubmissions.find(s => s.id === submissionId);
+            if (!submission) {
+                Swal.fire('ข้อผิดพลาด', 'ไม่พบข้อมูลการส่งงานที่เลือก', 'error');
+                return;
+            }
+            
+            if (adminDashboardDiv) adminDashboardDiv.style.display = 'none';
+            if (submissionDetailViewDiv) {
+                submissionDetailViewDiv.style.display = 'block';
+                
+                let filesHtml = '';
+                if (submission.courses && submission.courses.length > 0) {
+                    submission.courses.forEach((course, index) => {
+                        const courseCodeText = course.code || 'ไม่ได้ระบุ';
+                        const courseNameText = course.name || 'ไม่ได้ระบุ';
+                        filesHtml += `
+                            <div class="course-block" style="background-color: #fff;">
+                                <div class="course-block-header">วิชาที่ ${index + 1}</div>
+                                <p style="margin: 5px 0;"><strong>รหัสวิชา:</strong> ${courseCodeText}</p>
+                                <p style="margin: 5px 0;"><strong>ชื่อวิชา:</strong> ${courseNameText}</p>
+                                ${course.fileUrl ? `<p style="margin: 5px 0;"><strong>ไฟล์:</strong> <a href="${course.fileUrl}" target="_blank"><i class="fa-solid fa-file-pdf fa-fw"></i>${course.fileName || 'เปิดไฟล์'}</a></p>` : '<p>ไม่มีไฟล์แนบสำหรับวิชานี้</p>'}
+                            </div>
+                        `;
+                    });
+                } else {
+                    filesHtml = '<li>ไม่มีข้อมูลวิชาหรือไฟล์แนบ</li>';
+                }
+                
+                submissionDetailViewDiv.innerHTML = `
+                    <div class="heading-wrapper" style="justify-content: flex-start;">
+                        <span class="icon-bubble"><i class="fa-solid fa-circle-info"></i></span>
+                        <h3>รายละเอียดการส่งงาน</h3>
+                    </div>
+                    <p><strong>ID:</strong> ${submission.id || 'N/A'}</p>
+                    <p><strong>วันที่ส่ง:</strong> ${submission.submissionTimestamp || 'N/A'}</p>
+                    <p><strong>ชื่อผู้ส่ง:</strong> ${submission.fullName || 'N/A'}</p>
+                    <p><strong>กลุ่มสาระฯ:</strong> ${submission.learningArea || 'N/A'}</p>
+                    <p><strong>ลิงก์เพิ่มเติม:</strong> ${submission.additionalLink ? `<a href="${submission.additionalLink}" target="_blank">${submission.additionalLink}</a>` : 'ไม่มี'}</p>
+                    <div class="heading-wrapper" style="justify-content: flex-start; margin-top: 1.5rem; margin-bottom: 0.5rem;">
+                        <span class="icon-bubble"><i class="fa-solid fa-paperclip"></i></span>
+                        <h4>วิชาที่ส่งและไฟล์แนบ:</h4>
+                    </div>
+                    ${filesHtml}
+                    <hr>
+                    <p><strong>สถานะปัจจุบัน:</strong> ${formatStatus(submission.status || 'รอตรวจ')}</p>
+                    <p><strong>ความคิดเห็นผู้บริหาร (เดิม):</strong> <span id="previousAdminCommentDisplay">${submission.adminComment || 'ยังไม่มี'}</span></p>
+                    <div class="form-group" style="margin-top: 1.5rem;">
+                        <label for="newStatusModal"><strong>เปลี่ยนสถานะเป็น:</strong></label>
+                        <select id="newStatusModal" style="width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid var(--medium-gray); border-radius: var(--border-radius);">
+                            <option value="รอตรวจ" ${submission.status === 'รอตรวจ' ? 'selected' : ''}>รอตรวจ ⭐</option>
+                            <option value="รอแก้ไข" ${submission.status === 'รอแก้ไข' ? 'selected' : ''}>รอแก้ไข ❗</option>
+                            <option value="ตรวจแล้ว" ${submission.status === 'ตรวจแล้ว' ? 'selected' : ''}>ตรวจแล้ว ✅</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="adminCommentTextModal"><strong>ความคิดเห็นผู้บริหาร:</strong></label>
+                        <textarea id="adminCommentTextModal" rows="3" placeholder="ใส่ความคิดเห็น (ถ้ามี)" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid var(--medium-gray); border-radius: var(--border-radius);">${submission.adminComment || ''}</textarea>
+                    </div>
+                    <button type="button" id="updateStatusButtonModal" class="custom-button"><i class="fa-solid fa-floppy-disk"></i>บันทึกการเปลี่ยนแปลง</button>
+                    <button type="button" id="backToListButtonModal" class="custom-button" style="background-color: #6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>
+                `;
+                
+                const updateBtn = document.getElementById('updateStatusButtonModal');
+                if(updateBtn) updateBtn.onclick = () => updateSubmissionStatus(submission.id);
+                
+                const backBtn = document.getElementById('backToListButtonModal');
+                if(backBtn) {
+                    backBtn.onclick = () => {
+                        if(submissionDetailViewDiv) submissionDetailViewDiv.style.display = 'none';
+                        if(adminDashboardDiv) adminDashboardDiv.style.display = 'block';
+                        loadAdminSubmissions();
+                    };
+                }
+            }
+        }
+        
+        async function updateSubmissionStatus(submissionId) {
+            const newStatusElement = document.getElementById('newStatusModal');
+            const adminCommentElement = document.getElementById('adminCommentTextModal');
+            if(!newStatusElement || !adminCommentElement) {
+                Swal.fire('ข้อผิดพลาด', 'ไม่พบองค์ประกอบสำหรับอัปเดตสถานะ', 'error');
+                return;
+            }
+            
+            const newStatus = newStatusElement.value;
+            const adminComment = adminCommentElement.value;
+            
+            Swal.fire({
+                title: 'กำลังอัปเดต...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+            
+            const payload = new URLSearchParams();
+            payload.append('action', 'updateSubmission');
+            payload.append('submissionId', submissionId);
+            payload.append('newStatus', newStatus);
+            payload.append('adminComment', adminComment);
+            payload.append('term', currentTerm);
+            
+            try {
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: payload
+                });
+                const result = await response.json();
+                
+                if (result.success) {
+                    Swal.fire('สำเร็จ!', 'อัปเดตสถานะแล้ว', 'success');
+                    if(submissionDetailViewDiv) submissionDetailViewDiv.style.display = 'none';
+                    if(adminDashboardDiv) adminDashboardDiv.style.display = 'block';
+                    loadAdminSubmissions();
+                    loadDashboardData();
+                    loadAndDrawLearningSystemAreaChart();
+                } else {
+                    throw new Error(result.message || "ไม่สามารถอัปเดตได้");
+                }
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด!', error.message, 'error');
+            }
+        }
+        
+        const refreshDashboardStatsButton = document.getElementById('refreshDashboardButton');
+        if(refreshDashboardStatsButton) {
+            refreshDashboardStatsButton.addEventListener('click', () => {
+                loadDashboardData();
+                loadAndDrawLearningSystemAreaChart();
+            });
+        }
+        
+        async function searchByName(searchTerm) {
+            if (!searchTerm.trim()) {
+                loadAllSubmissions();
+                return;
+            }
+            
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: 'กำลังค้นหา...',
+                showConfirmButton: false,
+                timer: 1000
+            });
+            
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=searchSubmissions&searchTerm=${encodeURIComponent(searchTerm)}&term=${currentTerm}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    allRecentSubmissions = result.data || [];
+                    displaySubmissions(allRecentSubmissions);
+                    showSearchResultInfo(searchTerm, allRecentSubmissions.length);
+                    isSearchActive = true;
+                } else {
+                    throw new Error(result.message || 'ไม่สามารถค้นหาได้');
+                }
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด!', `การค้นหา: ${error.message}`, 'error');
+                console.error('Search error:', error);
+            }
+        }
+        
+        async function loadAllSubmissions() {
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getAllSubmissions&term=${currentTerm}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    allRecentSubmissions = result.data || [];
+                    displaySubmissions(allRecentSubmissions);
+                    hideSearchResultInfo();
+                    isSearchActive = false;
+                } else {
+                    throw new Error(result.message || 'ไม่สามารถโหลดข้อมูลได้');
+                }
+            } catch (error) {
+                console.error('Error loading all submissions:', error);
+            }
+        }
+        
+        function displaySubmissions(submissions) {
+            const recentTableBody = document.getElementById('recentSubmissionsTableBody');
+            if (!recentTableBody) return;
+            
+            recentTableBody.innerHTML = '';
+            if (submissions.length === 0) {
+                recentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">ไม่พบผลการค้นหา</td></tr>';
+                return;
+            }
+            
+            submissions.forEach(sub => {
+                const row = recentTableBody.insertRow();
+                row.insertCell().textContent = sub.submissionTimestamp;
+                row.insertCell().textContent = sub.fullName;
+                row.insertCell().textContent = sub.courseName;
+                row.insertCell().textContent = sub.learningArea;
+                row.insertCell().innerHTML = formatStatus(sub.status);
+                
+                const commentCell = row.insertCell();
+                const adminComment = sub.adminComment || '';
+                if (adminComment.trim() !== '') {
+                    commentCell.innerHTML = `<div style="background-color: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; word-wrap: break-word; white-space: normal; line-height: 1.6;">
+                        <i class="fa-solid fa-comment-dots" style="color: #ff9800; margin-right: 8px; vertical-align: middle;"></i>
+                        <span style="color: #856404; font-size: 0.95em;">${adminComment}</span>
+                    </div>`;
+                } else {
+                    commentCell.innerHTML = '<span style="color: #999; font-style: italic; font-size: 0.9em;">ยังไม่มีความคิดเห็น</span>';
+                }
+            });
+        }
+        
+        function showSearchResultInfo(searchTerm, resultCount) {
+            const searchResultInfo = document.getElementById('searchResultInfo');
+            if (searchResultInfo) {
+                searchResultInfo.style.display = 'block';
+                searchResultInfo.innerHTML = `<i class="fa-solid fa-info-circle"></i> ผลการค้นหา "${searchTerm}": พบ ${resultCount} รายการ`;
+            }
+        }
+        
+        function hideSearchResultInfo() {
+            const searchResultInfo = document.getElementById('searchResultInfo');
+            if (searchResultInfo) {
+                searchResultInfo.style.display = 'none';
+            }
+        }
+        
+        function clearSearch() {
+            const searchInput = document.getElementById('searchNameInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+            loadAllSubmissions();
+        }
+        
+        const searchButton = document.getElementById('searchButton');
+        const clearSearchButton = document.getElementById('clearSearchButton');
+        const searchNameInput = document.getElementById('searchNameInput');
+        
+        if (searchButton) {
+            searchButton.addEventListener('click', () => {
+                const searchTerm = document.getElementById('searchNameInput').value;
+                searchByName(searchTerm);
+            });
+        }
+        if (clearSearchButton) {
+            clearSearchButton.addEventListener('click', clearSearch);
+        }
+        if (searchNameInput) {
+            searchNameInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchByName(e.target.value);
+                }
+            });
+        }
+        
+        async function loadDashboardData() {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'info',
+                title: 'กำลังโหลดสถิติ...',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getDashboardData&term=${currentTerm}`);
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const data = result.data;
+                    document.getElementById('totalSubmissions').textContent = data.total || 0;
+                    document.getElementById('pendingSubmissions').textContent = data.pending || 0;
+                    document.getElementById('revisionSubmissions').textContent = data.revision || 0;
+                    document.getElementById('approvedSubmissions').textContent = data.approved || 0;
+                    
+                    const recentTableBody = document.getElementById('recentSubmissionsTableBody');
+                    if(recentTableBody) {
+                        if (!isSearchActive) {
+                            loadAllSubmissions();
+                        }
+                    }
+                } else {
+                    throw new Error(result.message || "ไม่สามารถโหลดข้อมูลแดชบอร์ดได้");
+                }
+            } catch (error) {
+                Swal.fire('เกิดข้อผิดพลาด!', `สถิติ: ${error.message}`, 'error');
+            }
+        }
+        
+        async function loadAndDrawLearningSystemAreaChart() {
+            const chartCanvas = document.getElementById('learningSystemAreaStatsChart');
+            if (!chartCanvas) return;
+            
+            const ctx = chartCanvas.getContext('2d');
+            
+            try {
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getLearningAreaStats&term=${currentTerm}`);
+                const result = await response.json();
+                
+                if (learningSystemAreaChartInstance) {
+                    learningSystemAreaChartInstance.destroy();
+                }
+                
+                if (result.success && result.counts && Object.keys(result.counts).length > 0) {
+                    const labels = Object.keys(result.counts);
+                    const dataValues = Object.values(result.counts);
+                    const pieChartColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#E7E9ED', '#83A1C4', '#F4A7B9'];
+                    
+                    learningSystemAreaChartInstance = new Chart(ctx, {
+                        type: 'pie',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'จำนวนการส่ง',
+                                data: dataValues,
+                                backgroundColor: pieChartColors,
+                                borderColor: '#fff',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'top'
+                                }
+                            }
+                        }
+                    });
+                } else {
+                    ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+                    ctx.font = "16px 'Prompt'";
+                    ctx.fillStyle = "#666";
+                    ctx.textAlign = "center";
+                    ctx.fillText("ยังไม่มีข้อมูลสำหรับแสดงผลกราฟ", chartCanvas.width / 2, chartCanvas.height / 2);
+                }
+            } catch (error) {
+                console.error('Error loading chart data:', error);
+                ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
+                ctx.font = "16px 'Prompt'";
+                ctx.fillStyle = "#666";
+                ctx.textAlign = "center";
+                ctx.fillText("ไม่สามารถโหลดข้อมูลกราฟได้", chartCanvas.width / 2, chartCanvas.height / 2);
+            }
+        }
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimestamp();
+            createCourseBlocks();
+            loadDashboardData();
+            loadAndDrawLearningSystemAreaChart();
+            showSection('form-section');
+        });
+    </script>
+</body>
+</html>
