@@ -98,6 +98,40 @@
             border-color: var(--white-color);
             box-shadow: 0 4px 10px rgba(0,0,0,.2);
         }
+
+        /* 🎯 NEW: Round selector */
+        .round-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+
+        .round-btn {
+            padding: 8px 16px;
+            border: 2px solid rgba(255,255,255,.5);
+            background-color: rgba(255,255,255,.2);
+            color: var(--white-color);
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95em;
+            font-family: var(--font-family);
+            transition: all 0.3s ease;
+        }
+
+        .round-btn:hover {
+            background-color: rgba(255,255,255,.4);
+            transform: scale(1.05);
+        }
+
+        .round-btn.active {
+            background-color: #4caf50;
+            color: white;
+            border-color: #4caf50;
+            box-shadow: 0 2px 8px rgba(76,175,80,.5);
+        }
         
         nav {
             display: flex;
@@ -422,6 +456,18 @@
             font-weight: 600;
             margin-left: 10px;
         }
+
+        /* 🎯 NEW: Round badge */
+        .round-badge {
+            display: inline-block;
+            background-color: #4caf50;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            font-weight: 600;
+            margin-left: 8px;
+        }
         
         @media (max-width:768px) {
             header h1 {
@@ -470,6 +516,16 @@
                 <i class="fa-solid fa-calendar-days"></i> ภาคเรียนที่ 2
             </button>
         </div>
+
+        <!-- 🎯 NEW: Round Selector (แสดงตามเทอม) -->
+        <div class="round-selector" id="roundSelector">
+            <button class="round-btn active" data-round="1" onclick="switchRound(1)">
+                <i class="fa-solid fa-1"></i> ครั้งที่ 1
+            </button>
+            <button class="round-btn" data-round="2" onclick="switchRound(2)" id="round2Btn">
+                <i class="fa-solid fa-2"></i> ครั้งที่ 2
+            </button>
+        </div>
         
         <nav>
             <a href="#form-section">📝 ส่งงาน</a>
@@ -482,7 +538,10 @@
         <section id="form-section" class="section">
             <div class="heading-wrapper">
                 <span class="icon-bubble"><i class="fa-solid fa-star"></i></span>
-                <h2>ส่งระบบเรียนรู้ <span class="term-stats-badge" id="formTermBadge">ภาคเรียนที่ 1</span></h2>
+                <h2>ส่งระบบเรียนรู้ 
+                    <span class="term-stats-badge" id="formTermBadge">ภาคเรียนที่ 1</span>
+                    <span class="round-badge" id="formRoundBadge">ครั้งที่ 1</span>
+                </h2>
             </div>
             <form id="submissionForm">
                 <label for="submissionTimestamp">วันเวลาที่ส่ง:</label>
@@ -519,7 +578,10 @@
         <section id="admin-section" class="section">
             <div class="heading-wrapper">
                 <span class="icon-bubble"><i class="fa-solid fa-user-shield"></i></span>
-                <h2>ส่วนผู้บริหาร <span class="term-stats-badge" id="adminTermBadge">ภาคเรียนที่ 1</span></h2>
+                <h2>ส่วนผู้บริหาร 
+                    <span class="term-stats-badge" id="adminTermBadge">ภาคเรียนที่ 1</span>
+                    <span class="round-badge" id="adminRoundBadge">ครั้งที่ 1</span>
+                </h2>
             </div>
             <div id="admin-login">
                 <label for="adminPassword">รหัสผ่านผู้บริหาร:</label>
@@ -608,7 +670,10 @@
         <section id="dashboard-section" class="section">
             <div class="heading-wrapper">
                 <span class="icon-bubble"><i class="fa-solid fa-chart-line"></i></span>
-                <h2>แดชบอร์ดสถิติ <span class="term-stats-badge" id="dashboardTermBadge">ภาคเรียนที่ 1</span></h2>
+                <h2>แดชบอร์ดสถิติ 
+                    <span class="term-stats-badge" id="dashboardTermBadge">ภาคเรียนที่ 1</span>
+                    <span class="round-badge" id="dashboardRoundBadge">ครั้งที่ 1</span>
+                </h2>
             </div>
             <button type="button" id="refreshDashboardButton" style="margin-bottom: 20px;"><i class="fa-solid fa-arrows-rotate"></i>รีเฟรชสถิติ</button>
             
@@ -684,6 +749,7 @@
         const ADMIN_PASSWORD_HASH = 'admin999';
         
         let currentTerm = 1;
+        let currentRound = 1; // 🎯 NEW: ครั้งที่ส่ง
         let learningSystemAreaChartInstance = null;
         let allRecentSubmissions = [];
         let isSearchActive = false;
@@ -702,11 +768,25 @@
             });
             document.querySelector(`[data-term="${term}"]`).classList.add('active');
             
+            // 🎯 แสดง/ซ่อนปุ่มครั้งที่ 2 (เทอม 1 มี 2 ครั้ง, เทอม 2 มี 1 ครั้ง)
+            const round2Btn = document.getElementById('round2Btn');
+            if (term === 1) {
+                round2Btn.style.display = 'inline-block';
+            } else {
+                round2Btn.style.display = 'none';
+                // เทอม 2 ต้อง reset เป็นครั้งที่ 1 เสมอ
+                currentRound = 1;
+                document.querySelectorAll('.round-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector('[data-round="1"]').classList.add('active');
+            }
+            
             // อัปเดต Badge
             const termText = term === 1 ? 'ภาคเรียนที่ 1' : 'ภาคเรียนที่ 2';
             document.getElementById('formTermBadge').textContent = termText;
             document.getElementById('adminTermBadge').textContent = termText;
             document.getElementById('dashboardTermBadge').textContent = termText;
+            
+            updateRoundBadges();
             
             // Reload ข้อมูล
             loadDashboardData();
@@ -730,8 +810,50 @@
                 timer: 1500
             });
         }
+
+        // ========== 🎯 NEW: ROUND SWITCHING FUNCTION ==========
+        function switchRound(round) {
+            currentRound = round;
+            
+            // อัปเดตปุ่ม active
+            document.querySelectorAll('.round-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`[data-round="${round}"]`).classList.add('active');
+            
+            updateRoundBadges();
+            
+            // Reload ข้อมูล
+            loadDashboardData();
+            loadAndDrawLearningSystemAreaChart();
+            
+            // Reset form
+            document.getElementById('submissionForm').reset();
+            setTimestamp();
+            
+            // ถ้าอยู่ใน admin mode ให้โหลด submissions ใหม่
+            if (document.getElementById('admin-section-content').style.display === 'block') {
+                loadAdminSubmissions();
+            }
+            
+            Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: `เปลี่ยนเป็นครั้งที่ ${round}`,
+                showConfirmButton: false,
+                timer: 1500
+            });
+        }
+
+        // ========== 🎯 NEW: Update Round Badges ==========
+        function updateRoundBadges() {
+            const roundText = `ครั้งที่ ${currentRound}`;
+            document.getElementById('formRoundBadge').textContent = roundText;
+            document.getElementById('adminRoundBadge').textContent = roundText;
+            document.getElementById('dashboardRoundBadge').textContent = roundText;
+        }
         
-        // ========== ฟังก์ชันหลักอื่นๆ (ใช้ currentTerm) ==========
+        // ========== ฟังก์ชันหลักอื่นๆ (ใช้ currentTerm + currentRound) ==========
         
         function addSummaryPoint() {
             if (summaryPointCount >= 10) {
@@ -770,7 +892,7 @@
         
         async function loadSummaryStats() {
             try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=getSummaryStats&term=${currentTerm}`);
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getSummaryStats&term=${currentTerm}&round=${currentRound}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -866,74 +988,73 @@
         }
         
         async function generatePDF() {
-    const term = document.getElementById('summaryTerm').value;
-    const year = document.getElementById('summaryYear').value;
-    const checkNumber = document.getElementById('summaryCheckNumber').value;
-    
-    if (!term || !year || !checkNumber) {
-        Swal.fire('กรุณากรอกข้อมูล', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
-        return;
-    }
-    
-    const summaryPoints = [];
-    document.querySelectorAll('.summary-point-input').forEach(input => {
-        if (input.value.trim()) {
-            summaryPoints.push(input.value.trim());
-        }
-    });
-    
-    if (summaryPoints.length === 0) {
-        Swal.fire('กรุณากรอกข้อมูล', 'กรุณากรอกข้อสรุปอย่างน้อย 1 ข้อ', 'warning');
-        return;
-    }
-    
-    Swal.fire({
-        title: 'กำลังสร้าง PDF...',
-        text: 'กรุณารอสักครู่',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-    });
-    
-    try {
-        // ✅ CALL BACKEND API
-        const payload = new URLSearchParams();
-        payload.append('action', 'generatePdf');
-        payload.append('term', currentTerm);
-        payload.append('summaryTerm', term);
-        payload.append('summaryYear', year);
-        payload.append('summaryCheckNumber', checkNumber);
-        
-        summaryPoints.forEach((point, idx) => {
-            payload.append(`summaryPoint${idx + 1}`, point);
-        });
-        
-        const response = await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            body: payload
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            // ✅ Download PDF
-            const link = document.createElement('a');
-            link.href = result.fileUrl;
-            link.download = result.fileName;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            const term = document.getElementById('summaryTerm').value;
+            const year = document.getElementById('summaryYear').value;
+            const checkNumber = document.getElementById('summaryCheckNumber').value;
             
-            Swal.close();
-            Swal.fire('สำเร็จ!', 'สร้างและดาวน์โหลด PDF เรียบร้อยแล้ว', 'success');
-        } else {
-            throw new Error(result.message);
+            if (!term || !year || !checkNumber) {
+                Swal.fire('กรุณากรอกข้อมูล', 'กรุณากรอกข้อมูลให้ครบถ้วน', 'warning');
+                return;
+            }
+            
+            const summaryPoints = [];
+            document.querySelectorAll('.summary-point-input').forEach(input => {
+                if (input.value.trim()) {
+                    summaryPoints.push(input.value.trim());
+                }
+            });
+            
+            if (summaryPoints.length === 0) {
+                Swal.fire('กรุณากรอกข้อมูล', 'กรุณากรอกข้อสรุปอย่างน้อย 1 ข้อ', 'warning');
+                return;
+            }
+            
+            Swal.fire({
+                title: 'กำลังสร้าง PDF...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            try {
+                const payload = new URLSearchParams();
+                payload.append('action', 'generatePdf');
+                payload.append('term', currentTerm);
+                payload.append('round', currentRound); // 🎯 เพิ่ม round
+                payload.append('summaryTerm', term);
+                payload.append('summaryYear', year);
+                payload.append('summaryCheckNumber', checkNumber);
+                
+                summaryPoints.forEach((point, idx) => {
+                    payload.append(`summaryPoint${idx + 1}`, point);
+                });
+                
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: payload
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    const link = document.createElement('a');
+                    link.href = result.fileUrl;
+                    link.download = result.fileName;
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    Swal.close();
+                    Swal.fire('สำเร็จ!', 'สร้างและดาวน์โหลด PDF เรียบร้อยแล้ว', 'success');
+                } else {
+                    throw new Error(result.message);
+                }
+                
+            } catch (error) {
+                Swal.close();
+                Swal.fire('เกิดข้อผิดพลาด!', error.message, 'error');
+            }
         }
-        
-    } catch (error) {
-        Swal.close();
-        Swal.fire('เกิดข้อผิดพลาด!', error.message, 'error');
-    }
-}
         
         // Event Listeners
         document.getElementById('createPdfSummaryBtn')?.addEventListener('click', () => {
@@ -1048,6 +1169,7 @@
                 const formData = new URLSearchParams();
                 formData.append('action', 'submitForm');
                 formData.append('term', currentTerm);
+                formData.append('round', currentRound); // 🎯 เพิ่ม round
                 formData.append('submissionTimestamp', document.getElementById('submissionTimestamp').value);
                 formData.append('fullName', document.getElementById('fullName').value.trim());
                 formData.append('learningArea', document.getElementById('learningArea').value);
@@ -1161,7 +1283,7 @@
             });
             
             try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=getAdminSubmissions&term=${currentTerm}`);
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getAdminSubmissions&term=${currentTerm}&round=${currentRound}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -1252,6 +1374,7 @@
             payload.append('action', 'deleteSubmission');
             payload.append('submissionId', submissionId);
             payload.append('term', currentTerm);
+            payload.append('round', currentRound); // 🎯 เพิ่ม round
             
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
@@ -1374,6 +1497,7 @@
             payload.append('newStatus', newStatus);
             payload.append('adminComment', adminComment);
             payload.append('term', currentTerm);
+            payload.append('round', currentRound); // 🎯 เพิ่ม round
             
             try {
                 const response = await fetch(APPS_SCRIPT_URL, {
@@ -1421,7 +1545,7 @@
             });
             
             try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=searchSubmissions&searchTerm=${encodeURIComponent(searchTerm)}&term=${currentTerm}`);
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=searchSubmissions&searchTerm=${encodeURIComponent(searchTerm)}&term=${currentTerm}&round=${currentRound}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -1440,7 +1564,7 @@
         
         async function loadAllSubmissions() {
             try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=getAllSubmissions&term=${currentTerm}`);
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getAllSubmissions&term=${currentTerm}&round=${currentRound}`);
                 const result = await response.json();
                 
                 if (result.success) {
@@ -1542,7 +1666,7 @@
             });
             
             try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=getDashboardData&term=${currentTerm}`);
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getDashboardData&term=${currentTerm}&round=${currentRound}`);
                 const result = await response.json();
                 
                 if (result.success && result.data) {
@@ -1573,7 +1697,7 @@
             const ctx = chartCanvas.getContext('2d');
             
             try {
-                const response = await fetch(`${APPS_SCRIPT_URL}?action=getLearningAreaStats&term=${currentTerm}`);
+                const response = await fetch(`${APPS_SCRIPT_URL}?action=getLearningAreaStats&term=${currentTerm}&round=${currentRound}`);
                 const result = await response.json();
                 
                 if (learningSystemAreaChartInstance) {
@@ -1631,6 +1755,12 @@
             loadDashboardData();
             loadAndDrawLearningSystemAreaChart();
             showSection('form-section');
+            updateRoundBadges();
+            
+            // 🎯 ซ่อนปุ่มครั้งที่ 2 ถ้าเริ่มจากเทอม 2
+            if (currentTerm === 2) {
+                document.getElementById('round2Btn').style.display = 'none';
+            }
         });
     </script>
 </body>
