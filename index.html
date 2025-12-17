@@ -528,6 +528,8 @@
         </div>
         
         <nav>
+            <a href="#home-section">🏠 หน้าหลัก</a>
+            
             <a href="#form-section">📝 ส่งงาน</a>
             <a href="#download-section">📥 ดาวน์โหลดแบบฟอร์ม</a>
             <a href="#admin-section">👑 ผู้บริหาร</a>
@@ -536,6 +538,16 @@
     </header>
     
     <div class="container">
+        <div class="container">
+        <section id="home-section" class="section">
+            <div style="text-align: center; padding: 10px;">
+                <img src="https://drive.google.com/uc?export=view&id=1PayIQk0NFdelFV5NjttkvbHRNHX9kiMD" 
+                     alt="ยินดีต้อนรับ" 
+                     style="max-width: 100%; height: auto; border-radius: var(--border-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+            </div>
+        </section>
+        <section id="form-section" class="section" style="display: none;">
+
         <section id="form-section" class="section">
             <div class="heading-wrapper">
                 <span class="icon-bubble"><i class="fa-solid fa-star"></i></span>
@@ -1138,8 +1150,7 @@
         // 🟢 ของใหม่ (ก๊อปปี้ไปวางทับอันเดิมได้เลย)
     function showSection(sectionIdToShow) {
     // เพิ่ม 'download-section' เข้าไปในรายการนี้แล้วครับ
-    const allSectionIds = ['form-section', 'admin-section', 'dashboard-section', 'download-section'];
-    
+    const allSectionIds = ['home-section', 'form-section', 'admin-section', 'dashboard-section', 'download-section'];    
     allSectionIds.forEach(id => {
         const section = document.getElementById(id);
         if (section) section.style.display = 'none';
@@ -1778,7 +1789,7 @@
             createCourseBlocks();
             loadDashboardData();
             loadAndDrawLearningSystemAreaChart();
-            showSection('form-section');
+            showSection('home-section');
             updateRoundBadges();
             
             // 🎯 ซ่อนปุ่มครั้งที่ 2 ถ้าเริ่มจากเทอม 2
