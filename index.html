@@ -575,6 +575,26 @@
                 <button type="submit"><i class="fa-solid fa-paper-plane"></i>ส่งข้อมูล</button>
             </form>
         </section>
+
+        <section id="download-section" class="section" style="display: none;">
+            <div class="heading-wrapper">
+                <span class="icon-bubble"><i class="fa-solid fa-cloud-arrow-down"></i></span>
+                <h2>ดาวน์โหลดเอกสาร</h2>
+            </div>
+            
+            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
+                <i class="fa-solid fa-file-word" style="font-size: 4em; color: #2b5797; margin-bottom: 15px;"></i>
+                <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้</h3>
+                <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2568</p>
+                
+                <a href="https://docs.google.com/document/d/1HVXo59abnT-faLB8h6fNeIouSpkvk6sC/edit?usp=sharing&ouid=118399992349718455584&rtpof=true&sd=true" 
+                   target="_blank" 
+                   class="custom-button" 
+                   style="text-decoration: none; font-size: 1.1em; padding: 12px 25px; display: inline-flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (Word/Google Doc)
+                </a>
+            </div>
+        </section>
         
         <section id="admin-section" class="section">
             <div class="heading-wrapper">
@@ -1115,15 +1135,18 @@
             if(timestampInput) timestampInput.value = ts;
         }
         
-        function showSection(sectionIdToShow) {
-            const allSectionIds = ['form-section', 'admin-section', 'dashboard-section'];
-            allSectionIds.forEach(id => {
-                const section = document.getElementById(id);
-                if (section) section.style.display = 'none';
-            });
-            const sectionToShow = document.getElementById(sectionIdToShow);
-            if (sectionToShow) sectionToShow.style.display = 'block';
-        }
+        // 🟢 ของใหม่ (ก๊อปปี้ไปวางทับอันเดิมได้เลย)
+    function showSection(sectionIdToShow) {
+    // เพิ่ม 'download-section' เข้าไปในรายการนี้แล้วครับ
+    const allSectionIds = ['form-section', 'admin-section', 'dashboard-section', 'download-section'];
+    
+    allSectionIds.forEach(id => {
+        const section = document.getElementById(id);
+        if (section) section.style.display = 'none';
+    });
+    const sectionToShow = document.getElementById(sectionIdToShow);
+    if (sectionToShow) sectionToShow.style.display = 'block';
+}
         
         document.querySelectorAll('nav a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
