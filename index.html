@@ -595,12 +595,13 @@
                 <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้</h3>
                 <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2568</p>
                 
-                <a href="https://docs.google.com/document/d/1IkMnWkXxPAFP-4xpUvHvNVqUE5ZvWv5H/edit?usp=drive_link" 
-                   target="_blank" 
+                <button 
+                   type="button"
+                   onclick="downloadFormFile()"
                    class="custom-button" 
-                   style="text-decoration: none; font-size: 1.1em; padding: 12px 25px; display: inline-flex; align-items: center; gap: 10px;">
-                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (Word/Google Doc)
-                </a>
+                   style="text-decoration: none; font-size: 1.1em; padding: 12px 25px; display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (Word)
+                </button>
             </div>
         </section>
         
@@ -777,6 +778,9 @@
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7qN5tVTKT9BQ0kgDKp69t8OWfIstvlRNITxlqq7km6sATM5P9uPTPCngWTVdAfqP/exec';
         const ADMIN_PASSWORD_HASH = 'admin999';
         
+        // 🎯 Google Doc ID สำหรับดาวน์โหลด
+        const GOOGLE_DOC_ID = '1lavq6fBQrbUwDPJpgKuappV_jdGRrkcc';
+        
         let currentTerm = 1;
         let currentRound = 1; // 🎯 NEW: ครั้งที่ส่ง
         let learningSystemAreaChartInstance = null;
@@ -786,6 +790,38 @@
         let pdfSummaryData = null;
         
         document.getElementById('currentYear').textContent = new Date().getFullYear();
+        
+        // ========== 🎯 DOWNLOAD FORM FILE ==========
+        function downloadFormFile() {
+            const docId = GOOGLE_DOC_ID;
+            const url = `https://docs.google.com/document/d/${docId}/export?format=docx`;
+            
+            Swal.fire({
+                title: 'กำลังดาวน์โหลด...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            // ดาวน์โหลด
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'แบบฟอร์มระบบเรียนรู้_2568.docx';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                Swal.close();
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'ดาวน์โหลดเสร็จสิ้น!',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }, 500);
+        }
         
         // ========== 🎯 TERM SWITCHING FUNCTION ==========
         function switchTerm(term) {
