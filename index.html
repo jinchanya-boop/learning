@@ -639,17 +639,33 @@
                 <h2>ดาวน์โหลดเอกสาร</h2>
             </div>
             
-            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
+            <!-- ไฟล์ที่ 1: แบบฟอร์ม ODT -->
+            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray); margin-bottom: 25px;">
                 <i class="fa-solid fa-file-word" style="font-size: 4em; color: #2b5797; margin-bottom: 15px;"></i>
                 <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้</h3>
-                <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2568</p>
+                <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2569</p>
                 
                 <button 
                    type="button"
                    onclick="downloadFormFile()"
                    class="custom-button" 
                    style="text-decoration: none; font-size: 1.1em; padding: 12px 25px; display: inline-flex; align-items: center; gap: 10px; cursor: pointer;">
-                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (Word)
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (ODT)
+                </button>
+            </div>
+
+            <!-- ไฟล์ที่ 2: PDF -->
+            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
+                <i class="fa-solid fa-file-pdf" style="font-size: 4em; color: #d32f2f; margin-bottom: 15px;"></i>
+                <h3 style="margin-top: 10px; color: var(--primary-color);">เอกสาร PDF</h3>
+                <p style="color: var(--dark-gray); margin-bottom: 25px;">คู่มือและเอกสารประกอบการใช้งาน</p>
+                
+                <button 
+                   type="button"
+                   onclick="downloadPdfFile()"
+                   class="custom-button" 
+                   style="text-decoration: none; font-size: 1.1em; padding: 12px 25px; display: inline-flex; align-items: center; gap: 10px; cursor: pointer; background-color: #d32f2f;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (PDF)
                 </button>
             </div>
         </section>
@@ -830,6 +846,9 @@
         // 🎯 Google Doc ID สำหรับดาวน์โหลด
         const GOOGLE_DOC_ID = '1UTxFsp2OcMqZS41HlPKUFy03jMaas5Hy';
         
+        // 🎯 Google Drive PDF ID สำหรับดาวน์โหลด
+        const GOOGLE_DRIVE_PDF_ID = '1RFdYMPyk9u5-cmGaJoF-bPUJCH0MYALc';
+        
         // 🎯 ข้อมูลครูและเลขที่บันทึกข้อความ
         const TEACHERS_DATA = [
             { no: 1, name: 'นางสาววจีพร แก้วหล้า', area: 'ภาษาไทย', memoNo: '001/2569', date: '5 มกราคม 2569' },
@@ -943,6 +962,38 @@
                 const link = document.createElement('a');
                 link.href = url;
                 link.download = 'แบบฟอร์มระบบเรียนรู้_2569.odt';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                Swal.close();
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: 'ดาวน์โหลดเสร็จสิ้น!',
+                    showConfirmButton: false,
+                    timer: 2000
+                });
+            }, 500);
+        }
+
+        // 🎯 DOWNLOAD PDF FILE
+        function downloadPdfFile() {
+            const pdfId = GOOGLE_DRIVE_PDF_ID;
+            const url = `https://drive.google.com/uc?export=download&id=${pdfId}`;
+            
+            Swal.fire({
+                title: 'กำลังดาวน์โหลด...',
+                text: 'กรุณารอสักครู่',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            // ดาวน์โหลด
+            setTimeout(() => {
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'เอกสารประกอบการใช้งาน.pdf';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
