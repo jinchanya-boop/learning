@@ -538,7 +538,7 @@
     <div class="container">
         <section id="home-section" class="section">
             <div style="text-align: center; padding: 10px;">
-                <img src="https://img5.pic.in.th/file/secure-sv1/e451bfabb112521399185bcb7815e087.png" 
+                <img src="https://img5.pic.in.th/file/secure-sv1/-11bdccf95cdedacba.png" 
                      alt="ยินดีต้อนรับ" 
                      style="max-width: 100%; height: auto; border-radius: var(--border-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
             </div>
@@ -929,7 +929,7 @@
         // ========== 🎯 DOWNLOAD FORM FILE ==========
         function downloadFormFile() {
             const docId = GOOGLE_DOC_ID;
-            const url = `https://docs.google.com/document/d/${docId}/export?format=docx`;
+            const url = `https://docs.google.com/document/d/${docId}/export?format=odt`;
             
             Swal.fire({
                 title: 'กำลังดาวน์โหลด...',
@@ -942,7 +942,7 @@
             setTimeout(() => {
                 const link = document.createElement('a');
                 link.href = url;
-                link.download = 'แบบฟอร์มระบบเรียนรู้_2568.docx';
+                link.download = 'แบบฟอร์มระบบเรียนรู้_2569.odt';
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
