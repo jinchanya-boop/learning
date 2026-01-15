@@ -820,6 +820,7 @@
                 <table class="admin-table" id="recentSubmissionsTable">
                     <thead>
                         <tr>
+                            <th style="width: 80px;">ครั้งที่</th>
                             <th style="width: 140px;">วันที่ส่ง</th>
                             <th style="width: 180px;">ชื่อผู้ส่ง</th>
                             <th style="width: 200px;">ชื่อวิชา (วิชาแรก)</th>
@@ -1904,35 +1905,43 @@
         }
         
         function displaySubmissions(submissions) {
-            const recentTableBody = document.getElementById('recentSubmissionsTableBody');
-            if (!recentTableBody) return;
-            
-            recentTableBody.innerHTML = '';
-            if (submissions.length === 0) {
-                recentTableBody.innerHTML = '<tr><td colspan="6" style="text-align:center;">ไม่พบผลการค้นหา</td></tr>';
-                return;
-            }
-            
-            submissions.forEach(sub => {
-                const row = recentTableBody.insertRow();
-                row.insertCell().textContent = sub.submissionTimestamp;
-                row.insertCell().textContent = sub.fullName;
-                row.insertCell().textContent = sub.courseName;
-                row.insertCell().textContent = sub.learningArea;
-                row.insertCell().innerHTML = formatStatus(sub.status);
-                
-                const commentCell = row.insertCell();
-                const adminComment = sub.adminComment || '';
-                if (adminComment.trim() !== '') {
-                    commentCell.innerHTML = `<div style="background-color: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; word-wrap: break-word; white-space: normal; line-height: 1.6;">
-                        <i class="fa-solid fa-comment-dots" style="color: #ff9800; margin-right: 8px; vertical-align: middle;"></i>
-                        <span style="color: #856404; font-size: 0.95em;">${adminComment}</span>
-                    </div>`;
-                } else {
-                    commentCell.innerHTML = '<span style="color: #999; font-style: italic; font-size: 0.9em;">ยังไม่มีความคิดเห็น</span>';
-                }
-            });
+    const recentTableBody = document.getElementById('recentSubmissionsTableBody');
+    if (!recentTableBody) return;
+    
+    recentTableBody.innerHTML = '';
+    if (submissions.length === 0) {
+        recentTableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">ไม่พบผลการค้นหา</td></tr>';
+        return;
+    }
+    
+    submissions.forEach(sub => {
+        const row = recentTableBody.insertRow();
+        
+        // 🎯 เพิ่มคอลัมน์ "ครั้งที่ส่ง"
+        const roundCell = row.insertCell();
+        const roundBadge = document.createElement('span');
+        roundBadge.style.cssText = 'display: inline-block; background-color: #4caf50; color: white; padding: 4px 10px; border-radius: 15px; font-weight: bold; font-size: 0.9em;';
+        roundBadge.textContent = sub.round || currentRound;
+        roundCell.appendChild(roundBadge);
+        
+        row.insertCell().textContent = sub.submissionTimestamp;
+        row.insertCell().textContent = sub.fullName;
+        row.insertCell().textContent = sub.courseName;
+        row.insertCell().textContent = sub.learningArea;
+        row.insertCell().innerHTML = formatStatus(sub.status);
+        
+        const commentCell = row.insertCell();
+        const adminComment = sub.adminComment || '';
+        if (adminComment.trim() !== '') {
+            commentCell.innerHTML = `<div style="background-color: #fff3cd; padding: 12px; border-radius: 8px; border-left: 4px solid #ffc107; word-wrap: break-word; white-space: normal; line-height: 1.6;">
+                <i class="fa-solid fa-comment-dots" style="color: #ff9800; margin-right: 8px; vertical-align: middle;"></i>
+                <span style="color: #856404; font-size: 0.95em;">${adminComment}</span>
+            </div>`;
+        } else {
+            commentCell.innerHTML = '<span style="color: #999; font-style: italic; font-size: 0.9em;">ยังไม่มีความคิดเห็น</span>';
         }
+    });
+}
         
         function showSearchResultInfo(searchTerm, resultCount) {
             const searchResultInfo = document.getElementById('searchResultInfo');
