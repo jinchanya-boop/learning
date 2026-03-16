@@ -1093,15 +1093,8 @@
             
             // 🎯 แสดง/ซ่อนปุ่มครั้งที่ 2 (เทอม 1 มี 2 ครั้ง, เทอม 2 มี 1 ครั้ง)
             const round2Btn = document.getElementById('round2Btn');
-            if (term === 1) {
-                round2Btn.style.display = 'inline-block';
-            } else {
-                round2Btn.style.display = 'none';
-                // เทอม 2 ต้อง reset เป็นครั้งที่ 1 เสมอ
-                currentRound = 1;
-                document.querySelectorAll('.round-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector('[data-round="1"]').classList.add('active');
-            }
+            // 🎯 ทั้งเทอม 1 และเทอม 2 มี 2 ครั้งแล้ว
+            round2Btn.style.display = 'inline-block';
             
             // อัปเดต Badge
             const termText = term === 1 ? 'ภาคเรียนที่ 1' : 'ภาคเรียนที่ 2';
