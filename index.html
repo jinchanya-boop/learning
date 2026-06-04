@@ -383,21 +383,42 @@
                 <span class="icon-bubble"><i class="fa-solid fa-cloud-arrow-down"></i></span>
                 <h2>ดาวน์โหลดเอกสาร</h2>
             </div>
-            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray); margin-bottom: 25px;">
-                <i class="fa-solid fa-file-word" style="font-size: 4em; color: #2b5797; margin-bottom: 15px;"></i>
-                <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้</h3>
-                <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2569</p>
-                <button type="button" onclick="downloadFormFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px;">
-                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (ODT)
-                </button>
-            </div>
-            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
-                <i class="fa-solid fa-file-pdf" style="font-size: 4em; color: #d32f2f; margin-bottom: 15px;"></i>
-                <h3 style="margin-top: 10px; color: var(--primary-color);">เอกสาร PDF</h3>
-                <p style="color: var(--dark-gray); margin-bottom: 25px;">คู่มือและเอกสารประกอบการใช้งาน</p>
-                <button type="button" onclick="downloadPdfFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px; background-color: #d32f2f;">
-                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (PDF)
-                </button>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+                <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
+                    <i class="fa-solid fa-file-word" style="font-size: 4em; color: #2b5797; margin-bottom: 15px;"></i>
+                    <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้</h3>
+                    <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2569</p>
+                    <button type="button" onclick="downloadFormFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px;">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (ODT)
+                    </button>
+                </div>
+                <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
+                    <i class="fa-solid fa-file-pdf" style="font-size: 4em; color: #d32f2f; margin-bottom: 15px;"></i>
+                    <h3 style="margin-top: 10px; color: var(--primary-color);">เอกสาร PDF</h3>
+                    <p style="color: var(--dark-gray); margin-bottom: 25px;">คู่มือและเอกสารประกอบการใช้งาน</p>
+                    <button type="button" onclick="downloadPdfFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px; background-color: #d32f2f;">
+                        <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (PDF)
+                    </button>
+                </div>
+                <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray); grid-column: 1 / -1;">
+                    <i class="fa-solid fa-file-lines" style="font-size: 4em; color: #f39c12; margin-bottom: 15px;"></i>
+                    <h3 style="margin-top: 10px; color: var(--primary-color);">ตัวอย่างระบบเรียนรู้</h3>
+                    <p style="color: var(--dark-gray); margin-bottom: 25px;">ไฟล์ตัวอย่างการเขียนระบบเรียนรู้สำหรับเป็นแนวทาง</p>
+                    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
+                        <a href="./เอกสารระบบเรียนรู้/ระบบเรียนรู้ วิชาพื้นฐาน ภาคเรียนที่ 1 ปีกา.pdf" download class="custom-button" style="font-size: 1em; padding: 10px 20px; background-color: #d32f2f; text-decoration: none;">
+                            <i class="fa-solid fa-download"></i> พื้นฐาน (PDF)
+                        </a>
+                        <a href="./เอกสารระบบเรียนรู้/ระบบเรียนรู้ วิชาพื้นฐาน ภาคเรียนที่ 1 ปีกา.doc" download class="custom-button" style="font-size: 1em; padding: 10px 20px; background-color: #2b5797; text-decoration: none;">
+                            <i class="fa-solid fa-download"></i> พื้นฐาน (DOC)
+                        </a>
+                        <a href="./เอกสารระบบเรียนรู้/ระบบเรียนรู้ วิชาเพิ่มเติม ภาคเรียนที่ 1 ปี.pdf" download class="custom-button" style="font-size: 1em; padding: 10px 20px; background-color: #d32f2f; text-decoration: none;">
+                            <i class="fa-solid fa-download"></i> เพิ่มเติม (PDF)
+                        </a>
+                        <a href="./เอกสารระบบเรียนรู้/ระบบเรียนรู้ วิชาเพิ่มเติม ภาคเรียนที่ 1 ปี.doc" download class="custom-button" style="font-size: 1em; padding: 10px 20px; background-color: #2b5797; text-decoration: none;">
+                            <i class="fa-solid fa-download"></i> เพิ่มเติม (DOC)
+                        </a>
+                    </div>
+                </div>
             </div>
         </section>
 
