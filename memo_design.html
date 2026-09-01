@@ -52,6 +52,35 @@
         .sig-img { display:none; position:absolute; top:-40px; left:50%; transform:translateX(-50%); height:62px; max-width:230px; object-fit:contain; mix-blend-mode:multiply; z-index:5; }
         body.hide-sig .sig-img { display:none !important; }
 
+        /* ===== ลายน้ำ "ฉบับร่าง" ===== */
+        .draft-watermark {
+            display:none;
+            position:absolute;
+            top:50%; left:50%;
+            transform:translate(-50%,-50%) rotate(-32deg);
+            font-family:'Sarabun',serif;
+            font-size:110px;
+            font-weight:700;
+            color:rgba(220,53,69,.15);
+            border:9px solid rgba(220,53,69,.15);
+            border-radius:18px;
+            padding:10px 46px;
+            letter-spacing:10px;
+            white-space:nowrap;
+            pointer-events:none;
+            z-index:50;
+            user-select:none;
+        }
+        .draft-watermark small {
+            display:block;
+            font-size:24px;
+            letter-spacing:3px;
+            text-align:center;
+            margin-top:4px;
+            font-weight:400;
+        }
+        body.is-draft .draft-watermark { display:block; }
+
         @media print {
             body { background:#fff; padding:0; }
             .memo-header-bar, .notice { display:none !important; }
@@ -59,6 +88,7 @@
             .memo-paper { padding:38px 58px; }
             .sig-img.is-loaded { display:block !important; }
             body.hide-sig .sig-img { display:none !important; }
+            body.is-draft .draft-watermark { display:block !important; }
             * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
         }
     </style>
@@ -79,6 +109,12 @@
 
     <div class="memo-paper" id="memoPaper">
         <img src="./krut.png" alt="ตราครุฑ" class="krut-logo" onerror="this.style.display='none'">
+
+        <div class="draft-watermark" id="draftWatermark">
+            ฉบับร่าง
+            <small id="draftStatusText">ยังลงนามไม่ครบ</small>
+        </div>
+
         <div class="memo-title">บันทึกข้อความ</div>
 
         <div class="memo-row">
@@ -189,6 +225,12 @@
         n.style.display = 'block';
     }
 
+    function escapeHtml(s) {
+        return String(s).replace(/[&<>"']/g, function (m) {
+            return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m];
+        });
+    }
+
     function renderComment(targetId, list) {
         const el = document.getElementById(targetId);
         if (list && list.length) {
@@ -200,12 +242,6 @@
         }
     }
 
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (m) {
-            return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m];
-        });
-    }
-
     function setSig(imgId, dataUrl) {
         const img = document.getElementById(imgId);
         if (!img || !dataUrl) return;
@@ -215,6 +251,15 @@
 
     function toggleSig() {
         document.body.classList.toggle('hide-sig', !document.getElementById('chkSig').checked);
+    }
+
+    /** ✅ เปิด/ปิดลายน้ำฉบับร่าง ตามสถานะ */
+    function applyDraftMode(status) {
+        const isApproved = (status === 'อนุมัติแล้ว');
+        document.body.classList.toggle('is-draft', !isApproved);
+        const t = document.getElementById('draftStatusText');
+        if (t && !isApproved) t.textContent = status || 'ยังลงนามไม่ครบ';
+        return isApproved;
     }
 
     async function loadMemo() {
@@ -244,6 +289,7 @@
                 document.getElementById('dynAreaInline').innerText = ar;
             }
             renderComment('cmtHead', []); renderComment('cmtDeputy', []); renderComment('cmtDirector', []);
+            applyDraftMode('');
             showNotice('warn', '⚠️ เปิดในโหมดฟอร์มเปล่า (ไม่ได้ระบุรหัสการส่งงาน) — ความเห็นและลายเซ็นจะไม่แสดง');
             return;
         }
@@ -286,16 +332,24 @@
             setSig('sigImgDeputy',   s.deputy);
             setSig('sigImgDirector', s.director);
 
-            if (d.status === 'อนุมัติแล้ว') {
-                showNotice('ok', '✅ เอกสารนี้ <b>อนุมัติแล้ว</b> — ดาวน์โหลด PDF ได้เลย');
+            // ✅ ลายน้ำ + ข้อความแจ้งสถานะ
+            const approved = applyDraftMode(d.status);
+            const btn = document.getElementById('btnPdf');
+
+            if (approved) {
+                showNotice('ok', '✅ เอกสารนี้ <b>อนุมัติแล้ว</b> — ดาวน์โหลด PDF ฉบับสมบูรณ์ได้เลย');
+                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลด PDF';
             } else if (d.status === 'รอแก้ไข') {
-                showNotice('err', '❗ สถานะ: <b>รอแก้ไข</b> — กรุณาแก้ไขตามความเห็นผู้ตรวจก่อน');
+                showNotice('err', '❗ สถานะ: <b>รอแก้ไข</b> — กรุณาแก้ไขตามความเห็นผู้ตรวจ แล้วส่งใหม่');
+                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลด (ฉบับร่าง)';
             } else {
-                showNotice('warn', '⏳ สถานะปัจจุบัน: <b>' + escapeHtml(d.status || '-') + '</b> — ยังลงนามไม่ครบทุกระดับ');
+                showNotice('warn', '⏳ สถานะปัจจุบัน: <b>' + escapeHtml(d.status || '-') + '</b> — เอกสารยังลงนามไม่ครบ จะมีลายน้ำ "ฉบับร่าง" กำกับ');
+                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลด (ฉบับร่าง)';
             }
         } catch (err) {
             showNotice('err', '❌ ' + escapeHtml(err.message));
             renderComment('cmtHead', []); renderComment('cmtDeputy', []); renderComment('cmtDirector', []);
+            applyDraftMode('');
         }
     }
 
@@ -308,9 +362,10 @@
             if (document.fonts && document.fonts.ready) await document.fonts.ready;
             await new Promise(r => setTimeout(r, 250));
             const name = (memoData && memoData.fullName) ? memoData.fullName : 'ใบปะหน้า';
+            const suffix = document.body.classList.contains('is-draft') ? '_ฉบับร่าง' : '';
             await html2pdf().set({
                 margin: 0,
-                filename: 'ใบปะหน้า_' + name + '.pdf',
+                filename: 'ใบปะหน้า_' + name + suffix + '.pdf',
                 image: { type: 'jpeg', quality: 0.98 },
                 html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
                 jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
