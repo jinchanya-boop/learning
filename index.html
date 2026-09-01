@@ -8,8 +8,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <style>
         :root {
@@ -27,44 +25,35 @@
         }
         *, *:before, *:after { box-sizing: border-box; }
         body {
-            font-family: var(--font-family);
-            margin: 0; padding: 0;
+            font-family: var(--font-family); margin: 0; padding: 0;
             background: linear-gradient(90deg, var(--secondary-color) 0%, var(--primary-color) 100%);
-            color: var(--text-color);
-            line-height: 1.6;
+            color: var(--text-color); line-height: 1.6;
         }
         .container { max-width: 1400px; margin: 15px auto; padding: 15px; }
         header {
-            text-align: center;
-            padding: 15px 0;
-            background-color: rgba(255,255,255,.1);
-            backdrop-filter: blur(5px);
-            border-bottom-left-radius: var(--border-radius);
-            border-bottom-right-radius: var(--border-radius);
+            text-align: center; padding: 15px 0;
+            background-color: rgba(255,255,255,.1); backdrop-filter: blur(5px);
+            border-bottom-left-radius: var(--border-radius); border-bottom-right-radius: var(--border-radius);
         }
         header img.logo { width: 120px; margin-bottom: 10px; }
         header h1 { font-size: 1.6em; color: var(--white-color); margin: 0; font-weight: 500; }
 
-        /* YEAR SELECTOR */
         .year-selector { display: flex; justify-content: center; align-items: center; gap: 10px; margin: 12px 0 6px; flex-wrap: wrap; }
         .year-label { color: rgba(255,255,255,0.85); font-size: 0.9em; font-weight: 500; }
         .year-btn { padding: 7px 18px; border: 2px solid rgba(255,255,255,0.6); background-color: rgba(255,255,255,0.15); color: var(--white-color); border-radius: 25px; cursor: pointer; font-weight: 600; font-size: 0.95em; font-family: var(--font-family); transition: all 0.3s ease; }
         .year-btn:hover { background-color: rgba(255,255,255,0.35); transform: scale(1.05); }
         .year-btn.active { background-color: #f39c12; color: white; border-color: #f39c12; box-shadow: 0 2px 10px rgba(243,156,18,0.5); }
 
-        /* TERM SELECTOR */
         .term-selector { display: flex; justify-content: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
         .term-btn { padding: 10px 20px; border: 2px solid rgba(0,0,0,.2); background-color: rgba(255,255,255,.3); color: var(--white-color); border-radius: var(--border-radius); cursor: pointer; font-weight: 600; font-size: 1em; font-family: var(--font-family); transition: all 0.3s ease; }
         .term-btn:hover { background-color: rgba(255,255,255,.5); transform: translateY(-2px); }
         .term-btn.active { background-color: var(--white-color); color: var(--primary-color); border-color: var(--white-color); box-shadow: 0 4px 10px rgba(0,0,0,.2); }
 
-        /* ROUND SELECTOR */
         .round-selector { display: flex; justify-content: center; gap: 10px; margin: 8px 0; flex-wrap: wrap; }
         .round-btn { padding: 8px 16px; border: 2px solid rgba(255,255,255,.5); background-color: rgba(255,255,255,.2); color: var(--white-color); border-radius: 25px; cursor: pointer; font-weight: 500; font-size: 0.95em; font-family: var(--font-family); transition: all 0.3s ease; }
         .round-btn:hover { background-color: rgba(255,255,255,.4); transform: scale(1.05); }
         .round-btn.active { background-color: #4caf50; color: white; border-color: #4caf50; box-shadow: 0 2px 8px rgba(76,175,80,.5); }
 
-        /* SELECTOR DIVIDER */
         .selector-divider { display: flex; align-items: center; justify-content: center; gap: 8px; margin: 4px 0; }
         .selector-divider span { color: rgba(255,255,255,0.4); font-size: 0.75em; }
         .selector-divider hr { flex: 1; max-width: 60px; border: none; border-top: 1px solid rgba(255,255,255,0.25); margin: 0; }
@@ -79,7 +68,6 @@
         .heading-wrapper h2, .heading-wrapper h3, .heading-wrapper h4 { margin: 0; color: var(--primary-color); font-weight: 500; }
         .heading-wrapper h2 { font-size: 1.5em; }
         .heading-wrapper h3 { font-size: 1.3em; margin-top: 1rem; margin-bottom: 1rem; }
-        .heading-wrapper h4 { font-size: 1.1em; }
 
         label { display: block; margin-bottom: 5px; font-weight: 500; color: var(--dark-gray); }
         input[type=text], input[type=url], input[type=password], input[type=number], select, textarea { width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid var(--medium-gray); border-radius: var(--border-radius); font-family: var(--font-family); font-size: 1em; }
@@ -124,20 +112,16 @@
         .summary-form-group { margin-bottom: 20px; padding: 15px; background-color: #f9f9f9; border-radius: var(--border-radius); }
         .summary-stats-display { background-color: #e8f5e9; padding: 15px; border-radius: var(--border-radius); margin: 15px 0; border: 2px solid #4caf50; }
         .summary-stats-display h4 { color: #2e7d32; margin-top: 0; }
-        .summary-detail-item { padding: 8px; margin: 5px 0; background-color: white; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
-        .summary-detail-item strong { color: var(--primary-color); }
+        .summary-detail-item { padding: 8px; margin: 5px 0; background-color: white; border-radius: 8px; }
 
-        /* BADGE STYLES */
         .year-badge { display: inline-block; background-color: #f39c12; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; margin-left: 8px; }
         .term-stats-badge { display: inline-block; background-color: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.9em; font-weight: 600; margin-left: 10px; }
         .round-badge { display: inline-block; background-color: #4caf50; color: white; padding: 3px 10px; border-radius: 15px; font-size: 0.85em; font-weight: 600; margin-left: 8px; }
 
-        /* CONTEXT BAR */
         .context-bar { display: flex; justify-content: center; align-items: center; gap: 8px; flex-wrap: wrap; margin: 6px 0 10px; font-size: 0.85em; color: rgba(255,255,255,0.9); }
         .context-bar .ctx-item { background: rgba(255,255,255,0.2); padding: 4px 12px; border-radius: 20px; font-weight: 500; }
         .context-bar .ctx-arrow { color: rgba(255,255,255,0.5); }
 
-        /* ===== MEMO TOPIC CARDS ===== */
         .memo-topics-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; margin-top: 10px; }
         .memo-topic-card { background: linear-gradient(135deg, #ffffff 0%, #f0f4ff 100%); border: 2px solid #d0d8ff; border-radius: 15px; padding: 20px; cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; }
         .memo-topic-card::before { content: ''; position: absolute; top: 0; left: 0; width: 5px; height: 100%; background: var(--primary-color); border-radius: 15px 0 0 15px; }
@@ -150,24 +134,21 @@
         .memo-topic-card .topic-arrow { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary-color); font-size: 1.3em; opacity: 0.5; transition: opacity 0.2s, right 0.2s; }
         .memo-topic-card:hover .topic-arrow { opacity: 1; right: 12px; }
 
-        /* BACK BUTTON */
-        .back-to-topics-btn { background-color: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-family: var(--font-family); font-size: 0.9em; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; transition: background-color 0.3s; }
+        .back-to-topics-btn { background-color: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-family: var(--font-family); font-size: 0.9em; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; }
         .back-to-topics-btn:hover { background-color: #5a6268; }
 
-        /* TOPIC DETAIL HEADER */
         .topic-detail-header { background: linear-gradient(135deg, var(--primary-color) 0%, #7b84e8 100%); color: white; padding: 18px 20px; border-radius: 12px; margin-bottom: 20px; }
         .topic-detail-header h3 { margin: 0 0 5px; font-size: 1.1em; }
         .topic-detail-header p { margin: 0; opacity: 0.85; font-size: 0.88em; }
 
-        /* ADMIN MEMO PANEL */
         .admin-memo-panel { background-color: #fff8e7; border: 2px dashed #f39c12; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
         .admin-memo-panel h4 { color: #e67e22; margin: 0 0 12px; font-size: 1em; display: flex; align-items: center; gap: 8px; }
         .admin-memo-panel input[type=text] { margin-bottom: 8px; border: 1px solid #f0c070; border-radius: 10px; }
         .admin-memo-panel textarea { min-height: 80px; border: 1px solid #f0c070; border-radius: 10px; margin-bottom: 8px; font-size: 0.9em; }
         .admin-memo-panel label { font-size: 0.85em; color: #8d5a00; margin-bottom: 3px; }
-        .add-topic-btn { background-color: #f39c12; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-family: var(--font-family); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; transition: background-color 0.3s; white-space: nowrap; }
+        .add-topic-btn { background-color: #f39c12; color: white; border: none; padding: 10px 18px; border-radius: 10px; cursor: pointer; font-family: var(--font-family); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
         .add-topic-btn:hover { background-color: #e08e0b; }
-        .delete-topic-btn { background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8em; font-family: var(--font-family); transition: all 0.2s; display: inline-flex; align-items: center; gap: 4px; }
+        .delete-topic-btn { background: none; border: 1px solid #e74c3c; color: #e74c3c; padding: 5px 10px; border-radius: 8px; cursor: pointer; font-size: 0.8em; font-family: var(--font-family); display: inline-flex; align-items: center; gap: 4px; }
         .delete-topic-btn:hover { background-color: #e74c3c; color: white; }
         .json-import-area { font-size: 0.8em; font-family: monospace; background: #f9f9f9; border: 1px dashed #ccc; border-radius: 8px; min-height: 80px; }
         .topic-admin-list { margin-top: 12px; }
@@ -175,11 +156,19 @@
         .topic-admin-item .item-title { font-weight: 600; color: var(--primary-color); font-size: 0.9em; flex: 1; }
         .topic-admin-item .item-count { color: #888; font-size: 0.82em; }
 
+        /* ✅ กล่องแสดงลายเซ็นที่บันทึกไว้แล้ว */
+        .saved-sig-box { background:#f0f8ff; border:1px solid #b8daff; border-radius:12px; padding:12px; margin-top:15px; }
+        .saved-sig-box h4 { margin:0 0 10px; font-size:0.95em; color:#0b5ed7; }
+        .saved-sig-grid { display:flex; gap:14px; flex-wrap:wrap; }
+        .saved-sig-item { text-align:center; background:#fff; border:1px solid #dee2e6; border-radius:10px; padding:8px 12px; min-width:150px; }
+        .saved-sig-item img { max-height:55px; max-width:160px; object-fit:contain; display:block; margin:0 auto 4px; }
+        .saved-sig-item .cap { font-size:0.78em; color:#666; }
+        .saved-sig-item .none { font-size:0.8em; color:#aaa; padding:16px 0; display:block; }
+
         @media (max-width:768px) {
             header h1 { font-size: 1.5em; }
             nav { flex-direction: column; gap: 10px; }
             nav a { display: block; }
-            .section h2 { font-size: 1.3em; }
             .search-container { flex-direction: column; }
             .search-container input { width: 100%; }
             .container { max-width: 100%; padding: 10px; }
@@ -235,7 +224,8 @@
         <section id="home-section" class="section">
             <div style="text-align: center; padding: 10px;">
                 <img src="./learning.png" alt="ยินดีต้อนรับ"
-                     style="max-width: 100%; height: auto; border-radius: var(--border-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+                     style="max-width: 100%; height: auto; border-radius: var(--border-radius); box-shadow: 0 4px 15px rgba(0,0,0,0.1);"
+                     onerror="this.style.display='none'">
             </div>
         </section>
 
@@ -246,49 +236,34 @@
                 <h2>เลขที่บันทึกข้อความของครู</h2>
             </div>
 
-            <!-- VIEW: รายการหัวเรื่อง -->
             <div id="memoTopicsView">
-                <!-- Admin Login Button -->
                 <div id="adminMemoLoginPrompt" style="text-align:right; margin-bottom:10px;">
                     <button onclick="showAdminMemoPanel()" style="background:none; border:1px dashed #ccc; color:#999; padding:6px 14px; border-radius:20px; cursor:pointer; font-family:var(--font-family); font-size:0.85em;">
                         <i class="fa-solid fa-lock"></i> ผู้ดูแล
                     </button>
                 </div>
 
-                <!-- Admin Panel (ซ่อนอยู่ก่อน) -->
                 <div class="admin-memo-panel" id="adminMemoPanel" style="display:none;">
                     <h4><i class="fa-solid fa-wand-magic-sparkles"></i> จัดการหัวเรื่องบันทึกข้อความ (ผู้ดูแล)</h4>
-
                     <label>ชื่อเรื่องบันทึกข้อความ:</label>
-                    <input type="text" id="newTopicTitle" placeholder="เช่น ส่งระบบเรียนรู้ ภาคเรียนที่ 2 ปีการศึกษา 2568" style="width:100%;">
-
+                    <input type="text" id="newTopicTitle" placeholder="เช่น ส่งระบบเรียนรู้ ภาคเรียนที่ 2 ปีการศึกษา 2569" style="width:100%;">
                     <label>ไอคอน (Emoji):</label>
                     <input type="text" id="newTopicIcon" placeholder="📋" style="width:80px;" value="📋">
-
                     <label>วางข้อมูล JSON ของครู:</label>
                     <textarea id="newTopicData" class="json-import-area" style="width:100%;"
-                        placeholder='[{"no":1,"name":"ชื่อครู","area":"กลุ่มสาระ","memoNo":"001/2568","date":"5 มกราคม 2568"},...]'></textarea>
-
+                        placeholder='[{"no":1,"name":"ชื่อครู","area":"กลุ่มสาระ","memoNo":"001/2569","date":"5 มกราคม 2569"},...]'></textarea>
                     <div style="display:flex; gap:10px; margin-top:8px; flex-wrap:wrap;">
-                        <button class="add-topic-btn" onclick="addMemoTopic()">
-                            <i class="fa-solid fa-plus"></i> เพิ่มหัวเรื่อง
-                        </button>
-                        <button class="add-topic-btn" onclick="toggleJsonHelper()" style="background-color:#6c757d;">
-                            <i class="fa-solid fa-code"></i> ดูตัวอย่าง JSON
-                        </button>
+                        <button class="add-topic-btn" onclick="addMemoTopic()"><i class="fa-solid fa-plus"></i> เพิ่มหัวเรื่อง</button>
+                        <button class="add-topic-btn" onclick="toggleJsonHelper()" style="background-color:#6c757d;"><i class="fa-solid fa-code"></i> ดูตัวอย่าง JSON</button>
                     </div>
-
-                    <div id="jsonHelperBox" style="display:none; margin-top:10px; background:#f0f0f0; padding:10px; border-radius:8px; font-size:0.8em; font-family:monospace; white-space:pre-wrap; overflow-x:auto;">[{"no":1,"name":"นางสาววจีพร แก้วหล้า","area":"ภาษาไทย","memoNo":"001/2568","date":"5 มกราคม 2568"},
-{"no":2,"name":"นางนงคราญ เจริญพงษ์","area":"ภาษาไทย","memoNo":"002/2568","date":"5 มกราคม 2568"}]</div>
-
+                    <div id="jsonHelperBox" style="display:none; margin-top:10px; background:#f0f0f0; padding:10px; border-radius:8px; font-size:0.8em; font-family:monospace; white-space:pre-wrap; overflow-x:auto;">[{"no":1,"name":"นางสาววจีพร แก้วหล้า","area":"ภาษาไทย","memoNo":"001/2569","date":"5 มกราคม 2569"},
+{"no":2,"name":"นางนงคราญ เจริญพงษ์","area":"ภาษาไทย","memoNo":"002/2569","date":"5 มกราคม 2569"}]</div>
                     <div class="topic-admin-list" id="topicAdminList"></div>
                 </div>
 
-                <!-- การ์ดหัวเรื่อง -->
                 <div class="memo-topics-grid" id="memoTopicsGrid"></div>
             </div>
 
-            <!-- VIEW: ตารางรายละเอียด -->
             <div id="memoTableView" style="display:none;">
                 <button class="back-to-topics-btn" onclick="backToTopics()">
                     <i class="fa-solid fa-arrow-left"></i> กลับไปรายการหัวเรื่อง
@@ -508,7 +483,7 @@
                 <div class="dashboard-card"><h3>ทั้งหมด</h3><p id="totalSubmissions">0</p></div>
                 <div class="dashboard-card"><h3>รอตรวจ ⭐</h3><p id="pendingSubmissions">0</p></div>
                 <div class="dashboard-card"><h3>รอแก้ไข ❗</h3><p id="revisionSubmissions">0</p></div>
-                <div class="dashboard-card"><h3>ตรวจแล้ว ✅</h3><p id="approvedSubmissions">0</p></div>
+                <div class="dashboard-card"><h3>อนุมัติแล้ว ✅</h3><p id="approvedSubmissions">0</p></div>
             </div>
             <div class="chart-container-wrapper" style="margin-top: 30px; margin-bottom: 30px; max-width: 550px; margin-left: auto; margin-right: auto;">
                 <div class="heading-wrapper">
@@ -559,11 +534,8 @@
 
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7qN5tVTKT9BQ0kgDKp69t8OWfIstvlRNITxlqq7km6sATM5P9uPTPCngWTVdAfqP/exec';
-        const ROLE_PASSWORDS = {
-            'head': 'head999',
-            'deputy': 'deputy999',
-            'director': 'admin999'
-        };
+        const ROLE_PASSWORDS = { 'head': 'head999', 'deputy': 'deputy999', 'director': 'admin999' };
+        const ADMIN_PASSWORD_HASH = 'admin999';
         let currentAdminRole = null;
         let currentAdminRoleName = '';
         const GOOGLE_DOC_ID = '1UTxFsp2OcMqZS41HlPKUFy03jMaas5Hy';
@@ -665,10 +637,11 @@
             { no:79, name:'นางสาวชญาภัทร ดีพรมกุล', area:'กิจกรรมพัฒนาผู้เรียน', memoNo:'079/2569', date:'5 มกราคม 2569' },
             { no:80, name:'นางสาวแววดาว อาจหาญ', area:'กิจกรรมพัฒนาผู้เรียน', memoNo:'080/2569', date:'5 มกราคม 2569' }
         ];
+
         const MEMO_TOPIC_2_DATA = [{"no":1,"name":"นางสาววจีพร แก้วหล้า","area":"ภาษาไทย","memoNo":"วช126/2569","date":"31 มีนาคม 2569"},{"no":2,"name":"นางนงคราญ เจริญพงษ์","area":"ภาษาไทย","memoNo":"วช127/2569","date":"31 มีนาคม 2569"},{"no":3,"name":"นางภัทราปภา บัวอาจ","area":"ภาษาไทย","memoNo":"วช128/2569","date":"31 มีนาคม 2569"},{"no":4,"name":"นางสุภัญกานต์ อินสา","area":"ภาษาไทย","memoNo":"วช129/2569","date":"31 มีนาคม 2569"},{"no":5,"name":"นางสาวณัฐนันท์ ชาวน่าน","area":"ภาษาไทย","memoNo":"วช130/2569","date":"31 มีนาคม 2569"},{"no":6,"name":"นางณิชารีย์ น้อยราช","area":"ภาษาไทย","memoNo":"วช131/2569","date":"31 มีนาคม 2569"},{"no":7,"name":"นายสมโภชน์ จันด้วง","area":"ภาษาไทย","memoNo":"วช132/2569","date":"31 มีนาคม 2569"},{"no":8,"name":"นางสาวนิธิกานต์ ปัญญา","area":"ภาษาไทย","memoNo":"วช133/2569","date":"31 มีนาคม 2569"},{"no":9,"name":"นางสาวมณฑิตา สีแก้ว","area":"ภาษาไทย","memoNo":"วช134/2569","date":"31 มีนาคม 2569"},{"no":10,"name":"นางสาวอัจฉราภรณ์ สิทธิวงศ์","area":"คณิตศาสตร์","memoNo":"วช135/2569","date":"31 มีนาคม 2569"},{"no":11,"name":"นายพงษ์พิชญ์ หมื่นพรมแสน","area":"คณิตศาสตร์","memoNo":"วช136/2569","date":"31 มีนาคม 2569"},{"no":12,"name":"นางรัตนาภรณ์ ขันทะยศ","area":"คณิตศาสตร์","memoNo":"วช137/2569","date":"31 มีนาคม 2569"},{"no":13,"name":"นางสาวหทัยกาญจน์ อินบุญมา","area":"คณิตศาสตร์","memoNo":"วช138/2569","date":"31 มีนาคม 2569"},{"no":14,"name":"นางเบญจพร นามแก้ว","area":"คณิตศาสตร์","memoNo":"วช139/2569","date":"31 มีนาคม 2569"},{"no":15,"name":"นางสาวสุภาพรรณ สิทธิวงศ์","area":"คณิตศาสตร์","memoNo":"วช140/2569","date":"31 มีนาคม 2569"},{"no":16,"name":"นางลัดดาวัลย์ ปินตา","area":"คณิตศาสตร์","memoNo":"วช141/2569","date":"31 มีนาคม 2569"},{"no":17,"name":"นางรัตนา เนตรใส","area":"คณิตศาสตร์","memoNo":"วช142/2569","date":"31 มีนาคม 2569"},{"no":18,"name":"นางณัฐพร การศิริ","area":"คณิตศาสตร์","memoNo":"วช143/2569","date":"31 มีนาคม 2569"},{"no":19,"name":"นางสาวนลัทพร ปวงไชยา","area":"คณิตศาสตร์","memoNo":"วช144/2569","date":"31 มีนาคม 2569"},{"no":20,"name":"นางวัชรีพร จิตอารีย์","area":"คณิตศาสตร์","memoNo":"วช145/2569","date":"31 มีนาคม 2569"},{"no":21,"name":"นายธัญวัฒน์ กาบคำ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช146/2569","date":"31 มีนาคม 2569"},{"no":22,"name":"นางสาวชรินพร ทะยศ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช147/2569","date":"31 มีนาคม 2569"},{"no":23,"name":"นางฉัตรฤดี อุดคำเที่ยง","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช148/2569","date":"31 มีนาคม 2569"},{"no":24,"name":"นายภาสกร กติยา","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช149/2569","date":"31 มีนาคม 2569"},{"no":25,"name":"นางสาวจริยา ใจยศ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช150/2569","date":"31 มีนาคม 2569"},{"no":26,"name":"นางสาวธัญรัตน์ วุทธะนู","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช151/2569","date":"31 มีนาคม 2569"},{"no":27,"name":"นางภิสชา ไชยบาล","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช152/2569","date":"31 มีนาคม 2569"},{"no":28,"name":"นางสาวจินต์ชัญญา อิทธิประเวศน์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช153/2569","date":"31 มีนาคม 2569"},{"no":29,"name":"นางสาวมาลินี อนุรักษ์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช154/2569","date":"31 มีนาคม 2569"},{"no":30,"name":"นางพวงทอง ชมภูมิ่ง","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช155/2569","date":"31 มีนาคม 2569"},{"no":31,"name":"นางสิตานัน เชื้อหมอ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช156/2569","date":"31 มีนาคม 2569"},{"no":32,"name":"นางสาวแสงรวี รุณวุฒิ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช157/2569","date":"31 มีนาคม 2569"},{"no":33,"name":"นายศุภฤกษ์ กิตินันท์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช158/2569","date":"31 มีนาคม 2569"},{"no":34,"name":"นายอลงกรณ์ วีระพันธ์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช159/2569","date":"31 มีนาคม 2569"},{"no":35,"name":"นางสาวกัญญา โชคสวัสดิ์ภิญโญ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช160/2569","date":"31 มีนาคม 2569"},{"no":36,"name":"นางวัชราพร มาลี","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช161/2569","date":"31 มีนาคม 2569"},{"no":37,"name":"นางสาวแววตรา ศักดิ์ศรี","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช162/2569","date":"31 มีนาคม 2569"},{"no":38,"name":"นางสาวชญากานต์ ส่วนบุญ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช163/2569","date":"31 มีนาคม 2569"},{"no":39,"name":"นายณรงค์ฤทธิ์ สมบัติปัญญ์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช164/2569","date":"31 มีนาคม 2569"},{"no":40,"name":"นางสาวจารุนันท์ อินทะรังษี","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช165/2569","date":"31 มีนาคม 2569"},{"no":41,"name":"นางอทิตยา ปิมปา","area":"ภาษาต่างประเทศ","memoNo":"วช166/2569","date":"31 มีนาคม 2569"},{"no":42,"name":"นายโสภณวิชญ์ อิ่นแก้ว","area":"ภาษาต่างประเทศ","memoNo":"วช167/2569","date":"31 มีนาคม 2569"},{"no":43,"name":"นางนฤตยา อะทะยศ","area":"ภาษาต่างประเทศ","memoNo":"วช168/2569","date":"31 มีนาคม 2569"},{"no":44,"name":"นางสาวปรียารัตน์ ขันทะสอน","area":"ภาษาต่างประเทศ","memoNo":"วช169/2569","date":"31 มีนาคม 2569"},{"no":45,"name":"นางสาวพัชรินทร์ หม่องนันท์","area":"ภาษาต่างประเทศ","memoNo":"วช170/2569","date":"31 มีนาคม 2569"},{"no":46,"name":"นางอัมพร ศรีเทพ","area":"ภาษาต่างประเทศ","memoNo":"วช171/2569","date":"31 มีนาคม 2569"},{"no":47,"name":"นางสาวชัญญ์อนนต์ คันนาทิพย์","area":"ภาษาต่างประเทศ","memoNo":"วช172/2569","date":"31 มีนาคม 2569"},{"no":48,"name":"นายวิชัย ทีฆาวงค์","area":"ภาษาต่างประเทศ","memoNo":"วช173/2569","date":"31 มีนาคม 2569"},{"no":49,"name":"นางสุมาลี สมบัติปัญญ์","area":"ภาษาต่างประเทศ","memoNo":"วช174/2569","date":"31 มีนาคม 2569"},{"no":50,"name":"นางสาวเรณุกา ปราณีทะ","area":"ภาษาต่างประเทศ","memoNo":"วช175/2569","date":"31 มีนาคม 2569"},{"no":51,"name":"นายกัมพล ปิจดี","area":"ภาษาต่างประเทศ","memoNo":"วช176/2569","date":"31 มีนาคม 2569"},{"no":52,"name":"นางทรรศน์มน กาละดี","area":"ภาษาต่างประเทศ","memoNo":"วช177/2569","date":"31 มีนาคม 2569"},{"no":53,"name":"นายณรงค์ สมศักดิ์","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช178/2569","date":"31 มีนาคม 2569"},{"no":54,"name":"นางมณีรัตน์ ตาดี","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช179/2569","date":"31 มีนาคม 2569"},{"no":55,"name":"นางสาวน้ำทิพย์ หนักแก้ว","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช180/2569","date":"31 มีนาคม 2569"},{"no":56,"name":"นายชัยวัฒน์ แก้วกุลา","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช181/2569","date":"31 มีนาคม 2569"},{"no":57,"name":"นางสาวสิริวลี พิลา","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช182/2569","date":"31 มีนาคม 2569"},{"no":58,"name":"นางจิราภัค แก้วมีศรี","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช183/2569","date":"31 มีนาคม 2569"},{"no":59,"name":"นางสาวนภัทร เสนพงศ์","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช184/2569","date":"31 มีนาคม 2569"},{"no":60,"name":"นางสาวสโรชา ทองมา","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช185/2569","date":"31 มีนาคม 2569"},{"no":61,"name":"นายกฤตภาส สุทธะ","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช186/2569","date":"31 มีนาคม 2569"},{"no":62,"name":"นางเยาวเรศน์ วงค์ขัติย์","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช187/2569","date":"31 มีนาคม 2569"},{"no":63,"name":"นายศุภชัย บุญประวัติ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช188/2569","date":"31 มีนาคม 2569"},{"no":64,"name":"นายบุรัสกร กุดนาน้อย","area":"สุขศึกษาและพลศึกษา","memoNo":"วช189/2569","date":"31 มีนาคม 2569"},{"no":65,"name":"นายเกรียงไกร คำมอญ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช190/2569","date":"31 มีนาคม 2569"},{"no":66,"name":"นางสาวอนุสรา มหาวงค์","area":"สุขศึกษาและพลศึกษา","memoNo":"วช191/2569","date":"31 มีนาคม 2569"},{"no":67,"name":"นายประทีป ปัญญานะ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช192/2569","date":"31 มีนาคม 2569"},{"no":68,"name":"นายวัชระ วงศ์ษารัฐ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช193/2569","date":"31 มีนาคม 2569"},{"no":69,"name":"นายชยพล รัชติวงศ์","area":"ศิลปะ","memoNo":"วช194/2569","date":"31 มีนาคม 2569"},{"no":70,"name":"นายฐิติกร ไชยจันดี","area":"ศิลปะ","memoNo":"วช195/2569","date":"31 มีนาคม 2569"},{"no":71,"name":"นางมาลี ไชยยศ","area":"ศิลปะ","memoNo":"วช196/2569","date":"31 มีนาคม 2569"},{"no":72,"name":"นายวิธวศิน กองคำ","area":"ศิลปะ","memoNo":"วช197/2569","date":"31 มีนาคม 2569"},{"no":73,"name":"นายณัฐวุฒิ เสนวงค์","area":"ศิลปะ","memoNo":"วช198/2569","date":"31 มีนาคม 2569"},{"no":74,"name":"นางกนกกาญจน์ บุญชูภักดิ์","area":"การงานอาชีพ","memoNo":"วช199/2569","date":"31 มีนาคม 2569"},{"no":75,"name":"นางสาวธนัชพรรณ ก่อสกุลรุ่งโรจน์","area":"การงานอาชีพ","memoNo":"วช200/2569","date":"31 มีนาคม 2569"},{"no":76,"name":"นายสุรชัย ใจซื่อ","area":"การงานอาชีพ","memoNo":"วช201/2569","date":"31 มีนาคม 2569"},{"no":77,"name":"นายธัชชัย ตาลตา","area":"การงานอาชีพ","memoNo":"วช202/2569","date":"31 มีนาคม 2569"},{"no":78,"name":"นางสาวทัศนีย์ การินทร์","area":"กิจกรรมพัฒนาผู้เรียน","memoNo":"วช203/2569","date":"31 มีนาคม 2569"},{"no":79,"name":"นางสาวชญาภัทร ดีพรมกุล","area":"กิจกรรมพัฒนาผู้เรียน","memoNo":"วช204/2569","date":"31 มีนาคม 2569"},{"no":80,"name":"นางสาวแววดาว อาจหาญ","area":"กิจกรรมพัฒนาผู้เรียน","memoNo":"วช205/2569","date":"31 มีนาคม 2569"}];
+
         const MEMO_TOPIC_3_DATA = [{"no":1,"name":"นางสาววจีพร แก้วหล้า","area":"ภาษาไทย","memoNo":"วช206/2569","date":"11 พฤษภาคม 2569"},{"no":2,"name":"นางนงคราญ เจริญพงษ์","area":"ภาษาไทย","memoNo":"วช207/2569","date":"11 พฤษภาคม 2569"},{"no":3,"name":"นางภัทราปภา บัวอาจ","area":"ภาษาไทย","memoNo":"วช208/2569","date":"11 พฤษภาคม 2569"},{"no":4,"name":"นางสุภัญกานต์ อินสา","area":"ภาษาไทย","memoNo":"วช209/2569","date":"11 พฤษภาคม 2569"},{"no":5,"name":"นางสาวณัฐนันท์ ชาวน่าน","area":"ภาษาไทย","memoNo":"วช210/2569","date":"11 พฤษภาคม 2569"},{"no":6,"name":"นางณิชารีย์ น้อยราช","area":"ภาษาไทย","memoNo":"วช211/2569","date":"11 พฤษภาคม 2569"},{"no":7,"name":"นายสมโภชน์ จันด้วง","area":"ภาษาไทย","memoNo":"วช212/2569","date":"11 พฤษภาคม 2569"},{"no":8,"name":"นางสาวนิธิกานต์ ปัญญา","area":"ภาษาไทย","memoNo":"วช213/2569","date":"11 พฤษภาคม 2569"},{"no":9,"name":"นางสาวมณฑิตา สีแก้ว","area":"ภาษาไทย","memoNo":"วช214/2569","date":"11 พฤษภาคม 2569"},{"no":10,"name":"นางสาวอัจฉราภรณ์ สิทธิวงศ์","area":"คณิตศาสตร์","memoNo":"วช215/2569","date":"11 พฤษภาคม 2569"},{"no":11,"name":"นายพงษ์พิชญ์ หมื่นพรมแสน","area":"คณิตศาสตร์","memoNo":"วช216/2569","date":"11 พฤษภาคม 2569"},{"no":12,"name":"นางรัตนาภรณ์ ขันทะยศ","area":"คณิตศาสตร์","memoNo":"วช217/2569","date":"11 พฤษภาคม 2569"},{"no":13,"name":"นางสาวหทัยกาญจน์ อินบุญมา","area":"คณิตศาสตร์","memoNo":"วช218/2569","date":"11 พฤษภาคม 2569"},{"no":14,"name":"นางเบญจพร นามแก้ว","area":"คณิตศาสตร์","memoNo":"วช219/2569","date":"11 พฤษภาคม 2569"},{"no":15,"name":"นางสาวสุภาพรรณ สิทธิวงศ์","area":"คณิตศาสตร์","memoNo":"วช220/2569","date":"11 พฤษภาคม 2569"},{"no":16,"name":"นางลัดดาวัลย์ ปินตา","area":"คณิตศาสตร์","memoNo":"วช221/2569","date":"11 พฤษภาคม 2569"},{"no":17,"name":"นางรัตนา เนตรใส","area":"คณิตศาสตร์","memoNo":"วช222/2569","date":"11 พฤษภาคม 2569"},{"no":18,"name":"นางณัฐพร การศิริ","area":"คณิตศาสตร์","memoNo":"วช223/2569","date":"11 พฤษภาคม 2569"},{"no":19,"name":"นางสาวนลัทพร ปวงไชยา","area":"คณิตศาสตร์","memoNo":"วช224/2569","date":"11 พฤษภาคม 2569"},{"no":20,"name":"นางวัชรีพร จิตอารีย์","area":"คณิตศาสตร์","memoNo":"วช225/2569","date":"11 พฤษภาคม 2569"},{"no":21,"name":"นายธัญวัฒน์ กาบคำ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช226/2569","date":"11 พฤษภาคม 2569"},{"no":22,"name":"นางสาวชรินพร ทะยศ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช227/2569","date":"11 พฤษภาคม 2569"},{"no":23,"name":"นางฉัตรฤดี อุดคำเที่ยง","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช228/2569","date":"11 พฤษภาคม 2569"},{"no":24,"name":"นายภาสกร กติยา","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช229/2569","date":"11 พฤษภาคม 2569"},{"no":25,"name":"นางสาวจริยา ใจยศ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช230/2569","date":"11 พฤษภาคม 2569"},{"no":26,"name":"นางสาวธัญรัตน์ วุทธะนู","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช231/2569","date":"11 พฤษภาคม 2569"},{"no":27,"name":"นางภิสชา ไชยบาล","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช232/2569","date":"11 พฤษภาคม 2569"},{"no":28,"name":"นางสาวจินต์ชัญญา อิทธิประเวศน์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช233/2569","date":"11 พฤษภาคม 2569"},{"no":29,"name":"นางสาวมาลินี อนุรักษ์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช234/2569","date":"11 พฤษภาคม 2569"},{"no":30,"name":"นางพวงทอง ชมภูมิ่ง","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช235/2569","date":"11 พฤษภาคม 2569"},{"no":31,"name":"นางสิตานัน เชื้อหมอ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช236/2569","date":"11 พฤษภาคม 2569"},{"no":32,"name":"นางสาวแสงรวี รุณวุฒิ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช237/2569","date":"11 พฤษภาคม 2569"},{"no":33,"name":"นายศุภฤกษ์ กิตินันท์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช238/2569","date":"11 พฤษภาคม 2569"},{"no":34,"name":"นายอลงกรณ์ วีระพันธ์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช239/2569","date":"11 พฤษภาคม 2569"},{"no":35,"name":"นางสาวกัญญา โชคสวัสดิ์ภิญโญ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช240/2569","date":"11 พฤษภาคม 2569"},{"no":36,"name":"นางวัชราพร มาลี","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช241/2569","date":"11 พฤษภาคม 2569"},{"no":37,"name":"นางสาวแววตรา ศักดิ์ศรี","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช242/2569","date":"11 พฤษภาคม 2569"},{"no":38,"name":"นางสาวชญากานต์ ส่วนบุญ","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช243/2569","date":"11 พฤษภาคม 2569"},{"no":39,"name":"นายณรงค์ฤทธิ์ สมบัติปัญญ์","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช244/2569","date":"11 พฤษภาคม 2569"},{"no":40,"name":"นางสาวจารุนันท์ อินทะรังษี","area":"วิทยาศาสตร์และเทคโนโลยี","memoNo":"วช245/2569","date":"11 พฤษภาคม 2569"},{"no":41,"name":"นางอทิตยา ปิมปา","area":"ภาษาต่างประเทศ","memoNo":"วช246/2569","date":"11 พฤษภาคม 2569"},{"no":42,"name":"นายโสภณวิชญ์ อิ่นแก้ว","area":"ภาษาต่างประเทศ","memoNo":"วช247/2569","date":"11 พฤษภาคม 2569"},{"no":43,"name":"นางนฤตยา อะทะยศ","area":"ภาษาต่างประเทศ","memoNo":"วช248/2569","date":"11 พฤษภาคม 2569"},{"no":44,"name":"นางสาวปรียารัตน์ ขันทะสอน","area":"ภาษาต่างประเทศ","memoNo":"วช249/2569","date":"11 พฤษภาคม 2569"},{"no":45,"name":"นางสาวพัชรินทร์ หม่องนันท์","area":"ภาษาต่างประเทศ","memoNo":"วช250/2569","date":"11 พฤษภาคม 2569"},{"no":46,"name":"นางอัมพร ศรีเทพ","area":"ภาษาต่างประเทศ","memoNo":"วช251/2569","date":"11 พฤษภาคม 2569"},{"no":47,"name":"นางสาวชัญญ์อนนต์ คันนาทิพย์","area":"ภาษาต่างประเทศ","memoNo":"วช252/2569","date":"11 พฤษภาคม 2569"},{"no":48,"name":"นายวิชัย ทีฆาวงค์","area":"ภาษาต่างประเทศ","memoNo":"วช253/2569","date":"11 พฤษภาคม 2569"},{"no":49,"name":"นางสุมาลี สมบัติปัญญ์","area":"ภาษาต่างประเทศ","memoNo":"วช254/2569","date":"11 พฤษภาคม 2569"},{"no":50,"name":"นางสาวเรณุกา ปราณีทะ","area":"ภาษาต่างประเทศ","memoNo":"วช255/2569","date":"11 พฤษภาคม 2569"},{"no":51,"name":"นายกัมพล ปิจดี","area":"ภาษาต่างประเทศ","memoNo":"วช256/2569","date":"11 พฤษภาคม 2569"},{"no":52,"name":"นางทรรศน์มน กาละดี","area":"ภาษาต่างประเทศ","memoNo":"วช257/2569","date":"11 พฤษภาคม 2569"},{"no":53,"name":"นายณรงค์ สมศักดิ์","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช258/2569","date":"11 พฤษภาคม 2569"},{"no":54,"name":"นางมณีรัตน์ ตาดี","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช259/2569","date":"11 พฤษภาคม 2569"},{"no":55,"name":"นางสาวน้ำทิพย์ หนักแก้ว","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช260/2569","date":"11 พฤษภาคม 2569"},{"no":56,"name":"นายชัยวัฒน์ แก้วกุลา","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช261/2569","date":"11 พฤษภาคม 2569"},{"no":57,"name":"นางสาวสิริวลี พิลา","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช262/2569","date":"11 พฤษภาคม 2569"},{"no":58,"name":"นางจิราภัค แก้วมีศรี","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช263/2569","date":"11 พฤษภาคม 2569"},{"no":59,"name":"นางสาวนภัทร เสนพงศ์","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช264/2569","date":"11 พฤษภาคม 2569"},{"no":60,"name":"นางสาวสโรชา ทองมา","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช265/2569","date":"11 พฤษภาคม 2569"},{"no":61,"name":"นายกฤตภาส สุทธะ","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช266/2569","date":"11 พฤษภาคม 2569"},{"no":62,"name":"นางเยาวเรศน์ วงค์ขัติย์","area":"สังคมศึกษา ศาสนาและวัฒนธรรม","memoNo":"วช267/2569","date":"11 พฤษภาคม 2569"},{"no":63,"name":"นายศุภชัย บุญประวัติ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช268/2569","date":"11 พฤษภาคม 2569"},{"no":64,"name":"นายบุรัสกร กุดนาน้อย","area":"สุขศึกษาและพลศึกษา","memoNo":"วช269/2569","date":"11 พฤษภาคม 2569"},{"no":65,"name":"นายเกรียงไกร คำมอญ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช270/2569","date":"11 พฤษภาคม 2569"},{"no":66,"name":"นางสาวอนุสรา มหาวงค์","area":"สุขศึกษาและพลศึกษา","memoNo":"วช271/2569","date":"11 พฤษภาคม 2569"},{"no":67,"name":"นายประทีป ปัญญานะ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช272/2569","date":"11 พฤษภาคม 2569"},{"no":68,"name":"นายวัชระ วงศ์ษารัฐ","area":"สุขศึกษาและพลศึกษา","memoNo":"วช273/2569","date":"11 พฤษภาคม 2569"},{"no":69,"name":"นายชยพล รัชติวงศ์","area":"ศิลปะ","memoNo":"วช274/2569","date":"11 พฤษภาคม 2569"},{"no":70,"name":"นายฐิติกร ไชยจันดี","area":"ศิลปะ","memoNo":"วช275/2569","date":"11 พฤษภาคม 2569"},{"no":71,"name":"นางมาลี ไชยยศ","area":"ศิลปะ","memoNo":"วช276/2569","date":"11 พฤษภาคม 2569"},{"no":72,"name":"นายวิธวศิน กองคำ","area":"ศิลปะ","memoNo":"วช277/2569","date":"11 พฤษภาคม 2569"},{"no":73,"name":"นายณัฐวุฒิ เสนวงค์","area":"ศิลปะ","memoNo":"วช278/2569","date":"11 พฤษภาคม 2569"},{"no":74,"name":"นางกนกกาญจน์ บุญชูภักดิ์","area":"การงานอาชีพ","memoNo":"วช279/2569","date":"11 พฤษภาคม 2569"},{"no":75,"name":"นางสาวธนัชพรรณ ก่อสกุลรุ่งโรจน์","area":"การงานอาชีพ","memoNo":"วช280/2569","date":"11 พฤษภาคม 2569"},{"no":76,"name":"นายสุรชัย ใจซื่อ","area":"การงานอาชีพ","memoNo":"วช281/2569","date":"11 พฤษภาคม 2569"},{"no":77,"name":"นายธัชชัย ตาลตา","area":"การงานอาชีพ","memoNo":"วช282/2569","date":"11 พฤษภาคม 2569"},{"no":78,"name":"ครูการงานใหม่","area":"การงานอาชีพ","memoNo":"วช283/2569","date":"11 พฤษภาคม 2569"},{"no":79,"name":"นางสาวทัศนีย์ การินทร์","area":"กิจกรรมพัฒนาผู้เรียน","memoNo":"วช284/2569","date":"11 พฤษภาคม 2569"},{"no":80,"name":"นางสาวชญาภัทร ดีพรมกุล","area":"กิจกรรมพัฒนาผู้เรียน","memoNo":"วช285/2569","date":"11 พฤษภาคม 2569"},{"no":81,"name":"นางสาวแววดาว อาจหาญ","area":"กิจกรรมพัฒนาผู้เรียน","memoNo":"วช286/2569","date":"11 พฤษภาคม 2569"}];
 
-        // ===== MEMO TOPICS DATABASE =====
         let MEMO_TOPICS = [
             { id:'topic_1', icon:'📚', title:'ส่งระบบเรียนรู้ ภาคเรียนที่ 2 ปีการศึกษา 2568', data: MEMO_TOPIC_1_DATA, createdAt:'5 มกราคม 2569' },
             { id:'topic_2', icon:'📋', title:'รายงานการพัฒนาผู้เรียนตามการวิเคราะห์ผู้เรียนรายบุคคล ภาคเรียนที่ 2 ปีการศึกษา 2568', data: MEMO_TOPIC_2_DATA, createdAt:'31 มีนาคม 2569' },
@@ -707,8 +680,8 @@
                 const card = document.createElement('div');
                 card.className = 'memo-topic-card';
                 card.onclick = () => openMemoTopic(topic.id);
-                const firstMemo = topic.data[0]?.memoNo || '';
-                const lastMemo  = topic.data[topic.data.length-1]?.memoNo || '';
+                const firstMemo = (topic.data[0] && topic.data[0].memoNo) || '';
+                const lastMemo  = (topic.data[topic.data.length-1] && topic.data[topic.data.length-1].memoNo) || '';
                 card.innerHTML = `
                     <span class="topic-icon">${topic.icon}</span>
                     <div class="topic-title">${topic.title}</div>
@@ -730,8 +703,8 @@
             const si = document.getElementById('teacherSearchInput');
             if (af) af.value = '';
             if (si) si.value = '';
-            const firstMemo = topic.data[0]?.memoNo || '';
-            const lastMemo  = topic.data[topic.data.length-1]?.memoNo || '';
+            const firstMemo = (topic.data[0] && topic.data[0].memoNo) || '';
+            const lastMemo  = (topic.data[topic.data.length-1] && topic.data[topic.data.length-1].memoNo) || '';
             document.getElementById('topicDetailTitle').textContent = `${topic.icon} ${topic.title}`;
             document.getElementById('topicDetailMeta').textContent =
                 `จำนวน ${topic.data.length} คน | เลขที่ ${firstMemo} – ${lastMemo} | ลงวันที่ ${topic.createdAt}`;
@@ -769,11 +742,13 @@
         }
 
         function filterTeachers() {
-            const areaVal   = document.getElementById('teacherAreaFilter')?.value || '';
-            const searchVal = (document.getElementById('teacherSearchInput')?.value || '').toLowerCase();
+            const areaEl = document.getElementById('teacherAreaFilter');
+            const searchEl = document.getElementById('teacherSearchInput');
+            const areaVal   = areaEl ? areaEl.value : '';
+            const searchVal = searchEl ? searchEl.value.toLowerCase() : '';
             displayTeachers(currentMemoTopicData.filter(t =>
                 (!areaVal || t.area === areaVal) &&
-                (!searchVal || t.name.toLowerCase().includes(searchVal) || t.memoNo.toLowerCase().includes(searchVal))
+                (!searchVal || t.name.toLowerCase().includes(searchVal) || String(t.memoNo).toLowerCase().includes(searchVal))
             ));
         }
 
@@ -932,23 +907,15 @@
         // ===== DOWNLOAD =====
         function downloadFormFile() {
             const url = `https://docs.google.com/document/d/${GOOGLE_DOC_ID}/export?format=odt`;
-            Swal.fire({ title:'กำลังดาวน์โหลด...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
-            setTimeout(() => {
-                const a = document.createElement('a'); a.href = url; a.download = 'แบบฟอร์มระบบเรียนรู้_2569.odt';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                Swal.close();
-                Swal.fire({ position:'top-end', icon:'success', title:'ดาวน์โหลดเสร็จสิ้น!', showConfirmButton:false, timer:2000 });
-            }, 500);
+            const a = document.createElement('a'); a.href = url; a.download = 'แบบฟอร์มระบบเรียนรู้_2569.odt';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            Swal.fire({ position:'top-end', icon:'success', title:'เริ่มดาวน์โหลดแล้ว!', showConfirmButton:false, timer:2000 });
         }
         function downloadPdfFile() {
             const url = `https://drive.google.com/uc?export=download&id=${GOOGLE_DRIVE_PDF_ID}`;
-            Swal.fire({ title:'กำลังดาวน์โหลด...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
-            setTimeout(() => {
-                const a = document.createElement('a'); a.href = url; a.download = 'เอกสารประกอบการใช้งาน.pdf';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                Swal.close();
-                Swal.fire({ position:'top-end', icon:'success', title:'ดาวน์โหลดเสร็จสิ้น!', showConfirmButton:false, timer:2000 });
-            }, 500);
+            const a = document.createElement('a'); a.href = url; a.download = 'เอกสารประกอบการใช้งาน.pdf';
+            document.body.appendChild(a); a.click(); document.body.removeChild(a);
+            Swal.fire({ position:'top-end', icon:'success', title:'เริ่มดาวน์โหลดแล้ว!', showConfirmButton:false, timer:2000 });
         }
 
         // ===== UTILS =====
@@ -1007,11 +974,11 @@
         }
 
         function formatStatus(status) {
-            if (status === 'รอหัวหน้าตรวจ')   return `<span class="status-pending">รอหัวหน้าตรวจ 🟡</span>`;
-            if (status === 'รอรองฯตรวจ')   return `<span class="status-pending" style="background:#fd7e14;color:white;">รอรองฯตรวจ 🟠</span>`;
-            if (status === 'รอผอ.อนุมัติ')   return `<span class="status-pending" style="background:#0dcaf0;color:white;">รอผอ.อนุมัติ 🔵</span>`;
-            if (status === 'รอแก้ไข')  return `<span class="status-revision">รอแก้ไข ❗</span>`;
-            if (status === 'อนุมัติแล้ว') return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
+            if (status === 'รอหัวหน้าตรวจ') return `<span class="status-pending">รอหัวหน้าตรวจ 🟡</span>`;
+            if (status === 'รอรองฯตรวจ')   return `<span class="status-pending" style="color:#fd7e14;">รอรองฯตรวจ 🟠</span>`;
+            if (status === 'รอผอ.อนุมัติ')  return `<span class="status-pending" style="color:#0aa2c0;">รอผอ.อนุมัติ 🔵</span>`;
+            if (status === 'รอแก้ไข')       return `<span class="status-revision">รอแก้ไข ❗</span>`;
+            if (status === 'อนุมัติแล้ว')    return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
             return status || 'รอหัวหน้าตรวจ 🟡';
         }
 
@@ -1058,7 +1025,8 @@
             const pw = document.getElementById('adminPassword').value;
             if (pw === ROLE_PASSWORDS[selectedRole]) {
                 currentAdminRole = selectedRole;
-                currentAdminRoleName = document.getElementById('adminRole').options[document.getElementById('adminRole').selectedIndex].text;
+                const sel = document.getElementById('adminRole');
+                currentAdminRoleName = sel.options[sel.selectedIndex].text;
                 Swal.fire({ title:'เข้าสู่ระบบสำเร็จ!', text: `ยินดีต้อนรับ ${currentAdminRoleName}`, icon:'success', timer:1500, showConfirmButton:false });
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-section-content').style.display = 'block';
@@ -1082,6 +1050,25 @@
                 document.getElementById('adminSubmissionsTableBody').innerHTML = `<tr><td colspan="5">Error: ${err.message}</td></tr>`;
             } finally { Swal.close(); }
         }
+
+        /** ✅ เปิดใบปะหน้าพร้อมลายเซ็นทั้ง 3 ตำแหน่ง */
+        function openMemoPrint(sub) {
+            const params = new URLSearchParams();
+            params.append('name',   sub.fullName || '');
+            params.append('area',   sub.learningArea || '');
+            params.append('status', sub.status || '');
+            params.append('term',   currentTerm);
+            params.append('year',   currentYear);
+            if (sub.headSignerName) params.append('headSignerName', sub.headSignerName);
+            const h = sub.sigHeadId     || sub.sigHead     || '';
+            const d = sub.sigDeputyId   || sub.sigDeputy   || '';
+            const p = sub.sigDirectorId || sub.sigDirector || '';
+            if (h) params.append('headSig', h);
+            if (d) params.append('deputySig', d);
+            if (p) params.append('directorSig', p);
+            window.open('memo_design.html?' + params.toString(), '_blank');
+        }
+
         function displayFilteredSubmissions() {
             const tbody = document.getElementById('adminSubmissionsTableBody');
             tbody.innerHTML = '';
@@ -1096,24 +1083,31 @@
                 row.insertCell().textContent = sub.submissionTimestamp||'';
                 row.insertCell().textContent = sub.fullName||'';
                 row.insertCell().textContent = (sub.courses&&sub.courses.length>0) ? (sub.courses[0].name||'N/A') : 'N/A';
-                row.insertCell().innerHTML = formatStatus(sub.status||'รอตรวจ');
+                row.insertCell().innerHTML = formatStatus(sub.status||'รอหัวหน้าตรวจ');
                 const ac = row.insertCell();
-                const vb = document.createElement('button'); vb.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ'; vb.className='custom-button'; vb.onclick=()=>showSubmissionDetail(sub.id); ac.appendChild(vb);
-                const pb = document.createElement('button'); 
-                pb.innerHTML='<i class="fa-solid fa-print"></i> พิมพ์ปะหน้า'; 
-                pb.className='custom-button'; 
+
+                const vb = document.createElement('button');
+                vb.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ';
+                vb.className='custom-button';
+                vb.onclick=()=>showSubmissionDetail(sub.id);
+                ac.appendChild(vb);
+
+                const pb = document.createElement('button');
+                pb.innerHTML='<i class="fa-solid fa-print"></i> พิมพ์ปะหน้า';
+                pb.className='custom-button';
                 pb.style.backgroundColor = '#198754';
-                pb.onclick=() => {
-                    const params = new URLSearchParams();
-                    params.append('name', sub.fullName || '');
-                    params.append('area', sub.learningArea || '');
-                    params.append('status', sub.status || '');
-                    window.open('memo_design.html?' + params.toString(), '_blank');
-                };
+                pb.style.marginLeft = '8px';
+                pb.onclick = () => openMemoPrint(sub);
                 ac.appendChild(pb);
-                const db = document.createElement('button'); db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ'; db.className='custom-button delete-button'; db.onclick=()=>confirmDeleteSubmission(sub.id); ac.appendChild(db);
+
+                const db = document.createElement('button');
+                db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ';
+                db.className='custom-button delete-button';
+                db.onclick=()=>confirmDeleteSubmission(sub.id);
+                ac.appendChild(db);
             });
         }
+
         function confirmDeleteSubmission(id) {
             Swal.fire({ title:'คุณแน่ใจหรือไม่?', text:'คุณจะไม่สามารถกู้คืนข้อมูลนี้ได้!', icon:'warning', showCancelButton:true, confirmButtonColor:'#d33', cancelButtonColor:'#3085d6', confirmButtonText:'ใช่, ลบเลย!', cancelButtonText:'ยกเลิก' })
             .then(r => { if (r.isConfirmed) deleteSubmissionOnServer(id); });
@@ -1130,14 +1124,30 @@
                 } else throw new Error(result.message);
             } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', err.message, 'error'); }
         }
+
+        /** helper: Drive ID → URL รูป (ใช้พรีวิว) */
+        function driveThumb(v) {
+            if (!v) return '';
+            if (String(v).indexOf('data:') === 0) return v;
+            const m = String(v).match(/[-\w]{25,}/);
+            const id = m ? m[0] : v;
+            return 'https://drive.google.com/thumbnail?id=' + id + '&sz=w400';
+        }
+
         function showSubmissionDetail(submissionId) {
             const sub = currentAdminSubmissions.find(s => s.id === submissionId);
             if (!sub) { Swal.fire('ข้อผิดพลาด','ไม่พบข้อมูลการส่งงานที่เลือก','error'); return; }
+
+            // ✅ รีเซ็ต SignaturePad ทุกครั้ง เพราะ canvas ถูกสร้างใหม่
+            _signaturePad = null;
+            _uploadedSigDataUrl = null;
+
             document.getElementById('admin-dashboard').style.display = 'none';
             const dv = document.getElementById('submission-detail-view');
             dv.style.display = 'block';
+
             let filesHtml = '';
-            if (sub.courses&&sub.courses.length>0) {
+            if (sub.courses && sub.courses.length > 0) {
                 sub.courses.forEach((c,i) => {
                     filesHtml += `<div class="course-block" style="background-color:#fff;">
                         <div class="course-block-header">วิชาที่ ${i+1}</div>
@@ -1146,7 +1156,27 @@
                         ${c.fileUrl ? `<p style="margin:5px 0;"><strong>ไฟล์:</strong> <a href="${c.fileUrl}" target="_blank"><i class="fa-solid fa-file-pdf fa-fw"></i>${c.fileName||'เปิดไฟล์'}</a></p>` : '<p>ไม่มีไฟล์แนบสำหรับวิชานี้</p>'}
                     </div>`;
                 });
-            } else { filesHtml = '<li>ไม่มีข้อมูลวิชาหรือไฟล์แนบ</li>'; }
+            } else { filesHtml = '<p>ไม่มีข้อมูลวิชาหรือไฟล์แนบ</p>'; }
+
+            function sigCell(label, val) {
+                if (val) {
+                    return `<div class="saved-sig-item">
+                                <img src="${driveThumb(val)}" alt="" onerror="this.style.display='none'">
+                                <div class="cap">${label}</div>
+                            </div>`;
+                }
+                return `<div class="saved-sig-item"><span class="none">— ยังไม่เซ็น —</span><div class="cap">${label}</div></div>`;
+            }
+            const savedSigHtml = `
+                <div class="saved-sig-box">
+                    <h4><i class="fa-solid fa-signature"></i> ลายเซ็นที่บันทึกไว้แล้ว</h4>
+                    <div class="saved-sig-grid">
+                        ${sigCell('หัวหน้ากลุ่มสาระ', sub.sigHeadId || sub.sigHead)}
+                        ${sigCell('รองฯ วิชาการ',   sub.sigDeputyId || sub.sigDeputy)}
+                        ${sigCell('ผู้อำนวยการ',    sub.sigDirectorId || sub.sigDirector)}
+                    </div>
+                </div>`;
+
             dv.innerHTML = `
                 <div class="heading-wrapper" style="justify-content:flex-start;">
                     <span class="icon-bubble"><i class="fa-solid fa-circle-info"></i></span>
@@ -1159,8 +1189,9 @@
                 <p><strong>ลิงก์เพิ่มเติม:</strong> ${sub.additionalLink ? `<a href="${sub.additionalLink}" target="_blank">${sub.additionalLink}</a>` : 'ไม่มี'}</p>
                 ${filesHtml}
                 <hr>
-                <p><strong>สถานะปัจจุบัน:</strong> ${formatStatus(sub.status||'รอตรวจ')}</p>
-                <p><strong>ความคิดเห็นผู้บริหาร (เดิม):</strong> ${sub.adminComment||'ยังไม่มี'}</p>
+                <p><strong>สถานะปัจจุบัน:</strong> ${formatStatus(sub.status||'รอหัวหน้าตรวจ')}</p>
+                <p><strong>ความคิดเห็นผู้บริหาร (เดิม):</strong> ${(sub.adminComment||'ยังไม่มี').toString().replace(/\n/g,'<br>')}</p>
+                ${savedSigHtml}
                 <div style="margin-top:1.5rem;">
                     <label><strong>เปลี่ยนสถานะเป็น:</strong></label>
                     <select id="newStatusModal" style="width:100%;padding:10px;margin-bottom:15px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);">
@@ -1172,9 +1203,8 @@
                     <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
                     <textarea id="adminCommentTextModal" rows="3" placeholder="ระบุข้อคิดเห็น (ถ้ามี)" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);"></textarea>
                 </div>
-                                <!-- Signature Pad -->
+
                 <div id="signature-container" style="margin-top:15px;display:none;">
-                    <!-- ชื่อหัวหน้าสาระ (แสดงเฉพาะเมื่อล็อกอินเป็นหัวหน้า) -->
                     <div id="head-name-input-container" style="display:none; margin-bottom:12px;">
                         <label style="font-weight:600;color:var(--text-color);margin-bottom:6px;display:block;">👤 ชื่อหัวหน้ากลุ่มสาระผู้ตรวจ:</label>
                         <input type="text" id="head-signer-name" placeholder="เช่น นายสมชาย ใจดี" style="width:100%;padding:10px 14px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);font-family:var(--font-family);font-size:1rem;">
@@ -1185,32 +1215,42 @@
                     </div>
                     <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
                         <button type="button" onclick="clearSignaturePad()" class="custom-button" style="background:#e74c3c;padding:6px 14px;font-size:0.85rem;"><i class="fas fa-eraser"></i> ล้างลายเซ็น</button>
-                        <label style="font-size:0.85rem;color:var(--dark-gray);cursor:pointer;border:1px solid var(--medium-gray);border-radius:8px;padding:6px 12px;">
+                        <label style="font-size:0.85rem;color:var(--dark-gray);cursor:pointer;border:1px solid var(--medium-gray);border-radius:8px;padding:6px 12px;margin:0;">
                             📎 แนบไฟล์ลายเซ็น (PNG/JPG)
                             <input type="file" id="signature-file-upload" accept="image/png,image/jpeg" style="display:none;" onchange="handleSigFileUpload(event)">
                         </label>
+                        <span style="font-size:0.8em;color:#888;">* ถ้าไม่เซ็นใหม่ ลายเซ็นเดิมจะยังคงอยู่</span>
                     </div>
                 </div>
-                <button type="button" id="updateStatusButtonModal" class="custom-button"><i class="fa-solid fa-floppy-disk"></i>บันทึกการเปลี่ยนแปลง</button>
-                <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>`;
-            // Show signature pad for admin
-                const sigC = document.getElementById('signature-container');
-                if (sigC && currentAdminRole) { 
-                    sigC.style.display = 'block'; 
-                    setTimeout(initSignaturePad, 200);
-                    const headNameContainer = document.getElementById('head-name-input-container');
-                    if (headNameContainer) {
-                        headNameContainer.style.display = currentAdminRole === 'head' ? 'block' : 'none';
-                        if (currentAdminRole === 'head') document.getElementById('head-signer-name').value = '';
+
+                <div style="margin-top:15px;display:flex;gap:10px;flex-wrap:wrap;">
+                    <button type="button" id="updateStatusButtonModal" class="custom-button"><i class="fa-solid fa-floppy-disk"></i>บันทึกการเปลี่ยนแปลง</button>
+                    <button type="button" id="printFromDetailBtn" class="custom-button" style="background-color:#198754;"><i class="fa-solid fa-print"></i>พิมพ์ใบปะหน้า</button>
+                    <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>
+                </div>`;
+
+            const sigC = document.getElementById('signature-container');
+            if (sigC && currentAdminRole) {
+                sigC.style.display = 'block';
+                setTimeout(initSignaturePad, 200);
+                const headNameContainer = document.getElementById('head-name-input-container');
+                if (headNameContainer) {
+                    headNameContainer.style.display = currentAdminRole === 'head' ? 'block' : 'none';
+                    if (currentAdminRole === 'head') {
+                        document.getElementById('head-signer-name').value = sub.headSignerName || '';
                     }
                 }
-                document.getElementById('updateStatusButtonModal').onclick = () => updateSubmissionStatus(sub.id);
+            }
+
+            document.getElementById('updateStatusButtonModal').onclick = () => updateSubmissionStatus(sub.id);
+            document.getElementById('printFromDetailBtn').onclick = () => openMemoPrint(sub);
             document.getElementById('backToListButtonModal').onclick = () => {
                 dv.style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 loadAdminSubmissions();
             };
         }
+
         // === SIGNATURE PAD LOGIC ===
         let _signaturePad = null;
         let _uploadedSigDataUrl = null;
@@ -1218,17 +1258,17 @@
         function initSignaturePad() {
             const canvas = document.getElementById('signature-pad-canvas');
             if (!canvas) return;
-            if (_signaturePad) { _signaturePad.clear(); return; }
-            _signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)', penColor: 'rgb(0,0,139)' });
-            function resizeSigCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
-                canvas.height = 180 * ratio;
-                canvas.getContext('2d').scale(ratio, ratio);
-                _signaturePad.clear();
-            }
-            window.addEventListener('resize', resizeSigCanvas);
-            setTimeout(resizeSigCanvas, 100);
+            _signaturePad = new SignaturePad(canvas, {
+                backgroundColor: 'rgb(255,255,255)',
+                penColor: 'rgb(0,0,139)',
+                minWidth: 1.0,
+                maxWidth: 2.8
+            });
+            const ratio = Math.max(window.devicePixelRatio || 1, 1);
+            canvas.width  = canvas.offsetWidth * ratio;
+            canvas.height = 180 * ratio;
+            canvas.getContext('2d').scale(ratio, ratio);
+            _signaturePad.clear();
         }
         function clearSignaturePad() {
             if (_signaturePad) _signaturePad.clear();
@@ -1258,12 +1298,36 @@
         async function updateSubmissionStatus(submissionId) {
             const newStatus    = document.getElementById('newStatusModal').value;
             const adminComment = document.getElementById('adminCommentTextModal').value;
+            const sigData      = getSignatureData();
+            const headNameEl   = document.getElementById('head-signer-name');
+
+            if (currentAdminRole && !sigData) {
+                const ok = await Swal.fire({
+                    title: 'ยังไม่ได้เซ็นลายเซ็น',
+                    text: 'ต้องการบันทึกโดยไม่แนบลายเซ็นหรือไม่?',
+                    icon: 'question', showCancelButton: true,
+                    confirmButtonText: 'บันทึกเลย', cancelButtonText: 'กลับไปเซ็น'
+                });
+                if (!ok.isConfirmed) return;
+            }
+
             Swal.fire({ title:'กำลังอัปเดต...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'updateSubmission', submissionId, newStatus, adminComment, adminRole: currentAdminRole, adminSignature: getSignatureData(), headSignerName: (document.getElementById('head-signer-name') ? document.getElementById('head-signer-name').value : '') }) });
+                const res = await fetch(APPS_SCRIPT_URL, {
+                    method:'POST',
+                    body: buildPayload({
+                        action:'updateSubmission',
+                        submissionId,
+                        newStatus,
+                        adminComment,
+                        adminRole: currentAdminRole || '',
+                        adminSignature: sigData,
+                        headSignerName: headNameEl ? headNameEl.value : ''
+                    })
+                });
                 const result = await res.json();
                 if (result.success) {
-                    Swal.fire('สำเร็จ!','อัปเดตสถานะแล้ว','success');
+                    Swal.fire('สำเร็จ!', result.message || 'อัปเดตสถานะแล้ว', 'success');
                     document.getElementById('submission-detail-view').style.display = 'none';
                     document.getElementById('admin-dashboard').style.display = 'block';
                     loadAdminSubmissions(); loadDashboardData(); loadAndDrawLearningSystemAreaChart();
@@ -1309,7 +1373,7 @@
             areas.forEach(a => {
                 const d = data[a.key];
                 if (d&&d.total>0) {
-                    const pct = d.total>0 ? ((d.submitted/d.total)*100).toFixed(1) : '0.0';
+                    const pct = ((d.submitted/d.total)*100).toFixed(1);
                     const color = d.notSubmitted>0 ? '#e74c3c' : '#27ae60';
                     const icon  = d.notSubmitted>0 ? '❌' : '✅';
                     html += `<div class="summary-detail-item" style="border-left:4px solid ${color};padding:15px;margin-bottom:12px;background-color:${color==='#27ae60'?'#f0fdf4':'#fef2f2'};">
@@ -1317,7 +1381,7 @@
                             <span style="font-weight:bold;font-size:16px;">${icon} ${a.name}</span>
                             <div style="margin-top:5px;font-size:14px;color:#555;">จำนวนครู ${d.total} คน | ส่งแล้ว ${d.submitted} คน (${pct}%)</div>
                         </div>`;
-                    if (d.notSubmitted>0&&d.notSubmittedNames?.length>0) {
+                    if (d.notSubmitted>0 && d.notSubmittedNames && d.notSubmittedNames.length>0) {
                         html += `<div style="background-color:#fff3cd;padding:10px;border-radius:8px;margin-top:10px;border-left:4px solid #e74c3c;">
                             <span style="color:#e74c3c;font-weight:bold;display:block;margin-bottom:5px;">❌ ยังไม่ส่ง (${d.notSubmitted} คน):</span>
                             <span style="color:#666;font-size:13px;">${d.notSubmittedNames.map(n=>`<span style="display:inline-block;background:#fff;padding:4px 8px;margin:3px;border-radius:4px;border:1px solid #e74c3c;color:#c0392b;">• ${n}</span>`).join('')}</span>
@@ -1345,37 +1409,43 @@
                 const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:fd });
                 const result = await res.json();
                 if (result.success) {
-                    const a = document.createElement('a'); a.href=result.fileUrl; a.download=result.fileName;
-                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                    Swal.close(); Swal.fire('สำเร็จ!','สร้างและดาวน์โหลด PDF เรียบร้อยแล้ว','success');
+                    window.open(result.fileUrl, '_blank');
+                    Swal.close(); Swal.fire('สำเร็จ!','สร้าง PDF เรียบร้อยแล้ว','success');
                 } else throw new Error(result.message);
             } catch(err) { Swal.close(); Swal.fire('เกิดข้อผิดพลาด!', err.message, 'error'); }
         }
-        document.getElementById('createPdfSummaryBtn')?.addEventListener('click', () => {
+        const createPdfBtn = document.getElementById('createPdfSummaryBtn');
+        if (createPdfBtn) createPdfBtn.addEventListener('click', () => {
             document.getElementById('admin-dashboard').style.display = 'none';
             document.getElementById('submission-detail-view').style.display = 'none';
             document.getElementById('pdf-summary-section').style.display = 'block';
             const c = document.getElementById('summaryPointsContainer'); if (c) { c.innerHTML=''; summaryPointCount=0; }
+            document.getElementById('summaryTerm').value = currentTerm;
+            document.getElementById('summaryYear').value = currentYear;
+            document.getElementById('summaryCheckNumber').value = currentRound;
             for (let i=0; i<3; i++) addSummaryPoint();
             loadSummaryStats();
         });
-        document.getElementById('addSummaryPointBtn')?.addEventListener('click', addSummaryPoint);
-        document.getElementById('generatePdfBtn')?.addEventListener('click', generatePDF);
-        document.getElementById('cancelPdfBtn')?.addEventListener('click', () => {
+        const addPointBtn = document.getElementById('addSummaryPointBtn');
+        if (addPointBtn) addPointBtn.addEventListener('click', addSummaryPoint);
+        const genPdfBtn = document.getElementById('generatePdfBtn');
+        if (genPdfBtn) genPdfBtn.addEventListener('click', generatePDF);
+        const cancelPdfBtn = document.getElementById('cancelPdfBtn');
+        if (cancelPdfBtn) cancelPdfBtn.addEventListener('click', () => {
             document.getElementById('pdf-summary-section').style.display = 'none';
             document.getElementById('admin-dashboard').style.display = 'block';
         });
 
         // ===== DASHBOARD =====
-        document.getElementById('refreshDashboardButton')?.addEventListener('click', () => {
+        const refreshDashBtn = document.getElementById('refreshDashboardButton');
+        if (refreshDashBtn) refreshDashBtn.addEventListener('click', () => {
             loadDashboardData(); loadAndDrawLearningSystemAreaChart();
         });
         async function loadDashboardData() {
-            Swal.fire({ toast:true, position:'top-end', icon:'info', title:'กำลังโหลดสถิติ...', showConfirmButton:false, timer:1500 });
             try {
                 const res = await fetch(buildUrl({ action:'getDashboardData' }));
                 const result = await res.json();
-                if (result.success&&result.data) {
+                if (result.success && result.data) {
                     const d = result.data;
                     document.getElementById('totalSubmissions').textContent    = d.total||0;
                     document.getElementById('pendingSubmissions').textContent  = d.pending||0;
@@ -1383,7 +1453,7 @@
                     document.getElementById('approvedSubmissions').textContent = d.approved||0;
                     if (!isSearchActive) loadAllSubmissions();
                 } else throw new Error(result.message);
-            } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', `สถิติ: ${err.message}`, 'error'); }
+            } catch(err) { console.error('Dashboard error:', err.message); }
         }
         async function loadAndDrawLearningSystemAreaChart() {
             const canvas = document.getElementById('learningSystemAreaStatsChart');
@@ -1393,7 +1463,7 @@
                 const res = await fetch(buildUrl({ action:'getLearningAreaStats' }));
                 const result = await res.json();
                 if (learningSystemAreaChartInstance) learningSystemAreaChartInstance.destroy();
-                if (result.success&&result.counts&&Object.keys(result.counts).length>0) {
+                if (result.success && result.counts && Object.keys(result.counts).length>0) {
                     learningSystemAreaChartInstance = new Chart(ctx, {
                         type:'pie',
                         data: { labels:Object.keys(result.counts), datasets:[{ label:'จำนวนการส่ง', data:Object.values(result.counts), backgroundColor:['#FF6384','#36A2EB','#FFCE56','#4BC0C0','#9966FF','#FF9F40','#E7E9ED','#83A1C4','#F4A7B9'], borderColor:'#fff', borderWidth:1 }] },
@@ -1413,7 +1483,7 @@
         async function searchByName(searchTerm) {
             if (!searchTerm.trim()) { loadAllSubmissions(); return; }
             try {
-                const res = await fetch(buildUrl({ action:'searchSubmissions', searchTerm:encodeURIComponent(searchTerm) }));
+                const res = await fetch(buildUrl({ action:'searchSubmissions', searchTerm:searchTerm }));
                 const result = await res.json();
                 if (result.success) { allRecentSubmissions=result.data||[]; displaySubmissions(allRecentSubmissions); showSearchResultInfo(searchTerm,allRecentSubmissions.length); isSearchActive=true; }
                 else throw new Error(result.message);
@@ -1434,15 +1504,19 @@
             subs.forEach(s => {
                 const row = tbody.insertRow();
                 const rc = row.insertCell();
-                const rb = document.createElement('span'); rb.style.cssText='display:inline-block;background-color:#4caf50;color:white;padding:4px 10px;border-radius:15px;font-weight:bold;font-size:0.9em;'; rb.textContent=s.round||currentRound; rc.appendChild(rb);
+                const rb = document.createElement('span');
+                rb.style.cssText='display:inline-block;background-color:#4caf50;color:white;padding:4px 10px;border-radius:15px;font-weight:bold;font-size:0.9em;';
+                rb.textContent=s.round||currentRound; rc.appendChild(rb);
                 row.insertCell().textContent = s.submissionTimestamp;
                 row.insertCell().textContent = s.fullName;
                 row.insertCell().textContent = s.courseName;
                 row.insertCell().textContent = s.learningArea;
                 row.insertCell().innerHTML = formatStatus(s.status);
                 const cc = row.insertCell();
-                const ac = s.adminComment||'';
-                cc.innerHTML = ac.trim() ? `<div style="background-color:#fff3cd;padding:12px;border-radius:8px;border-left:4px solid #ffc107;word-wrap:break-word;line-height:1.6;"><i class="fa-solid fa-comment-dots" style="color:#ff9800;margin-right:8px;"></i><span style="color:#856404;font-size:0.95em;">${ac}</span></div>` : '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
+                const ac = (s.adminComment||'').toString();
+                cc.innerHTML = ac.trim()
+                    ? `<div style="background-color:#fff3cd;padding:12px;border-radius:8px;border-left:4px solid #ffc107;word-wrap:break-word;line-height:1.6;"><i class="fa-solid fa-comment-dots" style="color:#ff9800;margin-right:8px;"></i><span style="color:#856404;font-size:0.95em;">${ac.replace(/\n/g,'<br>')}</span></div>`
+                    : '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
             });
         }
         function showSearchResultInfo(term, count) {
