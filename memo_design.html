@@ -227,14 +227,32 @@
                 </div>
             </div>
 
-            <!-- ลายเซ็นหัวหน้าหมวด และ รองวิชาการ (2 คอลัมน์) -->
-            <div class="signature-row">
+            <!-- ความเห็นหัวหน้ากลุ่มสาระการเรียนรู้ -->
+            <div class="director-comment" style="margin-top: 25px;">
+                <span class="memo-label" style="font-weight: normal;">ความเห็นหัวหน้ากลุ่มสาระการเรียนรู้</span><br>
+                <div class="comment-lines">
+                    ...................................................................................................................................................................................<br>
+                    ...................................................................................................................................................................................
+                </div>
+            </div>
+            <div class="align-right-block" style="margin-top: -5px;">
                 <div class="signature-block" style="margin-top: 0; position: relative;">
                     <img id="sigImgHead" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
                     ลงชื่อ....................................................<br>
-                    (....................................................)<br>
+                    (<span id="dynHeadSignerName">....................................................</span>)<br>
                     หัวหน้ากลุ่มสาระ<span id="dynArea">........................</span>
                 </div>
+            </div>
+
+            <!-- ความเห็นรองผู้อำนวยการฝ่ายบริหารงานวิชาการ -->
+            <div class="director-comment" style="margin-top: 25px;">
+                <span class="memo-label" style="font-weight: normal;">ความเห็นรองผู้อำนวยการฝ่ายบริหารงานวิชาการ</span><br>
+                <div class="comment-lines">
+                    ...................................................................................................................................................................................<br>
+                    ...................................................................................................................................................................................
+                </div>
+            </div>
+            <div class="align-right-block" style="margin-top: -5px;">
                 <div class="signature-block" style="margin-top: 0; position: relative;">
                     <img id="sigImgDeputy" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
                     ลงชื่อ....................................................<br>
@@ -243,17 +261,15 @@
                 </div>
             </div>
 
-            <!-- ความคิดเห็น ผอ. -->
-            <div class="director-comment">
-                <span class="memo-label" style="font-weight: normal;">ความคิดเห็นของผู้อำนวยการโรงเรียน</span><br>
+            <!-- ความเห็นผู้อำนวยการโรงเรียนสา -->
+            <div class="director-comment" style="margin-top: 25px;">
+                <span class="memo-label" style="font-weight: normal;">ความเห็นผู้อำนวยการโรงเรียนสา</span><br>
                 <div class="comment-lines">
                     ...................................................................................................................................................................................<br>
                     ...................................................................................................................................................................................
                 </div>
             </div>
-
-            <!-- ลายเซ็น ผอ. (ชิดขวา) -->
-            <div class="align-right-block" style="margin-top: -10px;">
+            <div class="align-right-block" style="margin-top: -5px;">
                 <div class="signature-block" style="margin-top: 0; position: relative;">
                     <img id="sigImgDirector" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
                     ลงชื่อ.....................................................<br>
@@ -294,7 +310,12 @@
             const headSig = urlParams.get('headSig');
             const deputySig = urlParams.get('deputySig');
             const directorSig = urlParams.get('directorSig');
+            const headSignerName = urlParams.get('headSignerName');
             
+            if (headSignerName) {
+                document.getElementById('dynHeadSignerName').innerText = headSignerName;
+            }
+
             if (headSig) {
                 const img = document.getElementById('sigImgHead');
                 img.src = headSig;
