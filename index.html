@@ -10,6 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
     <style>
         :root {
             --primary-color: #515ada;
@@ -1171,21 +1172,82 @@
                     <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
                     <textarea id="adminCommentTextModal" rows="3" placeholder="ระบุข้อคิดเห็น (ถ้ามี)" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);"></textarea>
                 </div>
+                                <!-- Signature Pad -->
+                <div id="signature-container" style="margin-top:15px;display:none;">
+                    <label style="font-weight:600;color:var(--text-color);margin-bottom:8px;display:block;">✍️ ลายเซ็นผู้บริหาร (วาดหรือแนบไฟล์):</label>
+                    <div style="border:2px dashed var(--medium-gray);border-radius:var(--border-radius);background:#fff;overflow:hidden;position:relative;">
+                        <canvas id="signature-pad-canvas" width="500" height="180" style="touch-action:none;width:100%;display:block;cursor:crosshair;"></canvas>
+                    </div>
+                    <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                        <button type="button" onclick="clearSignaturePad()" class="custom-button" style="background:#e74c3c;padding:6px 14px;font-size:0.85rem;"><i class="fas fa-eraser"></i> ล้างลายเซ็น</button>
+                        <label style="font-size:0.85rem;color:var(--dark-gray);cursor:pointer;border:1px solid var(--medium-gray);border-radius:8px;padding:6px 12px;">
+                            📎 แนบไฟล์ลายเซ็น (PNG/JPG)
+                            <input type="file" id="signature-file-upload" accept="image/png,image/jpeg" style="display:none;" onchange="handleSigFileUpload(event)">
+                        </label>
+                    </div>
+                </div>
                 <button type="button" id="updateStatusButtonModal" class="custom-button"><i class="fa-solid fa-floppy-disk"></i>บันทึกการเปลี่ยนแปลง</button>
                 <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>`;
-            document.getElementById('updateStatusButtonModal').onclick = () => updateSubmissionStatus(sub.id);
+            // Show signature pad for admin
+                const sigC = document.getElementById('signature-container');
+                if (sigC && currentAdminRole) { sigC.style.display = 'block'; setTimeout(initSignaturePad, 200); }
+                document.getElementById('updateStatusButtonModal').onclick = () => updateSubmissionStatus(sub.id);
             document.getElementById('backToListButtonModal').onclick = () => {
                 dv.style.display = 'none';
                 document.getElementById('admin-dashboard').style.display = 'block';
                 loadAdminSubmissions();
             };
         }
+        // === SIGNATURE PAD LOGIC ===
+        let _signaturePad = null;
+        let _uploadedSigDataUrl = null;
+
+        function initSignaturePad() {
+            const canvas = document.getElementById('signature-pad-canvas');
+            if (!canvas) return;
+            if (_signaturePad) { _signaturePad.clear(); return; }
+            _signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)', penColor: 'rgb(0,0,139)' });
+            function resizeSigCanvas() {
+                const ratio = Math.max(window.devicePixelRatio || 1, 1);
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = 180 * ratio;
+                canvas.getContext('2d').scale(ratio, ratio);
+                _signaturePad.clear();
+            }
+            window.addEventListener('resize', resizeSigCanvas);
+            setTimeout(resizeSigCanvas, 100);
+        }
+        function clearSignaturePad() {
+            if (_signaturePad) _signaturePad.clear();
+            _uploadedSigDataUrl = null;
+            const fileInput = document.getElementById('signature-file-upload');
+            if (fileInput) fileInput.value = '';
+        }
+        function handleSigFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                _uploadedSigDataUrl = e.target.result;
+                if (_signaturePad) {
+                    _signaturePad.clear();
+                    _signaturePad.fromDataURL(_uploadedSigDataUrl);
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        function getSignatureData() {
+            if (_uploadedSigDataUrl) return _uploadedSigDataUrl;
+            if (_signaturePad && !_signaturePad.isEmpty()) return _signaturePad.toDataURL('image/png');
+            return '';
+        }
+
         async function updateSubmissionStatus(submissionId) {
             const newStatus    = document.getElementById('newStatusModal').value;
             const adminComment = document.getElementById('adminCommentTextModal').value;
             Swal.fire({ title:'กำลังอัปเดต...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'updateSubmission', submissionId, newStatus, adminComment, adminRole: currentAdminRole }) });
+                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'updateSubmission', submissionId, newStatus, adminComment, adminRole: currentAdminRole, adminSignature: getSignatureData() }) });
                 const result = await res.json();
                 if (result.success) {
                     Swal.fire('สำเร็จ!','อัปเดตสถานะแล้ว','success');
