@@ -415,6 +415,7 @@
             <div id="admin-login">
                 <label for="adminRole">เข้าสู่ระบบในฐานะ:</label>
                 <select id="adminRole" style="margin-bottom: 15px;">
+                    <option value="head">หัวหน้ากลุ่มสาระการเรียนรู้</option>
                     <option value="deputy">รองผู้อำนวยการฝ่ายบริหารงานวิชาการ</option>
                     <option value="director">ผู้อำนวยการโรงเรียนสา</option>
                 </select>
@@ -436,6 +437,7 @@
                     <label for="statusFilter">กรองตามสถานะ:</label>
                     <select id="statusFilter">
                         <option value="ทั้งหมด">ทั้งหมด</option>
+                        <option value="รอหัวหน้าตรวจ">รอหัวหน้าตรวจ 🟡</option>
                         <option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option>
                         <option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option>
                         <option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option>
@@ -558,6 +560,7 @@
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7qN5tVTKT9BQ0kgDKp69t8OWfIstvlRNITxlqq7km6sATM5P9uPTPCngWTVdAfqP/exec';
         const ROLE_PASSWORDS = {
+            'head': 'head999',
             'deputy': 'deputy999',
             'director': 'admin999'
         };
@@ -997,17 +1000,19 @@
         }
         function updateDashboardForRole() {
             const filter = document.getElementById('statusFilter');
-            if (currentAdminRole === 'deputy') filter.value = 'รอรองฯตรวจ';
+            if (currentAdminRole === 'head') filter.value = 'รอหัวหน้าตรวจ';
+            else if (currentAdminRole === 'deputy') filter.value = 'รอรองฯตรวจ';
             else if (currentAdminRole === 'director') filter.value = 'รอผอ.อนุมัติ';
             else filter.value = 'ทั้งหมด';
         }
 
         function formatStatus(status) {
-            if (status === 'รอรองฯตรวจ')   return `<span class="status-pending">รอรองฯตรวจ 🟠</span>`;
-            if (status === 'รอผอ.อนุมัติ')   return `<span class="status-pending" style="background:#0dcaf0;color:white;">รอผอ.อนุมัติ 🔵</span>`;
-            if (status === 'รอแก้ไข')  return `<span class="status-revision">รอแก้ไข ❗</span>`;
-            if (status === 'อนุมัติแล้ว') return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
-            return status || 'รอรองฯตรวจ 🟠';
+            if (status === 'รอหัวหน้าตรวจ') return `<span class="status-pending">รอหัวหน้าตรวจ 🟡</span>`;
+            if (status === 'รอรองฯตรวจ')   return `<span class="status-pending" style="background:#fd7e14;color:white;">รอรองฯตรวจ 🟠</span>`;
+            if (status === 'รอผอ.อนุมัติ')  return `<span class="status-pending" style="background:#0dcaf0;color:white;">รอผอ.อนุมัติ 🔵</span>`;
+            if (status === 'รอแก้ไข')       return `<span class="status-revision">รอแก้ไข ❗</span>`;
+            if (status === 'อนุมัติแล้ว')   return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
+            return status || 'รอหัวหน้าตรวจ 🟡';
         }
 
         // ===== FORM SUBMIT =====
@@ -1159,9 +1164,10 @@
                 <div style="margin-top:1.5rem;">
                     <label><strong>เปลี่ยนสถานะเป็น:</strong></label>
                     <select id="newStatusModal" style="width:100%;padding:10px;margin-bottom:15px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);">
+                        ${currentAdminRole === 'head' ? `<option value="รอรองฯตรวจ">ผ่านเบื้องต้น - ส่งต่อให้รองฯ ตรวจ 🟠</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
                         ${currentAdminRole === 'deputy' ? `<option value="รอผอ.อนุมัติ">ผ่าน - ส่งต่อให้ ผอ. อนุมัติ 🔵</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
                         ${currentAdminRole === 'director' ? `<option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
-                        ${!currentAdminRole ? `<option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option><option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option><option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">รอแก้ไข ❗</option>` : ''}
+                        ${!currentAdminRole ? `<option value="รอหัวหน้าตรวจ">รอหัวหน้าตรวจ 🟡</option><option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option><option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option><option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">รอแก้ไข ❗</option>` : ''}
                     </select>
                     <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
                     <textarea id="adminCommentTextModal" rows="3" placeholder="ระบุข้อคิดเห็น (ถ้ามี)" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);"></textarea>
@@ -1194,7 +1200,8 @@
                     setTimeout(initSignaturePad, 200);
                     const headNameContainer = document.getElementById('head-name-input-container');
                     if (headNameContainer) {
-                        headNameContainer.style.display = 'none';
+                        headNameContainer.style.display = currentAdminRole === 'head' ? 'block' : 'none';
+                        if (currentAdminRole === 'head') document.getElementById('head-signer-name').value = '';
                     }
                 }
                 document.getElementById('updateStatusButtonModal').onclick = () => updateSubmissionStatus(sub.id);
@@ -1270,7 +1277,7 @@
                     newStatus,
                     adminComment,
                     adminRole: currentAdminRole,
-                    headSignerName: ''
+                    headSignerName: (document.getElementById('head-signer-name') ? document.getElementById('head-signer-name').value : '')
                 });
                 // append signature แยกต่างหากเพื่อป้องกัน URLSearchParams encode ขนาดใหญ่
                 if (sigData) payload.append('adminSignature', sigData);
