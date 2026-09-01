@@ -383,27 +383,21 @@
                 <span class="icon-bubble"><i class="fa-solid fa-cloud-arrow-down"></i></span>
                 <h2>ดาวน์โหลดเอกสาร</h2>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
-                <div style="text-align: center; padding: 40px 20px; background-color: #fff9e6; border-radius: var(--border-radius); border: 2px dashed #f39c12; grid-column: 1 / -1; box-shadow: 0 4px 15px rgba(243, 156, 18, 0.15);">
-                    <i class="fa-solid fa-folder-open" style="font-size: 4.5em; color: #f39c12; margin-bottom: 15px; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));"></i>
-                    <h3 style="margin-top: 10px; color: var(--primary-color); font-size: 1.5em;">แบบฟอร์มระบบเรียนรู้</h3>
-                    <p style="color: var(--dark-gray); margin-bottom: 25px; font-size: 1.1em;">ดาวน์โหลดไฟล์แบบฟอร์มการเขียนระบบเรียนรู้</p>
-                    <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-                        <a href="./basic-course.doc" download class="custom-button" style="font-size: 1em; padding: 12px 25px; background-color: #2b5797; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 12px rgba(43,87,151,0.4); font-weight: 600;">
-                            <i class="fa-solid fa-file-word" style="font-size: 1.2em;"></i> ระบบเรียนรู้ วิชาพื้นฐาน (DOC)
-                        </a>
-                        <a href="./basic-course.pdf" download class="custom-button" style="font-size: 1em; padding: 12px 25px; background-color: #d32f2f; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 12px rgba(211,47,47,0.4); font-weight: 600;">
-                            <i class="fa-solid fa-file-pdf" style="font-size: 1.2em;"></i> ระบบเรียนรู้ วิชาพื้นฐาน (PDF)
-                        </a>
-                        <a href="./additional-course.doc" download class="custom-button" style="font-size: 1em; padding: 12px 25px; background-color: #2b5797; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 12px rgba(43,87,151,0.4); font-weight: 600;">
-                            <i class="fa-solid fa-file-word" style="font-size: 1.2em;"></i> ระบบเรียนรู้ วิชาเพิ่มเติม (DOC)
-                        </a>
-                        <a href="./additional-course.pdf" download class="custom-button" style="font-size: 1em; padding: 12px 25px; background-color: #d32f2f; text-decoration: none; border-radius: 30px; box-shadow: 0 4px 12px rgba(211,47,47,0.4); font-weight: 600;">
-                            <i class="fa-solid fa-file-pdf" style="font-size: 1.2em;"></i> ระบบเรียนรู้ วิชาเพิ่มเติม (PDF)
-                        </a>
-                    </div>
-                </div>
-
+            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray); margin-bottom: 25px;">
+                <i class="fa-solid fa-file-word" style="font-size: 4em; color: #2b5797; margin-bottom: 15px;"></i>
+                <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้</h3>
+                <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2569</p>
+                <button type="button" onclick="downloadFormFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (ODT)
+                </button>
+            </div>
+            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
+                <i class="fa-solid fa-file-pdf" style="font-size: 4em; color: #d32f2f; margin-bottom: 15px;"></i>
+                <h3 style="margin-top: 10px; color: var(--primary-color);">เอกสาร PDF</h3>
+                <p style="color: var(--dark-gray); margin-bottom: 25px;">คู่มือและเอกสารประกอบการใช้งาน</p>
+                <button type="button" onclick="downloadPdfFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px; background-color: #d32f2f;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (PDF)
+                </button>
             </div>
         </section>
 
@@ -418,7 +412,13 @@
                 </h2>
             </div>
             <div id="admin-login">
-                <label for="adminPassword">รหัสผ่านผู้บริหาร:</label>
+                <label for="adminRole">เข้าสู่ระบบในฐานะ:</label>
+                <select id="adminRole" style="margin-bottom: 15px;">
+                    <option value="head">หัวหน้ากลุ่มสาระการเรียนรู้</option>
+                    <option value="deputy">รองผู้อำนวยการฝ่ายบริหารงานวิชาการ</option>
+                    <option value="director">ผู้อำนวยการโรงเรียนสา</option>
+                </select>
+                <label for="adminPassword">รหัสผ่าน:</label>
                 <input type="password" id="adminPassword" name="adminPassword" placeholder="กรอกรหัสผ่าน">
                 <button type="button" id="loginButton"><i class="fa-solid fa-wand-magic-sparkles"></i>เข้าสู่ระบบ</button>
             </div>
@@ -436,9 +436,11 @@
                     <label for="statusFilter">กรองตามสถานะ:</label>
                     <select id="statusFilter">
                         <option value="ทั้งหมด">ทั้งหมด</option>
-                        <option value="รอตรวจ">รอตรวจ ⭐</option>
+                        <option value="รอหัวหน้าตรวจ">รอหัวหน้าตรวจ 🟡</option>
+                        <option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option>
+                        <option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option>
+                        <option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option>
                         <option value="รอแก้ไข">รอแก้ไข ❗</option>
-                        <option value="ตรวจแล้ว">ตรวจแล้ว ✅</option>
                     </select>
                     <button type="button" id="refreshAdminList"><i class="fa-solid fa-arrows-rotate"></i>โหลดข้อมูล</button>
                 </div>
@@ -556,7 +558,13 @@
 
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7qN5tVTKT9BQ0kgDKp69t8OWfIstvlRNITxlqq7km6sATM5P9uPTPCngWTVdAfqP/exec';
-        const ADMIN_PASSWORD_HASH = 'admin999';
+        const ROLE_PASSWORDS = {
+            'head': 'head999',
+            'deputy': 'deputy999',
+            'director': 'admin999'
+        };
+        let currentAdminRole = null;
+        let currentAdminRoleName = '';
         const GOOGLE_DOC_ID = '1UTxFsp2OcMqZS41HlPKUFy03jMaas5Hy';
         const GOOGLE_DRIVE_PDF_ID = '1RFdYMPyk9u5-cmGaJoF-bPUJCH0MYALc';
 
@@ -989,11 +997,21 @@
             }
             c.innerHTML = html;
         }
+        function updateDashboardForRole() {
+            const filter = document.getElementById('statusFilter');
+            if (currentAdminRole === 'head') filter.value = 'รอหัวหน้าตรวจ';
+            else if (currentAdminRole === 'deputy') filter.value = 'รอรองฯตรวจ';
+            else if (currentAdminRole === 'director') filter.value = 'รอผอ.อนุมัติ';
+            else filter.value = 'ทั้งหมด';
+        }
+
         function formatStatus(status) {
-            if (status === 'รอตรวจ')   return `<span class="status-pending">รอตรวจ ⭐</span>`;
+            if (status === 'รอหัวหน้าตรวจ')   return `<span class="status-pending">รอหัวหน้าตรวจ 🟡</span>`;
+            if (status === 'รอรองฯตรวจ')   return `<span class="status-pending" style="background:#fd7e14;color:white;">รอรองฯตรวจ 🟠</span>`;
+            if (status === 'รอผอ.อนุมัติ')   return `<span class="status-pending" style="background:#0dcaf0;color:white;">รอผอ.อนุมัติ 🔵</span>`;
             if (status === 'รอแก้ไข')  return `<span class="status-revision">รอแก้ไข ❗</span>`;
-            if (status === 'ตรวจแล้ว') return `<span class="status-approved">ตรวจแล้ว ✅</span>`;
-            return status || 'รอตรวจ ⭐';
+            if (status === 'อนุมัติแล้ว') return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
+            return status || 'รอหัวหน้าตรวจ 🟡';
         }
 
         // ===== FORM SUBMIT =====
@@ -1035,11 +1053,16 @@
 
         // ===== ADMIN LOGIN =====
         document.getElementById('loginButton').addEventListener('click', () => {
-            if (document.getElementById('adminPassword').value === ADMIN_PASSWORD_HASH) {
-                Swal.fire({ title:'เข้าสู่ระบบสำเร็จ!', icon:'success', timer:1500, showConfirmButton:false });
+            const selectedRole = document.getElementById('adminRole').value;
+            const pw = document.getElementById('adminPassword').value;
+            if (pw === ROLE_PASSWORDS[selectedRole]) {
+                currentAdminRole = selectedRole;
+                currentAdminRoleName = document.getElementById('adminRole').options[document.getElementById('adminRole').selectedIndex].text;
+                Swal.fire({ title:'เข้าสู่ระบบสำเร็จ!', text: `ยินดีต้อนรับ ${currentAdminRoleName}`, icon:'success', timer:1500, showConfirmButton:false });
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-section-content').style.display = 'block';
                 document.getElementById('admin-dashboard').style.display = 'block';
+                updateDashboardForRole();
                 loadAdminSubmissions();
             } else { Swal.fire('รหัสผ่านไม่ถูกต้อง!','กรุณาลองใหม่อีกครั้ง','error'); }
         });
@@ -1075,6 +1098,18 @@
                 row.insertCell().innerHTML = formatStatus(sub.status||'รอตรวจ');
                 const ac = row.insertCell();
                 const vb = document.createElement('button'); vb.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ'; vb.className='custom-button'; vb.onclick=()=>showSubmissionDetail(sub.id); ac.appendChild(vb);
+                const pb = document.createElement('button'); 
+                pb.innerHTML='<i class="fa-solid fa-print"></i> พิมพ์ปะหน้า'; 
+                pb.className='custom-button'; 
+                pb.style.backgroundColor = '#198754';
+                pb.onclick=() => {
+                    const params = new URLSearchParams();
+                    params.append('name', sub.fullName || '');
+                    params.append('area', sub.learningArea || '');
+                    params.append('status', sub.status || '');
+                    window.open('memo_design.html?' + params.toString(), '_blank');
+                };
+                ac.appendChild(pb);
                 const db = document.createElement('button'); db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ'; db.className='custom-button delete-button'; db.onclick=()=>confirmDeleteSubmission(sub.id); ac.appendChild(db);
             });
         }
@@ -1128,12 +1163,13 @@
                 <div style="margin-top:1.5rem;">
                     <label><strong>เปลี่ยนสถานะเป็น:</strong></label>
                     <select id="newStatusModal" style="width:100%;padding:10px;margin-bottom:15px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);">
-                        <option value="รอตรวจ" ${sub.status==='รอตรวจ'?'selected':''}>รอตรวจ ⭐</option>
-                        <option value="รอแก้ไข" ${sub.status==='รอแก้ไข'?'selected':''}>รอแก้ไข ❗</option>
-                        <option value="ตรวจแล้ว" ${sub.status==='ตรวจแล้ว'?'selected':''}>ตรวจแล้ว ✅</option>
+                        ${currentAdminRole === 'head' ? `<option value="รอรองฯตรวจ">ผ่านเบื้องต้น - ส่งต่อให้รองฯ ตรวจ 🟠</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
+                        ${currentAdminRole === 'deputy' ? `<option value="รอผอ.อนุมัติ">ผ่าน - ส่งต่อให้ ผอ. อนุมัติ 🔵</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
+                        ${currentAdminRole === 'director' ? `<option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
+                        ${!currentAdminRole ? `<option value="รอหัวหน้าตรวจ">รอหัวหน้าตรวจ 🟡</option><option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option><option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option><option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">รอแก้ไข ❗</option>` : ''}
                     </select>
-                    <label><strong>ความคิดเห็นผู้บริหาร:</strong></label>
-                    <textarea id="adminCommentTextModal" rows="3" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);">${sub.adminComment||''}</textarea>
+                    <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
+                    <textarea id="adminCommentTextModal" rows="3" placeholder="ระบุข้อคิดเห็น (ถ้ามี)" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);"></textarea>
                 </div>
                 <button type="button" id="updateStatusButtonModal" class="custom-button"><i class="fa-solid fa-floppy-disk"></i>บันทึกการเปลี่ยนแปลง</button>
                 <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>`;
@@ -1149,7 +1185,7 @@
             const adminComment = document.getElementById('adminCommentTextModal').value;
             Swal.fire({ title:'กำลังอัปเดต...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'updateSubmission', submissionId, newStatus, adminComment }) });
+                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'updateSubmission', submissionId, newStatus, adminComment, adminRole: currentAdminRole }) });
                 const result = await res.json();
                 if (result.success) {
                     Swal.fire('สำเร็จ!','อัปเดตสถานะแล้ว','success');
