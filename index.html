@@ -1174,6 +1174,11 @@
                 </div>
                                 <!-- Signature Pad -->
                 <div id="signature-container" style="margin-top:15px;display:none;">
+                    <!-- ชื่อหัวหน้าสาระ (แสดงเฉพาะเมื่อล็อกอินเป็นหัวหน้า) -->
+                    <div id="head-name-input-container" style="display:none; margin-bottom:12px;">
+                        <label style="font-weight:600;color:var(--text-color);margin-bottom:6px;display:block;">👤 ชื่อหัวหน้ากลุ่มสาระผู้ตรวจ:</label>
+                        <input type="text" id="head-signer-name" placeholder="เช่น นายสมชาย ใจดี" style="width:100%;padding:10px 14px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);font-family:var(--font-family);font-size:1rem;">
+                    </div>
                     <label style="font-weight:600;color:var(--text-color);margin-bottom:8px;display:block;">✍️ ลายเซ็นผู้บริหาร (วาดหรือแนบไฟล์):</label>
                     <div style="border:2px dashed var(--medium-gray);border-radius:var(--border-radius);background:#fff;overflow:hidden;position:relative;">
                         <canvas id="signature-pad-canvas" width="500" height="180" style="touch-action:none;width:100%;display:block;cursor:crosshair;"></canvas>
@@ -1190,7 +1195,15 @@
                 <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>`;
             // Show signature pad for admin
                 const sigC = document.getElementById('signature-container');
-                if (sigC && currentAdminRole) { sigC.style.display = 'block'; setTimeout(initSignaturePad, 200); }
+                if (sigC && currentAdminRole) { 
+                    sigC.style.display = 'block'; 
+                    setTimeout(initSignaturePad, 200);
+                    const headNameContainer = document.getElementById('head-name-input-container');
+                    if (headNameContainer) {
+                        headNameContainer.style.display = currentAdminRole === 'head' ? 'block' : 'none';
+                        if (currentAdminRole === 'head') document.getElementById('head-signer-name').value = '';
+                    }
+                }
                 document.getElementById('updateStatusButtonModal').onclick = () => updateSubmissionStatus(sub.id);
             document.getElementById('backToListButtonModal').onclick = () => {
                 dv.style.display = 'none';
@@ -1247,7 +1260,7 @@
             const adminComment = document.getElementById('adminCommentTextModal').value;
             Swal.fire({ title:'กำลังอัปเดต...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'updateSubmission', submissionId, newStatus, adminComment, adminRole: currentAdminRole, adminSignature: getSignatureData() }) });
+                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'updateSubmission', submissionId, newStatus, adminComment, adminRole: currentAdminRole, adminSignature: getSignatureData(), headSignerName: (document.getElementById('head-signer-name') ? document.getElementById('head-signer-name').value : '') }) });
                 const result = await res.json();
                 if (result.success) {
                     Swal.fire('สำเร็จ!','อัปเดตสถานะแล้ว','success');
