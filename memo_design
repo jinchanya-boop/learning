@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ใบปะหน้า - บันทึกข้อความอนุมัติ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #515ada;
+            --success-color: #27ae60;
+        }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #525659; /* สีพื้นหลังเหมือน PDF viewer */
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
+        }
+        
+        .memo-container {
+            background: #fff;
+            width: 100%;
+            max-width: 850px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .memo-header-bar {
+            background: #323639;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .memo-header-bar h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .action-buttons button {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Prompt', sans-serif;
+            transition: all 0.3s;
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        .action-buttons button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* รูปแบบกระดาษบันทึกข้อความ */
+        .memo-paper {
+            padding: 40px 60px 40px 70px;
+            font-family: 'Sarabun', serif;
+            font-size: 18px; /* ปรับขนาดให้เล็กลง */
+            color: #000;
+            background-color: white;
+            min-height: 800px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .krut-logo {
+            position: absolute;
+            top: 50px;
+            left: 80px;
+            width: 60px;
+        }
+
+        .memo-title {
+            text-align: center;
+            font-size: 28px; /* ปรับให้เล็กลง */
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .memo-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .memo-label {
+            font-weight: bold;
+            font-size: 20px; /* ปรับให้เล็กลง */
+            margin-right: 15px;
+            white-space: nowrap;
+        }
+
+        .memo-value {
+            flex-grow: 1;
+        }
+
+        .dotted-line {
+            display: inline-block;
+            border-bottom: 1px dotted #000;
+            min-width: 50px;
+        }
+
+        .content-body {
+            margin-top: 15px;
+            text-indent: 60px; /* ย่อหน้า 2.5cm */
+            text-align: justify;
+        }
+
+        /* ส่วนลายเซ็น */
+        .signature-block {
+            text-align: center;
+            margin-top: 40px;
+            display: inline-block;
+        }
+
+        .align-right-block {
+            display: flex;
+            justify-content: flex-end;
+            margin-right: 50px;
+        }
+
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 0 20px;
+        }
+
+        .director-comment {
+            margin-top: 40px;
+        }
+
+        .director-comment .memo-label {
+            font-size: 21px; /* 16pt สำหรับหัวข้อนี้ */
+        }
+
+        .comment-lines {
+            line-height: 2;
+            margin-top: 10px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .memo-header-bar { display: none; }
+            .memo-container { box-shadow: none; max-width: 100%; }
+            .memo-paper { padding: 40px 60px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="memo-container">
+        <!-- แถบเครื่องมือด้านบน (ไม่แสดงตอนพิมพ์) -->
+        <div class="memo-header-bar">
+            <h2><i class="fa-solid fa-file-pdf"></i> บันทึกข้อความ - โรงเรียนสา</h2>
+            <div class="action-buttons">
+                <button onclick="window.print()"><i class="fa-solid fa-print"></i> พิมพ์ / PDF</button>
+            </div>
+        </div>
+
+        <!-- กระดาษบันทึกข้อความ -->
+        <div class="memo-paper">
+            
+            <!-- ตราครุฑ -->
+            <img src="./krut.png" alt="ตราครุฑ" class="krut-logo">
+            
+            <div class="memo-title">บันทึกข้อความ</div>
+
+            <div class="memo-row">
+                <div class="memo-label">ส่วนราชการ</div>
+                <div class="memo-value">โรงเรียนสา อำเภอเวียงสา จังหวัดน่าน....................................................................................</div>
+            </div>
+
+            <div class="memo-row">
+                <div style="flex: 1; display: flex;">
+                    <div class="memo-label">ที่</div>
+                    <div class="memo-value">วช ............/2569</div>
+                </div>
+                <div style="flex: 1; display: flex;">
+                    <div class="memo-label">วันที่</div>
+                    <div class="memo-value">......................................................................</div>
+                </div>
+            </div>
+
+            <div class="memo-row">
+                <div class="memo-label">เรื่อง</div>
+                <div class="memo-value">ส่งระบบเรียนรู้ ภาคเรียนที่ <span id="dynTerm1">1</span> ปีการศึกษา <span id="dynYear1">2569</span></div>
+            </div>
+
+            <div class="memo-row" style="margin-bottom: 25px;">
+                <div class="memo-label">เรียน</div>
+                <div class="memo-value">ผู้อำนวยการโรงเรียนสา</div>
+            </div>
+
+            <div class="content-body">
+                ด้วยข้าพเจ้า <span class="dotted-line" style="width: 250px; text-align: center;" id="dynTeacherName">(ชื่อ-สกุล ครูผู้สอน)</span> ตำแหน่ง ครู ได้ดำเนินการจัดทำระบบเรียนรู้ ภาคเรียนที่ <span id="dynTerm2">1</span> ปีการศึกษา <span id="dynYear2">2569</span> ตามแนวทางหลักสูตรสถานศึกษาโรงเรียนสา และตามแบบบันทึกระบบเรียนรู้ที่โรงเรียนกำหนด ซึ่งประกอบด้วยเอกสารสำคัญ ได้แก่ (1) ด้านการวางแผนและออกแบบการเรียนรู้ ได้แก่ การวิเคราะห์ความสอดคล้องของมาตรฐานการเรียนรู้และตัวชี้วัดกับสาระการเรียนรู้ คำอธิบายรายวิชา โครงสร้างรายวิชา กำหนดการจัดการเรียนรู้ และการออกแบบกิจกรรมการเรียนรู้ (2) ด้านการจัดการเรียนรู้ ได้แก่ แผนการจัดการเรียนรู้และกิจกรรมการจัดการเรียนรู้ รวมถึงการประเมินแผนการจัดการเรียนรู้ (3) ด้านการวัดและประเมินผลการเรียนรู้ ได้แก่ การวัดและประเมินผลรายวิชา การกำหนดภาระงานที่สำคัญ แผนการวัดและประเมินผลตามสภาพจริง และการประเมินคุณภาพเครื่องมือวัดและประเมินผล (4) ด้านการวิเคราะห์และพัฒนาผู้เรียน ได้แก่ การวิเคราะห์ผู้เรียนเป็นรายบุคคล การสรุปผลการวิเคราะห์ผู้เรียน การจัดกิจกรรมปรับพื้นฐาน และรายงานผลการพัฒนาคุณภาพผู้เรียน
+            </div>
+            
+            <div class="content-body">
+                ทั้งนี้ เพื่อใช้เป็นแนวทางในการจัดการเรียนการสอน และเป็นข้อมูลประกอบการดำเนินงานด้านวิชาการของสถานศึกษา จึงขอส่งระบบเรียนรู้ดังกล่าว
+            </div>
+
+            <div class="content-body">
+                จึงเรียนมาเพื่อโปรดทราบและพิจารณา
+            </div>
+
+            <!-- ลายเซ็นครู (ชิดขวา) -->
+            <div class="align-right-block">
+                <div class="signature-block">
+                    ลงชื่อ <span id="dynTeacherSig" style="font-family: 'Sarabun', serif; font-size: 24px; color: #000080; font-style: italic; padding: 0 10px;">.....................................................</span><br>
+                    ( <span id="dynTeacherNameSig">....................................................</span> )<br>
+                    ตำแหน่ง ครู
+                </div>
+            </div>
+
+            <!-- ลายเซ็นหัวหน้าหมวด และ รองวิชาการ (2 คอลัมน์) -->
+            <div class="signature-row">
+                <div class="signature-block" style="margin-top: 0; position: relative;">
+                    <img id="sigImgHead" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
+                    ลงชื่อ....................................................<br>
+                    (....................................................)<br>
+                    หัวหน้ากลุ่มสาระ<span id="dynArea">........................</span>
+                </div>
+                <div class="signature-block" style="margin-top: 0; position: relative;">
+                    <img id="sigImgDeputy" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
+                    ลงชื่อ....................................................<br>
+                    (นางสาวอริศรา ยากับ)<br>
+                    รองผู้อำนวยการกลุ่มงานบริหารวิชาการ
+                </div>
+            </div>
+
+            <!-- ความคิดเห็น ผอ. -->
+            <div class="director-comment">
+                <span class="memo-label" style="font-weight: normal;">ความคิดเห็นของผู้อำนวยการโรงเรียน</span><br>
+                <div class="comment-lines">
+                    ...................................................................................................................................................................................<br>
+                    ...................................................................................................................................................................................
+                </div>
+            </div>
+
+            <!-- ลายเซ็น ผอ. (ชิดขวา) -->
+            <div class="align-right-block" style="margin-top: -10px;">
+                <div class="signature-block" style="margin-top: 0; position: relative;">
+                    <img id="sigImgDirector" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
+                    ลงชื่อ.....................................................<br>
+                    (นางรัชนีวรรณ บุญทวี)<br>
+                    ผู้อำนวยการโรงเรียนสา
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // ดึงข้อมูลจาก URL Parameters (เช่น ?name=สมหญิง&area=คณิตศาสตร์)
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const name = urlParams.get('name');
+            const area = urlParams.get('area');
+            const term = urlParams.get('term') || '1';
+            const year = urlParams.get('year') || '2569';
+
+            if (name) {
+                document.getElementById('dynTeacherName').innerText = name;
+                document.getElementById('dynTeacherNameSig').innerText = name;
+                // สร้างลายเซ็นจำลอง (ฟอนต์เอียง) 
+                document.getElementById('dynTeacherSig').innerText = name.split(" ")[0]; // เอาแค่ชื่อหน้า
+            }
+            if (area) {
+                document.getElementById('dynArea').innerText = area;
+            }
+            
+            document.getElementById('dynTerm1').innerText = term;
+            document.getElementById('dynTerm2').innerText = term;
+            document.getElementById('dynYear1').innerText = year;
+            document.getElementById('dynYear2').innerText = year;
+
+            // Signature images from URL params
+            const headSig = urlParams.get('headSig');
+            const deputySig = urlParams.get('deputySig');
+            const directorSig = urlParams.get('directorSig');
+            
+            if (headSig) {
+                const img = document.getElementById('sigImgHead');
+                img.src = headSig;
+                img.style.display = 'block';
+            }
+            if (deputySig) {
+                const img = document.getElementById('sigImgDeputy');
+                img.src = deputySig;
+                img.style.display = 'block';
+            }
+            if (directorSig) {
+                const img = document.getElementById('sigImgDirector');
+                img.src = directorSig;
+                img.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>
