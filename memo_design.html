@@ -3,383 +3,446 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ใบปะหน้า - บันทึกข้อความ</title>
+    <title>ใบปะหน้า - บันทึกข้อความอนุมัติ</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;700&family=Prompt:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
-        body { font-family:'Prompt',sans-serif; background:#525659; display:flex; justify-content:center; padding:30px 15px; margin:0; }
-        .memo-container { background:#fff; width:100%; max-width:850px; box-shadow:0 10px 30px rgba(0,0,0,.5); border-radius:4px; overflow:hidden; }
-
-        .memo-header-bar { background:#323639; color:#fff; padding:12px 18px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; }
-        .memo-header-bar h2 { margin:0; font-size:.95rem; font-weight:500; }
-        .action-buttons { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-        .action-buttons button { background:rgba(255,255,255,.12); color:#fff; border:1px solid rgba(255,255,255,.25); padding:7px 14px; border-radius:5px; cursor:pointer; font-family:'Prompt',sans-serif; font-size:13px; transition:all .25s; display:inline-flex; align-items:center; gap:6px; }
-        .action-buttons button:hover { background:rgba(255,255,255,.28); }
-        .action-buttons .primary { background:#198754; border-color:#198754; }
-        .action-buttons .primary:hover { background:#157347; }
-        .sig-toggle { color:#ddd; font-size:12.5px; display:inline-flex; align-items:center; gap:6px; cursor:pointer; user-select:none; }
-
-        .notice { padding:10px 18px; font-size:13px; display:none; }
-        .notice.warn { background:#fff3cd; color:#856404; border-bottom:1px solid #ffe69c; }
-        .notice.err  { background:#f8d7da; color:#842029; border-bottom:1px solid #f5c2c7; }
-        .notice.ok   { background:#d1e7dd; color:#0f5132; border-bottom:1px solid #badbcc; }
-
-        /* ===== กระดาษ ===== */
-        .memo-paper { padding:38px 58px 40px 68px; font-family:'Sarabun',serif; font-size:17.5px; color:#000; background:#fff; min-height:1050px; line-height:1.45; position:relative; }
-        .krut-logo { position:absolute; top:44px; left:78px; width:58px; }
-        .memo-title { text-align:center; font-size:27px; font-weight:bold; margin:16px 0 18px; letter-spacing:1px; }
-        .memo-row { display:flex; margin-bottom:7px; }
-        .memo-label { font-weight:bold; font-size:19px; margin-right:14px; white-space:nowrap; }
-        .memo-value { flex-grow:1; }
-        .dotted-line { display:inline-block; border-bottom:1px dotted #000; min-width:50px; }
-        .content-body { margin-top:13px; text-indent:58px; text-align:justify; }
-
-        .signature-block { text-align:center; margin-top:34px; display:inline-block; }
-        .align-right-block { display:flex; justify-content:flex-end; margin-right:46px; }
-        .review-section { margin-top:22px; }
-        .review-section .sec-label { font-size:19px; }
-        .comment-lines { line-height:1.9; margin-top:6px; color:#555; letter-spacing:1px; }
-        .comment-filled { line-height:1.75; margin-top:6px; color:#000; padding-left:14px; }
-        .comment-filled div { margin-bottom:3px; }
-
-        /* กล่องความเห็นผู้ตรวจสอบ (ไม่มีลายเซ็น) */
-        .verify-box { margin-top:18px; border:1px solid #999; border-radius:6px; padding:10px 14px; background:#fbfbfb; display:none; }
-        .verify-box .vb-title { font-weight:bold; font-size:17px; margin-bottom:5px; }
-        .verify-box .vb-item { margin:3px 0 3px 10px; font-size:16.5px; }
-        .verify-box .vb-role { font-weight:bold; }
-
-        .sig-img { display:none; position:absolute; top:-40px; left:50%; transform:translateX(-50%); height:62px; max-width:230px; object-fit:contain; mix-blend-mode:multiply; z-index:5; }
-        body.hide-sig .sig-img { display:none !important; }
-
-        /* ===== ลายน้ำ "ฉบับร่าง" ===== */
-        .draft-watermark {
-            display:none;
-            position:absolute;
-            top:50%; left:50%;
-            transform:translate(-50%,-50%) rotate(-32deg);
-            font-family:'Sarabun',serif;
-            font-size:110px;
-            font-weight:700;
-            color:rgba(220,53,69,.15);
-            border:9px solid rgba(220,53,69,.15);
-            border-radius:18px;
-            padding:10px 46px;
-            letter-spacing:10px;
-            white-space:nowrap;
-            pointer-events:none;
-            z-index:50;
-            user-select:none;
+        :root {
+            --primary-color: #515ada;
+            --success-color: #27ae60;
         }
-        .draft-watermark small {
-            display:block;
-            font-size:24px;
-            letter-spacing:3px;
-            text-align:center;
-            margin-top:4px;
-            font-weight:400;
+        body {
+            font-family: 'Prompt', sans-serif;
+            background-color: #525659; /* สีพื้นหลังเหมือน PDF viewer */
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            margin: 0;
         }
-        body.is-draft .draft-watermark { display:block; }
+        
+        .memo-container {
+            background: #fff;
+            width: 100%;
+            max-width: 850px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .memo-header-bar {
+            background: #323639;
+            color: white;
+            padding: 12px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .memo-header-bar h2 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .action-buttons button {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 6px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-family: 'Prompt', sans-serif;
+            transition: all 0.3s;
+            margin-left: 8px;
+            font-size: 14px;
+        }
+
+        .action-buttons button:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        /* รูปแบบกระดาษบันทึกข้อความ */
+        .memo-paper {
+            padding: 40px 60px 40px 70px;
+            font-family: 'Sarabun', serif;
+            font-size: 18px; /* ปรับขนาดให้เล็กลง */
+            color: #000;
+            background-color: white;
+            min-height: 800px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .krut-logo {
+            position: absolute;
+            top: 50px;
+            left: 80px;
+            width: 60px;
+        }
+
+        .memo-title {
+            text-align: center;
+            font-size: 28px; /* ปรับให้เล็กลง */
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        .memo-row {
+            display: flex;
+            margin-bottom: 8px;
+        }
+
+        .memo-label {
+            font-weight: bold;
+            font-size: 20px; /* ปรับให้เล็กลง */
+            margin-right: 15px;
+            white-space: nowrap;
+        }
+
+        .memo-value {
+            flex-grow: 1;
+        }
+
+        .dotted-line {
+            display: inline-block;
+            border-bottom: 1px dotted #000;
+            min-width: 50px;
+        }
+
+        .content-body {
+            margin-top: 15px;
+            text-indent: 60px; /* ย่อหน้า 2.5cm */
+            text-align: justify;
+        }
+
+        /* ส่วนลายเซ็น */
+        .signature-block {
+            text-align: center;
+            margin-top: 40px;
+            display: inline-block;
+        }
+
+        .align-right-block {
+            display: flex;
+            justify-content: flex-end;
+            margin-right: 50px;
+        }
+
+        .signature-row {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 0 20px;
+        }
+
+        .director-comment {
+            margin-top: 40px;
+        }
+
+        .director-comment .memo-label {
+            font-size: 21px; /* 16pt สำหรับหัวข้อนี้ */
+        }
+
+        .comment-lines {
+            line-height: 2;
+            margin-top: 10px;
+            color: #666;
+            letter-spacing: 2px;
+        }
+
+        /* ===== FILL-IN PANEL (ซ่อนตอนพิมพ์) ===== */
+        .fill-panel {
+            background: #fffbe6;
+            border: 2px dashed #f39c12;
+            border-radius: 8px;
+            padding: 14px 20px;
+            margin: 0 0 16px 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: flex-end;
+        }
+        .fill-panel label {
+            font-family: 'Prompt', sans-serif;
+            font-size: 0.82em;
+            color: #7a5100;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+        .fill-panel input[type=text] {
+            font-family: 'Prompt', sans-serif;
+            font-size: 0.95em;
+            padding: 6px 10px;
+            border: 1px solid #f0c070;
+            border-radius: 6px;
+            width: 220px;
+            background: #fff;
+        }
+        .fill-panel .hint {
+            font-family: 'Prompt', sans-serif;
+            font-size: 0.78em;
+            color: #e67e22;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* ===== INLINE EDITABLE DISPLAY ===== */
+        .memo-editable-display {
+            border-bottom: 1px dotted #000;
+            min-width: 60px;
+            display: inline-block;
+            padding: 0 4px;
+            color: #000;
+        }
+        .memo-editable-display.empty {
+            color: #999;
+        }
 
         @media print {
-            body { background:#fff; padding:0; }
-            .memo-header-bar, .notice { display:none !important; }
-            .memo-container { box-shadow:none; max-width:100%; }
-            .memo-paper { padding:38px 58px; }
-            .sig-img.is-loaded { display:block !important; }
-            body.hide-sig .sig-img { display:none !important; }
-            body.is-draft .draft-watermark { display:block !important; }
-            * { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+            body { background: white; padding: 0; }
+            .memo-header-bar { display: none; }
+            .fill-panel { display: none; }
+            .memo-container { box-shadow: none; max-width: 100%; }
+            .memo-paper { padding: 40px 60px; }
         }
     </style>
 </head>
 <body>
 
-<div class="memo-container">
-    <div class="memo-header-bar">
-        <h2><i class="fa-solid fa-file-lines"></i> ใบปะหน้าบันทึกข้อความ — โรงเรียนสา</h2>
-        <div class="action-buttons">
-            <label class="sig-toggle"><input type="checkbox" id="chkSig" checked onchange="toggleSig()"> แสดงลายเซ็น</label>
-            <button onclick="window.print()"><i class="fa-solid fa-print"></i> พิมพ์</button>
-            <button class="primary" id="btnPdf" onclick="downloadPdf()"><i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลด PDF</button>
+    <div class="memo-container">
+        <!-- แถบเครื่องมือด้านบน (ไม่แสดงตอนพิมพ์) -->
+        <div class="memo-header-bar">
+            <h2><i class="fa-solid fa-file-pdf"></i> บันทึกข้อความ - โรงเรียนสา</h2>
+            <div class="action-buttons">
+                <button onclick="window.print()"><i class="fa-solid fa-print"></i> พิมพ์ / PDF</button>
+            </div>
+        </div>
+
+        <!-- แผงกรอกข้อมูล (ซ่อนตอนพิมพ์) -->
+        <div class="fill-panel" id="fillPanel">
+            <div>
+                <label for="inputMemoNo">📝 เลขที่บันทึกข้อความ</label>
+                <input type="text" id="inputMemoNo" placeholder="เช่น วช 045/2569" maxlength="30">
+            </div>
+            <div>
+                <label for="inputMemoDate">📅 วันที่</label>
+                <input type="text" id="inputMemoDate" placeholder="เช่น 5 มกราคม 2569" maxlength="40">
+            </div>
+            <div class="hint">
+                <i class="fa-solid fa-circle-info"></i>
+                กรอกข้อมูลด้านบนก่อนพิมพ์ — ข้อมูลจะแสดงในเอกสารอัตโนมัติ
+            </div>
+        </div>
+
+        <!-- กระดาษบันทึกข้อความ -->
+        <div class="memo-paper">
+            
+            <!-- ตราครุฑ -->
+            <img src="./krut.png" alt="ตราครุฑ" class="krut-logo">
+            
+            <div class="memo-title">บันทึกข้อความ</div>
+
+            <div class="memo-row">
+                <div class="memo-label">ส่วนราชการ</div>
+                <div class="memo-value">โรงเรียนสา อำเภอเวียงสา จังหวัดน่าน....................................................................................</div>
+            </div>
+
+            <div class="memo-row">
+                <div style="flex: 1; display: flex;">
+                    <div class="memo-label">ที่</div>
+                    <div class="memo-value">
+                        <span id="displayMemoNo" class="memo-editable-display empty">............/2569</span>
+                    </div>
+                </div>
+                <div style="flex: 1; display: flex;">
+                    <div class="memo-label">วันที่</div>
+                    <div class="memo-value">
+                        <span id="displayMemoDate" class="memo-editable-display empty">......................................................................</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="memo-row">
+                <div class="memo-label">เรื่อง</div>
+                <div class="memo-value">ส่งระบบเรียนรู้ ภาคเรียนที่ <span id="dynTerm1">1</span> ปีการศึกษา <span id="dynYear1">2569</span></div>
+            </div>
+
+            <div class="memo-row" style="margin-bottom: 25px;">
+                <div class="memo-label">เรียน</div>
+                <div class="memo-value">ผู้อำนวยการโรงเรียนสา</div>
+            </div>
+
+            <div class="content-body">
+                ด้วยข้าพเจ้า <span class="dotted-line" style="width: 250px; text-align: center;" id="dynTeacherName">(ชื่อ-สกุล ครูผู้สอน)</span> ตำแหน่ง ครู ได้ดำเนินการจัดทำระบบเรียนรู้ ภาคเรียนที่ <span id="dynTerm2">1</span> ปีการศึกษา <span id="dynYear2">2569</span> ตามแนวทางหลักสูตรสถานศึกษาโรงเรียนสา และตามแบบบันทึกระบบเรียนรู้ที่โรงเรียนกำหนด ซึ่งประกอบด้วยเอกสารสำคัญ ได้แก่ (1) ด้านการวางแผนและออกแบบการเรียนรู้ ได้แก่ การวิเคราะห์ความสอดคล้องของมาตรฐานการเรียนรู้และตัวชี้วัดกับสาระการเรียนรู้ คำอธิบายรายวิชา โครงสร้างรายวิชา กำหนดการจัดการเรียนรู้ และการออกแบบกิจกรรมการเรียนรู้ (2) ด้านการจัดการเรียนรู้ ได้แก่ แผนการจัดการเรียนรู้และกิจกรรมการจัดการเรียนรู้ รวมถึงการประเมินแผนการจัดการเรียนรู้ (3) ด้านการวัดและประเมินผลการเรียนรู้ ได้แก่ การวัดและประเมินผลรายวิชา การกำหนดภาระงานที่สำคัญ แผนการวัดและประเมินผลตามสภาพจริง และการประเมินคุณภาพเครื่องมือวัดและประเมินผล (4) ด้านการวิเคราะห์และพัฒนาผู้เรียน ได้แก่ การวิเคราะห์ผู้เรียนเป็นรายบุคคล การสรุปผลการวิเคราะห์ผู้เรียน การจัดกิจกรรมปรับพื้นฐาน และรายงานผลการพัฒนาคุณภาพผู้เรียน
+            </div>
+            
+            <div class="content-body">
+                ทั้งนี้ เพื่อใช้เป็นแนวทางในการจัดการเรียนการสอน และเป็นข้อมูลประกอบการดำเนินงานด้านวิชาการของสถานศึกษา จึงขอส่งระบบเรียนรู้ดังกล่าว
+            </div>
+
+            <div class="content-body">
+                จึงเรียนมาเพื่อโปรดทราบและพิจารณา
+            </div>
+
+            <!-- ลายเซ็นครู (ชิดขวา) -->
+            <div class="align-right-block">
+                <div class="signature-block">
+                    ลงชื่อ <span id="dynTeacherSig" style="font-family: 'Sarabun', serif; font-size: 24px; color: #000080; font-style: italic; padding: 0 10px;">.....................................................</span><br>
+                    ( <span id="dynTeacherNameSig">....................................................</span> )<br>
+                    ตำแหน่ง ครู
+                </div>
+            </div>
+
+            <!-- ความเห็นหัวหน้ากลุ่มสาระการเรียนรู้ -->
+            <div class="director-comment" style="margin-top: 25px;">
+                <span class="memo-label" style="font-weight: normal;">ความเห็นหัวหน้ากลุ่มสาระการเรียนรู้</span><br>
+                <div class="comment-lines">
+                    ...................................................................................................................................................................................<br>
+                    ...................................................................................................................................................................................
+                </div>
+            </div>
+            <div class="align-right-block" style="margin-top: -5px;">
+                <div class="signature-block" style="margin-top: 0; position: relative;">
+                    <img id="sigImgHead" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
+                    ลงชื่อ....................................................<br>
+                    (<span id="dynHeadSignerName">....................................................</span>)<br>
+                    หัวหน้ากลุ่มสาระ<span id="dynArea">........................</span>
+                </div>
+            </div>
+
+            <!-- ความเห็นรองผู้อำนวยการฝ่ายบริหารงานวิชาการ -->
+            <div class="director-comment" style="margin-top: 25px;">
+                <span class="memo-label" style="font-weight: normal;">ความเห็นรองผู้อำนวยการฝ่ายบริหารงานวิชาการ</span><br>
+                <div class="comment-lines">
+                    ...................................................................................................................................................................................<br>
+                    ...................................................................................................................................................................................
+                </div>
+            </div>
+            <div class="align-right-block" style="margin-top: -5px;">
+                <div class="signature-block" style="margin-top: 0; position: relative;">
+                    <img id="sigImgDeputy" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
+                    ลงชื่อ....................................................<br>
+                    (นางสาวอริศรา ยากับ)<br>
+                    รองผู้อำนวยการกลุ่มงานบริหารวิชาการ
+                </div>
+            </div>
+
+            <!-- ความเห็นผู้อำนวยการโรงเรียนสา -->
+            <div class="director-comment" style="margin-top: 25px;">
+                <span class="memo-label" style="font-weight: normal;">ความเห็นผู้อำนวยการโรงเรียนสา</span><br>
+                <div class="comment-lines">
+                    ...................................................................................................................................................................................<br>
+                    ...................................................................................................................................................................................
+                </div>
+            </div>
+            <div class="align-right-block" style="margin-top: -5px;">
+                <div class="signature-block" style="margin-top: 0; position: relative;">
+                    <img id="sigImgDirector" src="" style="display:none; position:absolute; top:-25px; left:50%; transform:translateX(-50%); height:60px; opacity:0.85;">
+                    ลงชื่อ.....................................................<br>
+                    (นางรัชนีวรรณ บุญทวี)<br>
+                    ผู้อำนวยการโรงเรียนสา
+                </div>
+            </div>
+
         </div>
     </div>
 
-    <div class="notice" id="noticeBar"></div>
-
-    <div class="memo-paper" id="memoPaper">
-        <img src="./krut.png" alt="ตราครุฑ" class="krut-logo" onerror="this.style.display='none'">
-
-        <div class="draft-watermark" id="draftWatermark">
-            ฉบับร่าง
-            <small id="draftStatusText">ยังลงนามไม่ครบ</small>
-        </div>
-
-        <div class="memo-title">บันทึกข้อความ</div>
-
-        <div class="memo-row">
-            <div class="memo-label">ส่วนราชการ</div>
-            <div class="memo-value">โรงเรียนสา อำเภอเวียงสา จังหวัดน่าน..................................................................................</div>
-        </div>
-
-        <div class="memo-row">
-            <div style="flex:1;display:flex;">
-                <div class="memo-label">ที่</div>
-                <div class="memo-value">วช ............/<span id="dynYearNo">2569</span></div>
-            </div>
-            <div style="flex:1;display:flex;">
-                <div class="memo-label">วันที่</div>
-                <div class="memo-value">..................................................................</div>
-            </div>
-        </div>
-
-        <div class="memo-row">
-            <div class="memo-label">เรื่อง</div>
-            <div class="memo-value">ส่งระบบเรียนรู้ ครั้งที่ <span id="dynRound">1</span> ภาคเรียนที่ <span id="dynTerm1">1</span> ปีการศึกษา <span id="dynYear1">2569</span></div>
-        </div>
-
-        <div class="memo-row" style="margin-bottom:20px;">
-            <div class="memo-label">เรียน</div>
-            <div class="memo-value">ผู้อำนวยการโรงเรียนสา</div>
-        </div>
-
-        <div class="content-body">
-            ด้วยข้าพเจ้า <span class="dotted-line" style="min-width:240px;text-align:center;" id="dynTeacherName">(ชื่อ-สกุล ครูผู้สอน)</span> ตำแหน่ง ครู กลุ่มสาระการเรียนรู้<span id="dynAreaInline">..................</span> ได้ดำเนินการจัดทำระบบเรียนรู้ ภาคเรียนที่ <span id="dynTerm2">1</span> ปีการศึกษา <span id="dynYear2">2569</span> ตามแนวทางหลักสูตรสถานศึกษาโรงเรียนสา และตามแบบบันทึกระบบเรียนรู้ที่โรงเรียนกำหนด ซึ่งประกอบด้วยเอกสารสำคัญ ได้แก่ (1) ด้านการวางแผนและออกแบบการเรียนรู้ (2) ด้านการจัดการเรียนรู้ (3) ด้านการวัดและประเมินผลการเรียนรู้ (4) ด้านการวิเคราะห์และพัฒนาผู้เรียน
-        </div>
-
-        <div class="content-body">
-            ทั้งนี้ เพื่อใช้เป็นแนวทางในการจัดการเรียนการสอน และเป็นข้อมูลประกอบการดำเนินงานด้านวิชาการของสถานศึกษา จึงขอส่งระบบเรียนรู้ดังกล่าว
-        </div>
-
-        <div class="content-body">จึงเรียนมาเพื่อโปรดทราบและพิจารณา</div>
-
-        <div class="align-right-block">
-            <div class="signature-block">
-                ลงชื่อ <span id="dynTeacherSig" style="font-size:23px;color:#000080;font-style:italic;padding:0 8px;">...............................................</span><br>
-                ( <span id="dynTeacherNameSig">..............................................</span> )<br>
-                ตำแหน่ง ครู
-            </div>
-        </div>
-
-        <!-- ✅ ความเห็นผู้ตรวจสอบความถูกต้อง (ไม่มีลายเซ็น) -->
-        <div class="verify-box" id="verifyBox">
-            <div class="vb-title">ผลการตรวจสอบความถูกต้องเบื้องต้น (งานระบบเรียนรู้)</div>
-            <div id="verifyItems"></div>
-        </div>
-
-        <!-- หัวหน้ากลุ่มสาระ -->
-        <div class="review-section">
-            <span class="sec-label">ความเห็นหัวหน้ากลุ่มสาระการเรียนรู้</span>
-            <div id="cmtHead"></div>
-        </div>
-        <div class="align-right-block" style="margin-top:-4px;">
-            <div class="signature-block" style="margin-top:0;position:relative;">
-                <img id="sigImgHead" class="sig-img" alt="">
-                ลงชื่อ..................................................<br>
-                (<span id="dynHeadSignerName">..................................................</span>)<br>
-                หัวหน้ากลุ่มสาระ<span id="dynArea">......................</span>
-            </div>
-        </div>
-
-        <!-- รองฯ -->
-        <div class="review-section">
-            <span class="sec-label">ความเห็นรองผู้อำนวยการฝ่ายบริหารงานวิชาการ</span>
-            <div id="cmtDeputy"></div>
-        </div>
-        <div class="align-right-block" style="margin-top:-4px;">
-            <div class="signature-block" style="margin-top:0;position:relative;">
-                <img id="sigImgDeputy" class="sig-img" alt="">
-                ลงชื่อ..................................................<br>
-                (นางสาวอริศรา ยากับ)<br>
-                รองผู้อำนวยการกลุ่มงานบริหารวิชาการ
-            </div>
-        </div>
-
-        <!-- ผอ. -->
-        <div class="review-section">
-            <span class="sec-label">ความเห็นผู้อำนวยการโรงเรียนสา</span>
-            <div id="cmtDirector"></div>
-        </div>
-        <div class="align-right-block" style="margin-top:-4px;">
-            <div class="signature-block" style="margin-top:0;position:relative;">
-                <img id="sigImgDirector" class="sig-img" alt="">
-                ลงชื่อ..................................................<br>
-                (นางรัชนีวรรณ บุญทวี)<br>
-                ผู้อำนวยการโรงเรียนสา
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    // ⚠️ ต้องเป็น URL เดียวกับใน index.html
-    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7qN5tVTKT9BQ0kgDKp69t8OWfIstvlRNITxlqq7km6sATM5P9uPTPCngWTVdAfqP/exec';
-
-    const DOTS = '.....................................................................................................................................';
-    let memoData = null;
-
-    function showNotice(type, html) {
-        const n = document.getElementById('noticeBar');
-        n.className = 'notice ' + type;
-        n.innerHTML = html;
-        n.style.display = 'block';
-    }
-
-    function escapeHtml(s) {
-        return String(s).replace(/[&<>"']/g, function (m) {
-            return ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' })[m];
-        });
-    }
-
-    function renderComment(targetId, list) {
-        const el = document.getElementById(targetId);
-        if (list && list.length) {
-            el.className = 'comment-filled';
-            el.innerHTML = list.map(function (c) { return '<div>- ' + escapeHtml(c) + '</div>'; }).join('');
-        } else {
-            el.className = 'comment-lines';
-            el.innerHTML = DOTS + '<br>' + DOTS;
-        }
-    }
-
-    function setSig(imgId, dataUrl) {
-        const img = document.getElementById(imgId);
-        if (!img || !dataUrl) return;
-        img.onload = function () { img.style.display = 'block'; img.classList.add('is-loaded'); };
-        img.src = dataUrl;
-    }
-
-    function toggleSig() {
-        document.body.classList.toggle('hide-sig', !document.getElementById('chkSig').checked);
-    }
-
-    /** ✅ เปิด/ปิดลายน้ำฉบับร่าง ตามสถานะ */
-    function applyDraftMode(status) {
-        const isApproved = (status === 'อนุมัติแล้ว');
-        document.body.classList.toggle('is-draft', !isApproved);
-        const t = document.getElementById('draftStatusText');
-        if (t && !isApproved) t.textContent = status || 'ยังลงนามไม่ครบ';
-        return isApproved;
-    }
-
-    async function loadMemo() {
-        const p = new URLSearchParams(window.location.search);
-        const id    = p.get('id');
-        const year  = p.get('year')  || '2569';
-        const term  = p.get('term')  || '1';
-        const round = p.get('round') || '1';
-
-        document.getElementById('dynTerm1').innerText  = term;
-        document.getElementById('dynTerm2').innerText  = term;
-        document.getElementById('dynYear1').innerText  = year;
-        document.getElementById('dynYear2').innerText  = year;
-        document.getElementById('dynYearNo').innerText = year;
-        document.getElementById('dynRound').innerText  = round;
-
-        // โหมดสำรอง: ถ้าไม่มี id ใช้ค่าจาก URL ตรง ๆ
-        if (!id) {
-            const nm = p.get('name'), ar = p.get('area');
-            if (nm) {
-                document.getElementById('dynTeacherName').innerText = nm;
-                document.getElementById('dynTeacherNameSig').innerText = nm;
-                document.getElementById('dynTeacherSig').innerText = nm.split(' ')[0];
-            }
-            if (ar) {
-                document.getElementById('dynArea').innerText = ar;
-                document.getElementById('dynAreaInline').innerText = ar;
-            }
-            renderComment('cmtHead', []); renderComment('cmtDeputy', []); renderComment('cmtDirector', []);
-            applyDraftMode('');
-            showNotice('warn', '⚠️ เปิดในโหมดฟอร์มเปล่า (ไม่ได้ระบุรหัสการส่งงาน) — ความเห็นและลายเซ็นจะไม่แสดง');
-            return;
-        }
-
-        showNotice('ok', '⏳ กำลังโหลดข้อมูล...');
-        try {
-            const url = APPS_SCRIPT_URL + '?action=getSubmissionForMemo&submissionId=' + encodeURIComponent(id) +
-                        '&year=' + year + '&term=' + term + '&round=' + round;
-            const res = await fetch(url);
-            const json = await res.json();
-            if (!json.success) throw new Error(json.message || 'โหลดข้อมูลไม่สำเร็จ');
-
-            const d = json.data;
-            memoData = d;
-
-            document.getElementById('dynTeacherName').innerText    = d.fullName || '';
-            document.getElementById('dynTeacherNameSig').innerText = d.fullName || '';
-            document.getElementById('dynTeacherSig').innerText     = (d.fullName || '').split(' ')[0] || '';
-            document.getElementById('dynArea').innerText           = d.learningArea || '';
-            document.getElementById('dynAreaInline').innerText     = d.learningArea || '';
-            document.getElementById('dynRound').innerText          = d.round || round;
-            if (d.headSignerName) document.getElementById('dynHeadSignerName').innerText = d.headSignerName;
-
-            const c = d.comments || {};
-            renderComment('cmtHead',     c.head);
-            renderComment('cmtDeputy',   c.deputy);
-            renderComment('cmtDirector', c.director);
-
-            // ความเห็นผู้ตรวจสอบ (เจ้าหน้าที่ / หัวหน้างาน) — ไม่มีลายเซ็น
-            const vItems = [];
-            (c.officer || []).forEach(function (t) { vItems.push('<div class="vb-item"><span class="vb-role">เจ้าหน้าที่งานระบบเรียนรู้:</span> ' + escapeHtml(t) + '</div>'); });
-            (c.chief   || []).forEach(function (t) { vItems.push('<div class="vb-item"><span class="vb-role">หัวหน้างานระบบเรียนรู้:</span> ' + escapeHtml(t) + '</div>'); });
-            if (vItems.length) {
-                document.getElementById('verifyItems').innerHTML = vItems.join('');
-                document.getElementById('verifyBox').style.display = 'block';
-            }
-
-            const s = d.signatures || {};
-            setSig('sigImgHead',     s.head);
-            setSig('sigImgDeputy',   s.deputy);
-            setSig('sigImgDirector', s.director);
-
-            // ✅ ลายน้ำ + ข้อความแจ้งสถานะ
-            const approved = applyDraftMode(d.status);
-            const btn = document.getElementById('btnPdf');
-
-            if (approved) {
-                showNotice('ok', '✅ เอกสารนี้ <b>อนุมัติแล้ว</b> — ดาวน์โหลด PDF ฉบับสมบูรณ์ได้เลย');
-                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลด PDF';
-            } else if (d.status === 'รอแก้ไข') {
-                showNotice('err', '❗ สถานะ: <b>รอแก้ไข</b> — กรุณาแก้ไขตามความเห็นผู้ตรวจ แล้วส่งใหม่');
-                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลด (ฉบับร่าง)';
+    <script>
+        // ===== LIVE UPDATE: เลขที่และวันที่ =====
+        document.getElementById('inputMemoNo').addEventListener('input', function() {
+            const val = this.value.trim();
+            const display = document.getElementById('displayMemoNo');
+            if (val) {
+                display.textContent = val;
+                display.classList.remove('empty');
             } else {
-                showNotice('warn', '⏳ สถานะปัจจุบัน: <b>' + escapeHtml(d.status || '-') + '</b> — เอกสารยังลงนามไม่ครบ จะมีลายน้ำ "ฉบับร่าง" กำกับ');
-                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down"></i> ดาวน์โหลด (ฉบับร่าง)';
+                display.textContent = '............/2569';
+                display.classList.add('empty');
             }
-        } catch (err) {
-            showNotice('err', '❌ ' + escapeHtml(err.message));
-            renderComment('cmtHead', []); renderComment('cmtDeputy', []); renderComment('cmtDirector', []);
-            applyDraftMode('');
-        }
-    }
+        });
 
-    async function downloadPdf() {
-        const btn = document.getElementById('btnPdf');
-        const old = btn.innerHTML;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> กำลังสร้าง...';
-        btn.disabled = true;
-        try {
-            if (document.fonts && document.fonts.ready) await document.fonts.ready;
-            await new Promise(r => setTimeout(r, 250));
-            const name = (memoData && memoData.fullName) ? memoData.fullName : 'ใบปะหน้า';
-            const suffix = document.body.classList.contains('is-draft') ? '_ฉบับร่าง' : '';
-            await html2pdf().set({
-                margin: 0,
-                filename: 'ใบปะหน้า_' + name + suffix + '.pdf',
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, backgroundColor: '#ffffff', scrollY: 0 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all', 'css'] }
-            }).from(document.getElementById('memoPaper')).save();
-        } catch (e) {
-            alert('สร้าง PDF ไม่สำเร็จ: ' + e.message + '\nลองใช้ปุ่ม "พิมพ์" แล้วเลือก Save as PDF แทนครับ');
-        } finally {
-            btn.innerHTML = old;
-            btn.disabled = false;
-        }
-    }
+        document.getElementById('inputMemoDate').addEventListener('input', function() {
+            const val = this.value.trim();
+            const display = document.getElementById('displayMemoDate');
+            if (val) {
+                display.textContent = val;
+                display.classList.remove('empty');
+            } else {
+                display.textContent = '......................................................................';
+                display.classList.add('empty');
+            }
+        });
 
-    document.addEventListener('DOMContentLoaded', loadMemo);
-</script>
+        // ดึงข้อมูลจาก URL Parameters (เช่น ?name=สมหญิง&area=คณิตศาสตร์)
+        document.addEventListener("DOMContentLoaded", function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            
+            const name = urlParams.get('name');
+            const area = urlParams.get('area');
+            const term = urlParams.get('term') || '1';
+            const year = urlParams.get('year') || '2569';
+
+            if (name) {
+                document.getElementById('dynTeacherName').innerText = name;
+                document.getElementById('dynTeacherNameSig').innerText = name;
+                // สร้างลายเซ็นจำลอง (ฟอนต์เอียง) 
+                document.getElementById('dynTeacherSig').innerText = name.split(" ")[0]; // เอาแค่ชื่อหน้า
+            }
+            if (area) {
+                document.getElementById('dynArea').innerText = area;
+            }
+            
+            document.getElementById('dynTerm1').innerText = term;
+            document.getElementById('dynTerm2').innerText = term;
+            document.getElementById('dynYear1').innerText = year;
+            document.getElementById('dynYear2').innerText = year;
+
+            // รับ memoNo และ date จาก URL params (optional)
+            const memoNo = urlParams.get('memoNo');
+            const memoDate = urlParams.get('date');
+
+            if (memoNo) {
+                document.getElementById('inputMemoNo').value = memoNo;
+                document.getElementById('displayMemoNo').textContent = memoNo;
+                document.getElementById('displayMemoNo').classList.remove('empty');
+            }
+            if (memoDate) {
+                document.getElementById('inputMemoDate').value = memoDate;
+                document.getElementById('displayMemoDate').textContent = memoDate;
+                document.getElementById('displayMemoDate').classList.remove('empty');
+            }
+
+            // Signature images from URL params
+            const headSig = urlParams.get('headSig');
+            const deputySig = urlParams.get('deputySig');
+            const directorSig = urlParams.get('directorSig');
+            const headSignerName = urlParams.get('headSignerName');
+            
+            if (headSignerName) {
+                document.getElementById('dynHeadSignerName').innerText = headSignerName;
+            }
+
+            if (headSig) {
+                const img = document.getElementById('sigImgHead');
+                img.src = headSig;
+                img.style.display = 'block';
+            }
+            if (deputySig) {
+                const img = document.getElementById('sigImgDeputy');
+                img.src = deputySig;
+                img.style.display = 'block';
+            }
+            if (directorSig) {
+                const img = document.getElementById('sigImgDirector');
+                img.src = directorSig;
+                img.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
