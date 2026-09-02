@@ -386,11 +386,15 @@
             let sigData = null;
             try {
                 const raw = sessionStorage.getItem('memo_sig_data');
+                console.log('📦 Raw sessionStorage:', raw); // DEBUG
                 if (raw) {
                     sigData = JSON.parse(raw);
+                    console.log('✅ Parsed sigData:', sigData); // DEBUG
                     sessionStorage.removeItem('memo_sig_data'); // ใช้ครั้งเดียวแล้วลบทิ้ง
                 }
-            } catch(e) {}
+            } catch(e) {
+                console.error('❌ Error parsing sessionStorage:', e); // DEBUG
+            }
 
             const name           = (sigData && sigData.name)           || urlParams.get('name');
             const area           = (sigData && sigData.area)           || urlParams.get('area');
@@ -402,6 +406,8 @@
             const headSignerName = (sigData && sigData.headSignerName) || urlParams.get('headSignerName');
             const memoNo         = urlParams.get('memoNo');
             const memoDate       = urlParams.get('date');
+            
+            console.log('🖊️ Signatures:', { headSig, deputySig, directorSig }); // DEBUG
 
             if (name) {
                 document.getElementById('dynTeacherName').innerText = name;
@@ -435,20 +441,39 @@
                 document.getElementById('dynHeadSignerName').innerText = headSignerName;
             }
 
+            // Helper: แปลง Drive URL ธรรมดาเป็น direct image link
+            function convertToDirectLink(url) {
+                if (!url || url.trim() === '') return '';
+                // ถ้าเป็น data:image หรือ base64 แล้วก็ return เลย
+                if (url.startsWith('data:image')) return url;
+                // ถ้าเป็น Drive URL แบบปกติ → แปลงเป็น direct link
+                const match = url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+                if (match && match[1]) {
+                    return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+                }
+                return url;
+            }
+
             if (headSig) {
+                console.log('🖊️ Loading HEAD signature:', headSig); // DEBUG
                 const img = document.getElementById('sigImgHead');
-                img.src = headSig;
+                img.src = convertToDirectLink(headSig);
                 img.style.display = 'block';
+                img.onerror = () => { console.error('❌ Failed to load HEAD signature'); img.style.display='none'; };
             }
             if (deputySig) {
+                console.log('🖊️ Loading DEPUTY signature:', deputySig); // DEBUG
                 const img = document.getElementById('sigImgDeputy');
-                img.src = deputySig;
+                img.src = convertToDirectLink(deputySig);
                 img.style.display = 'block';
+                img.onerror = () => { console.error('❌ Failed to load DEPUTY signature'); img.style.display='none'; };
             }
             if (directorSig) {
+                console.log('🖊️ Loading DIRECTOR signature:', directorSig); // DEBUG
                 const img = document.getElementById('sigImgDirector');
-                img.src = directorSig;
+                img.src = convertToDirectLink(directorSig);
                 img.style.display = 'block';
+                img.onerror = () => { console.error('❌ Failed to load DIRECTOR signature'); img.style.display='none'; };
             }
         });
     </script>
