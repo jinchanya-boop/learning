@@ -1146,8 +1146,14 @@
                     viewBtn.style.color = '#000';
                     viewBtn.style.marginLeft = '4px';
                     viewBtn.onclick = () => {
-                        sessionStorage.setItem('memo_sig_data', JSON.stringify(memoData));
-                        window.open(memoBaseUrl, '_blank');
+                        console.log('🚀 Sending memo data:', memoData);
+                        // ใช้ localStorage แทน sessionStorage เพราะ sessionStorage ไม่ส่งข้าม tab ใหม่
+                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
+                        const newWindow = window.open(memoBaseUrl, '_blank');
+                        // ลบข้อมูลหลังจาก 5 วินาที (กันข้อมูลค้างค่า)
+                        setTimeout(() => {
+                            localStorage.removeItem('memo_sig_data');
+                        }, 5000);
                     };
                     ac.appendChild(viewBtn);
 
@@ -1157,8 +1163,11 @@
                     dlBtn.style.backgroundColor = '#d32f2f';
                     dlBtn.style.marginLeft = '4px';
                     dlBtn.onclick = () => {
-                        sessionStorage.setItem('memo_sig_data', JSON.stringify(memoData));
+                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
                         printMemoAsPdf(memoBaseUrl, sub.fullName);
+                        setTimeout(() => {
+                            localStorage.removeItem('memo_sig_data');
+                        }, 5000);
                     };
                     ac.appendChild(dlBtn);
                 }
@@ -1599,8 +1608,9 @@
                     viewBtn.className = 'custom-button';
                     viewBtn.style.cssText = 'background:#0dcaf0;color:#000;padding:5px 12px;font-size:0.82rem;';
                     viewBtn.onclick = () => {
-                        sessionStorage.setItem('memo_sig_data', JSON.stringify(memoData));
+                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
                         window.open(memoBaseUrl, '_blank');
+                        setTimeout(() => { localStorage.removeItem('memo_sig_data'); }, 5000);
                     };
                     btnContainer.appendChild(viewBtn);
                     
@@ -1610,8 +1620,9 @@
                     pdfBtn.className = 'custom-button';
                     pdfBtn.style.cssText = 'background:#d32f2f;padding:5px 12px;font-size:0.82rem;';
                     pdfBtn.onclick = () => {
-                        sessionStorage.setItem('memo_sig_data', JSON.stringify(memoData));
+                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
                         printMemoAsPdf(memoBaseUrl, s.fullName);
+                        setTimeout(() => { localStorage.removeItem('memo_sig_data'); }, 5000);
                     };
                     btnContainer.appendChild(pdfBtn);
                     
