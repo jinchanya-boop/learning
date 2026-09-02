@@ -381,11 +381,27 @@
         // ดึงข้อมูลจาก URL Parameters (เช่น ?name=สมหญิง&area=คณิตศาสตร์)
         document.addEventListener("DOMContentLoaded", function() {
             const urlParams = new URLSearchParams(window.location.search);
-            
-            const name = urlParams.get('name');
-            const area = urlParams.get('area');
-            const term = urlParams.get('term') || '1';
-            const year = urlParams.get('year') || '2569';
+
+            // --- อ่านจาก sessionStorage ก่อน (กรณีเปิดจากปุ่มในระบบ) ---
+            let sigData = null;
+            try {
+                const raw = sessionStorage.getItem('memo_sig_data');
+                if (raw) {
+                    sigData = JSON.parse(raw);
+                    sessionStorage.removeItem('memo_sig_data'); // ใช้ครั้งเดียวแล้วลบทิ้ง
+                }
+            } catch(e) {}
+
+            const name           = (sigData && sigData.name)           || urlParams.get('name');
+            const area           = (sigData && sigData.area)           || urlParams.get('area');
+            const term           = (sigData && sigData.term)           || urlParams.get('term') || '1';
+            const year           = (sigData && sigData.year)           || urlParams.get('year') || '2569';
+            const headSig        = (sigData && sigData.headSig)        || urlParams.get('headSig');
+            const deputySig      = (sigData && sigData.deputySig)      || urlParams.get('deputySig');
+            const directorSig    = (sigData && sigData.directorSig)    || urlParams.get('directorSig');
+            const headSignerName = (sigData && sigData.headSignerName) || urlParams.get('headSignerName');
+            const memoNo         = urlParams.get('memoNo');
+            const memoDate       = urlParams.get('date');
 
             if (name) {
                 document.getElementById('dynTeacherName').innerText = name;
@@ -403,9 +419,6 @@
             document.getElementById('dynYear2').innerText = year;
 
             // รับ memoNo และ date จาก URL params (optional)
-            const memoNo = urlParams.get('memoNo');
-            const memoDate = urlParams.get('date');
-
             if (memoNo) {
                 document.getElementById('inputMemoNo').value = memoNo;
                 document.getElementById('displayMemoNo').textContent = memoNo;
@@ -417,12 +430,7 @@
                 document.getElementById('displayMemoDate').classList.remove('empty');
             }
 
-            // Signature images from URL params
-            const headSig = urlParams.get('headSig');
-            const deputySig = urlParams.get('deputySig');
-            const directorSig = urlParams.get('directorSig');
-            const headSignerName = urlParams.get('headSignerName');
-            
+            // Signature images from sessionStorage / URL params
             if (headSignerName) {
                 document.getElementById('dynHeadSignerName').innerText = headSignerName;
             }
