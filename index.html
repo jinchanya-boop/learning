@@ -1124,6 +1124,37 @@
                     window.open('memo_design.html?' + params.toString(), '_blank');
                 };
                 ac.appendChild(pb);
+                // ปุ่มดูออนไลน์ + ดาวน์โหลด PDF เฉพาะงานที่อนุมัติแล้ว
+                if (sub.status === 'อนุมัติแล้ว') {
+                    const memoParams = new URLSearchParams({
+                        name:            sub.fullName      || '',
+                        area:            sub.learningArea  || '',
+                        term:            currentTerm,
+                        year:            currentYear,
+                        headSig:         sub.sigHead        || '',
+                        deputySig:       sub.sigDeputy      || '',
+                        directorSig:     sub.sigDirector    || '',
+                        headSignerName:  sub.headSignerName || ''
+                    });
+                    const memoUrl = 'memo_design.html?' + memoParams.toString();
+
+                    const viewBtn = document.createElement('button');
+                    viewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> ดูออนไลน์';
+                    viewBtn.className = 'custom-button';
+                    viewBtn.style.backgroundColor = '#0dcaf0';
+                    viewBtn.style.color = '#000';
+                    viewBtn.style.marginLeft = '4px';
+                    viewBtn.onclick = () => window.open(memoUrl, '_blank');
+                    ac.appendChild(viewBtn);
+
+                    const dlBtn = document.createElement('button');
+                    dlBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> PDF';
+                    dlBtn.className = 'custom-button';
+                    dlBtn.style.backgroundColor = '#d32f2f';
+                    dlBtn.style.marginLeft = '4px';
+                    dlBtn.onclick = () => printMemoAsPdf(memoUrl, sub.fullName);
+                    ac.appendChild(dlBtn);
+                }
                 const db = document.createElement('button'); db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ'; db.className='custom-button delete-button'; db.onclick=()=>confirmDeleteSubmission(sub.id); ac.appendChild(db);
             });
         }
@@ -1249,6 +1280,18 @@
                 loadAdminSubmissions();
             };
         }
+        // ===== MEMO PDF HELPER =====
+        function printMemoAsPdf(memoUrl, teacherName) {
+            const win = window.open(memoUrl, '_blank');
+            if (!win) {
+                Swal.fire('แจ้งเตือน', 'กรุณาอนุญาต Popup แล้วลองใหม่', 'warning');
+                return;
+            }
+            win.addEventListener('load', () => {
+                setTimeout(() => win.print(), 600);
+            });
+        }
+
         // ===== SAVED COMMENT (localStorage per role) =====
         function saveCurrentComment() {
             const text = (document.getElementById('adminCommentTextModal') || {}).value || '';
@@ -1525,6 +1568,31 @@
                 const cc = row.insertCell();
                 const ac = s.adminComment||'';
                 cc.innerHTML = ac.trim() ? `<div style="background-color:#fff3cd;padding:12px;border-radius:8px;border-left:4px solid #ffc107;word-wrap:break-word;line-height:1.6;"><i class="fa-solid fa-comment-dots" style="color:#ff9800;margin-right:8px;"></i><span style="color:#856404;font-size:0.95em;">${ac}</span></div>` : '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
+                // ปุ่มดูออนไลน์ + PDF เฉพาะงานที่อนุมัติแล้ว
+                if (s.status === 'อนุมัติแล้ว') {
+                    const memoParams = new URLSearchParams({
+                        name:           s.fullName       || '',
+                        area:           s.learningArea   || '',
+                        term:           currentTerm,
+                        year:           currentYear,
+                        headSig:        s.sigHead        || '',
+                        deputySig:      s.sigDeputy      || '',
+                        directorSig:    s.sigDirector    || '',
+                        headSignerName: s.headSignerName || ''
+                    });
+                    const memoUrl = 'memo_design.html?' + memoParams.toString();
+                    cc.innerHTML += `
+                        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;">
+                            <button onclick="window.open('${memoUrl}','_blank')"
+                                class="custom-button" style="background:#0dcaf0;color:#000;padding:5px 12px;font-size:0.82rem;">
+                                <i class="fa-solid fa-eye"></i> ดูออนไลน์
+                            </button>
+                            <button onclick="printMemoAsPdf('${memoUrl}','${(s.fullName||'').replace(/'/g,"\\'")}') "
+                                class="custom-button" style="background:#d32f2f;padding:5px 12px;font-size:0.82rem;">
+                                <i class="fa-solid fa-file-pdf"></i> PDF
+                            </button>
+                        </div>`;
+                }
             });
         }
         function showSearchResultInfo(term, count) {
