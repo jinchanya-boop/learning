@@ -564,6 +564,19 @@
             'deputy': 'deputy999',
             'director': 'admin999'
         };
+
+        // ===== หัวหน้ากลุ่มสาระแต่ละกลุ่ม (แก้ไขได้ที่นี่) =====
+        const HEAD_OF_AREA = {
+            'ภาษาไทย':                        'นางสาววจีพร แก้วหล้า',
+            'คณิตศาสตร์':                      'นางลัดดาวัลย์ ปินตา',
+            'วิทยาศาสตร์และเทคโนโลยี':        'นายธัญวัฒน์ กาบคำ',
+            'ภาษาต่างประเทศ':                  'นางอทิตยา ปิมปา',
+            'สังคมศึกษา ศาสนาและวัฒนธรรม':    'นายณรงค์ สมศักดิ์',
+            'สุขศึกษาและพลศึกษา':              'นายศุภชัย บุญประวัติ',
+            'ศิลปะ':                           'นายชยพล รัชติวงศ์',
+            'การงานอาชีพ':                     'นางกนกกาญจน์ บุญชูภักดิ์',
+            'กิจกรรมพัฒนาผู้เรียน':           'นางสาวทัศนีย์ การินทร์'
+        };
         let currentAdminRole = null;
         let currentAdminRoleName = '';
         const GOOGLE_DOC_ID = '1UTxFsp2OcMqZS41HlPKUFy03jMaas5Hy';
@@ -1170,7 +1183,22 @@
                         ${!currentAdminRole ? `<option value="รอหัวหน้าตรวจ">รอหัวหน้าตรวจ 🟡</option><option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option><option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option><option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">รอแก้ไข ❗</option>` : ''}
                     </select>
                     <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
-                    <textarea id="adminCommentTextModal" rows="3" placeholder="ระบุข้อคิดเห็น (ถ้ามี)" style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);"></textarea>
+                    <div style="position:relative;">
+                        <textarea id="adminCommentTextModal" rows="3"
+                            placeholder="${currentAdminRole === 'head' ? 'เช่น ตรวจแล้ว ถูกต้องครบถ้วน' : currentAdminRole === 'deputy' ? 'เช่น อนุมัติ นำไปใช้ในกระบวนการจัดการเรียนการสอน' : currentAdminRole === 'director' ? 'เช่น อนุมัติ' : 'ระบุข้อคิดเห็น (ถ้ามี)'}"
+                            style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);"></textarea>
+                        <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                            <button type="button" onclick="loadSavedComment()" class="custom-button"
+                                style="background:#4caf50;padding:5px 12px;font-size:0.8rem;">
+                                <i class="fa-solid fa-clock-rotate-left"></i> ใช้ข้อความล่าสุด
+                            </button>
+                            <button type="button" onclick="saveCurrentComment()" class="custom-button"
+                                style="background:#ff9800;padding:5px 12px;font-size:0.8rem;">
+                                <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อความนี้ไว้ใช้ซ้ำ
+                            </button>
+                            <span id="savedCommentHint" style="font-size:0.78rem;color:#888;"></span>
+                        </div>
+                    </div>
                 </div>
                                 <!-- Signature Pad -->
                 <div id="signature-container" style="margin-top:15px;display:none;">
@@ -1201,9 +1229,19 @@
                     const headNameContainer = document.getElementById('head-name-input-container');
                     if (headNameContainer) {
                         headNameContainer.style.display = currentAdminRole === 'head' ? 'block' : 'none';
-                        if (currentAdminRole === 'head') document.getElementById('head-signer-name').value = '';
+                        if (currentAdminRole === 'head') {
+                            // auto-fill ชื่อหัวหน้าสาระจาก map ตาม learningArea ของงานนี้
+                            const autoName = HEAD_OF_AREA[sub.learningArea] || '';
+                            document.getElementById('head-signer-name').value = autoName;
+                        }
                     }
                 }
+                // โหลด saved comment ของ role นี้จาก localStorage (ถ้ามี)
+                const savedKey = 'savedComment_' + currentAdminRole;
+                const saved = localStorage.getItem(savedKey);
+                const hint = document.getElementById('savedCommentHint');
+                if (saved && hint) hint.textContent = `มีข้อความบันทึกไว้: "${saved.substring(0,30)}${saved.length>30?'...':''}"`;
+                else if (hint) hint.textContent = 'ยังไม่มีข้อความที่บันทึกไว้';
                 document.getElementById('updateStatusButtonModal').onclick = () => updateSubmissionStatus(sub.id);
             document.getElementById('backToListButtonModal').onclick = () => {
                 dv.style.display = 'none';
@@ -1211,18 +1249,41 @@
                 loadAdminSubmissions();
             };
         }
-        // === SIGNATURE PAD LOGIC ===
+        // ===== SAVED COMMENT (localStorage per role) =====
+        function saveCurrentComment() {
+            const text = (document.getElementById('adminCommentTextModal') || {}).value || '';
+            if (!text.trim()) { Swal.fire('แจ้งเตือน', 'กรุณาพิมพ์ข้อความก่อนบันทึก', 'warning'); return; }
+            const key = 'savedComment_' + currentAdminRole;
+            localStorage.setItem(key, text.trim());
+            const hint = document.getElementById('savedCommentHint');
+            if (hint) hint.textContent = `บันทึกแล้ว: "${text.trim().substring(0,30)}${text.trim().length>30?'...':''}"`;
+            Swal.fire({ title:'บันทึกสำเร็จ!', text:'ข้อความนี้จะถูกเรียกใช้ครั้งต่อไปโดยอัตโนมัติ', icon:'success', timer:1500, showConfirmButton:false });
+        }
+        function loadSavedComment() {
+            const key = 'savedComment_' + currentAdminRole;
+            const saved = localStorage.getItem(key);
+            if (!saved) { Swal.fire('แจ้งเตือน', 'ยังไม่มีข้อความที่บันทึกไว้สำหรับ role นี้', 'info'); return; }
+            const ta = document.getElementById('adminCommentTextModal');
+            if (ta) ta.value = saved;
+        }
+
+        // ===== SIGNATURE PAD LOGIC =====
         let _signaturePad = null;
         let _uploadedSigDataUrl = null;
 
         function initSignaturePad() {
             const canvas = document.getElementById('signature-pad-canvas');
             if (!canvas) return;
-            if (_signaturePad) { _signaturePad.clear(); return; }
+            // destroy object เก่าทุกครั้ง เพราะ canvas ถูก inject ใหม่แต่ละครั้งที่เปิด detail
+            if (_signaturePad) {
+                try { _signaturePad.off(); } catch(e) {}
+                _signaturePad = null;
+            }
+            _uploadedSigDataUrl = null;
             _signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)', penColor: 'rgb(0,0,139)' });
             function resizeSigCanvas() {
                 const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width = canvas.offsetWidth * ratio;
+                canvas.width  = canvas.offsetWidth * ratio;
                 canvas.height = 180 * ratio;
                 canvas.getContext('2d').scale(ratio, ratio);
                 _signaturePad.clear();
