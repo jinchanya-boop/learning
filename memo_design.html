@@ -205,10 +205,16 @@
 
         @media print {
             body { background: white; padding: 0; }
-            .memo-header-bar { display: none; }
-            .fill-panel { display: none; }
+            .memo-header-bar { display: none !important; }
+            .fill-panel { display: none !important; }
+            .admin-system-comment { display: none !important; }
             .memo-container { box-shadow: none; max-width: 100%; }
-            .memo-paper { padding: 40px 60px; }
+            .memo-paper { padding: 40px 60px; min-height: auto; }
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            .signature-block img { opacity: 1 !important; display: block !important; }
         }
     </style>
 </head>
@@ -237,6 +243,12 @@
                 <i class="fa-solid fa-circle-info"></i>
                 กรอกข้อมูลด้านบนก่อนพิมพ์ — ข้อมูลจะแสดงในเอกสารอัตโนมัติ
             </div>
+        </div>
+
+        <!-- ความคิดเห็นของเจ้าหน้าที่ระบบ (แสดงเฉพาะบนเว็บ, ซ่อนตอนพิมพ์) -->
+        <div class="admin-system-comment" id="systemAdminCommentPanel" style="display: none; background: #e8f4fd; border: 1px solid #b6d4fe; border-radius: 8px; padding: 14px 20px; margin: 0 0 16px 0;">
+            <h4 style="margin: 0 0 8px 0; color: #084298; font-size: 16px; font-family: 'Prompt', sans-serif;"><i class="fa-solid fa-comment-dots"></i> ความคิดเห็นจากเจ้าหน้าที่ระบบเรียนรู้:</h4>
+            <div id="systemAdminCommentText" style="margin: 0; color: #052c65; font-size: 14px; white-space: pre-wrap; font-family: 'Prompt', sans-serif; line-height: 1.6;"></div>
         </div>
 
         <!-- กระดาษบันทึกข้อความ -->
@@ -301,7 +313,7 @@
             <!-- ความเห็นหัวหน้ากลุ่มสาระการเรียนรู้ -->
             <div class="director-comment" style="margin-top: 25px;">
                 <span class="memo-label" style="font-weight: normal;">ความเห็นหัวหน้ากลุ่มสาระการเรียนรู้</span><br>
-                <div class="comment-lines">
+                <div class="comment-lines" id="headCommentLines">
                     ...................................................................................................................................................................................<br>
                     ...................................................................................................................................................................................
                 </div>
@@ -318,7 +330,7 @@
             <!-- ความเห็นรองผู้อำนวยการฝ่ายบริหารงานวิชาการ -->
             <div class="director-comment" style="margin-top: 25px;">
                 <span class="memo-label" style="font-weight: normal;">ความเห็นรองผู้อำนวยการฝ่ายบริหารงานวิชาการ</span><br>
-                <div class="comment-lines">
+                <div class="comment-lines" id="deputyCommentLines">
                     ...................................................................................................................................................................................<br>
                     ...................................................................................................................................................................................
                 </div>
@@ -335,7 +347,7 @@
             <!-- ความเห็นผู้อำนวยการโรงเรียนสา -->
             <div class="director-comment" style="margin-top: 25px;">
                 <span class="memo-label" style="font-weight: normal;">ความเห็นผู้อำนวยการโรงเรียนสา</span><br>
-                <div class="comment-lines">
+                <div class="comment-lines" id="directorCommentLines">
                     ...................................................................................................................................................................................<br>
                     ...................................................................................................................................................................................
                 </div>
@@ -415,6 +427,7 @@
             const deputySig      = (sigData && sigData.deputySig)      || urlParams.get('deputySig');
             const directorSig    = (sigData && sigData.directorSig)    || urlParams.get('directorSig');
             const headSignerName = (sigData && sigData.headSignerName) || urlParams.get('headSignerName');
+            const adminComment   = (sigData && sigData.adminComment)   || urlParams.get('adminComment') || '';
             const memoNo         = urlParams.get('memoNo');
             const memoDate       = urlParams.get('date');
             
@@ -452,6 +465,53 @@
                 document.getElementById('dynHeadSignerName').innerText = headSignerName;
             }
 
+            // ===== Parse adminComment =====
+            let sysAdminComments = [];
+            let headComments = [];
+            let deputyComments = [];
+            let directorComments = [];
+
+            if (adminComment) {
+                const lines = adminComment.split('\n');
+                for (let line of lines) {
+                    line = line.trim();
+                    if (!line) continue;
+                    if (line.startsWith('[หัวหน้า]')) {
+                        headComments.push(line.replace('[หัวหน้า]', '').trim());
+                    } else if (line.startsWith('[รองฯ]')) {
+                        deputyComments.push(line.replace('[รองฯ]', '').trim());
+                    } else if (line.startsWith('[ผอ.]')) {
+                        directorComments.push(line.replace('[ผอ.]', '').trim());
+                    } else {
+                        sysAdminComments.push(line);
+                    }
+                }
+            }
+
+            if (sysAdminComments.length > 0) {
+                document.getElementById('systemAdminCommentText').innerText = sysAdminComments.join('\n');
+                document.getElementById('systemAdminCommentPanel').style.display = 'block';
+            }
+            
+            function replaceCommentBlock(elementId, comments) {
+                if (comments.length > 0) {
+                    const el = document.getElementById(elementId);
+                    if (el) {
+                        el.innerText = comments.join('\n');
+                        el.style.letterSpacing = 'normal';
+                        el.style.color = '#000';
+                        el.style.minHeight = '30px';
+                        el.style.borderBottom = '1px dotted #000';
+                        el.style.display = 'inline-block';
+                        el.style.padding = '0 10px';
+                    }
+                }
+            }
+
+            replaceCommentBlock('headCommentLines', headComments);
+            replaceCommentBlock('deputyCommentLines', deputyComments);
+            replaceCommentBlock('directorCommentLines', directorComments);
+
             // Helper: แปลง Drive URL ธรรมดาเป็น direct image link
             function convertToDirectLink(url) {
                 if (!url || url.trim() === '') return '';
@@ -468,10 +528,15 @@
                 return url;
             }
 
-            if (headSig) {
-                console.log('🖊️ Loading HEAD signature:', headSig);
+            // === DEBUG: ถ้าไม่มีลายเซ็นจากระบบ ใช้ลายเซ็นทดสอบ ===
+            const testHeadSig = headSig || 'https://via.placeholder.com/200x80/0dcaf0/000000?text=Head+Signature';
+            const testDeputySig = deputySig || 'https://via.placeholder.com/200x80/ff9800/ffffff?text=Deputy+Signature';
+            const testDirectorSig = directorSig || 'https://via.placeholder.com/200x80/4caf50/ffffff?text=Director+Signature';
+
+            if (testHeadSig) {
+                console.log('🖊️ Loading HEAD signature:', testHeadSig);
                 const img = document.getElementById('sigImgHead');
-                const directUrl = convertToDirectLink(headSig);
+                const directUrl = convertToDirectLink(testHeadSig);
                 console.log('🔗 Converted HEAD URL:', directUrl);
                 img.src = directUrl;
                 img.style.display = 'block';
@@ -482,10 +547,10 @@
                     img.style.display='none'; 
                 };
             }
-            if (deputySig) {
-                console.log('🖊️ Loading DEPUTY signature:', deputySig);
+            if (testDeputySig) {
+                console.log('🖊️ Loading DEPUTY signature:', testDeputySig);
                 const img = document.getElementById('sigImgDeputy');
-                const directUrl = convertToDirectLink(deputySig);
+                const directUrl = convertToDirectLink(testDeputySig);
                 console.log('🔗 Converted DEPUTY URL:', directUrl);
                 img.src = directUrl;
                 img.style.display = 'block';
@@ -496,10 +561,10 @@
                     img.style.display='none'; 
                 };
             }
-            if (directorSig) {
-                console.log('🖊️ Loading DIRECTOR signature:', directorSig);
+            if (testDirectorSig) {
+                console.log('🖊️ Loading DIRECTOR signature:', testDirectorSig);
                 const img = document.getElementById('sigImgDirector');
-                const directUrl = convertToDirectLink(directorSig);
+                const directUrl = convertToDirectLink(testDirectorSig);
                 console.log('🔗 Converted DIRECTOR URL:', directUrl);
                 img.src = directUrl;
                 img.style.display = 'block';
