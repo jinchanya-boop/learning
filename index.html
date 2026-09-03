@@ -1135,7 +1135,8 @@
                         headSig:        sub.sigHead        || '',
                         deputySig:      sub.sigDeputy      || '',
                         directorSig:    sub.sigDirector    || '',
-                        headSignerName: sub.headSignerName || ''
+                        headSignerName: sub.headSignerName || '',
+                        adminComment:   sub.adminComment   || ''
                     };
                     const memoBaseUrl = 'memo_design.html?from=system&name=' + encodeURIComponent(sub.fullName || '');
 
@@ -1594,7 +1595,8 @@
                         headSig:        s.sigHead        || '',
                         deputySig:      s.sigDeputy      || '',
                         directorSig:    s.sigDirector    || '',
-                        headSignerName: s.headSignerName || ''
+                        headSignerName: s.headSignerName || '',
+                        adminComment:   s.adminComment   || ''
                     };
                     const memoBaseUrl = 'memo_design.html?from=system&name=' + encodeURIComponent(s.fullName || '');
                     
