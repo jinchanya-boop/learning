@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    
     <style>
         :root {
             --primary-color: #515ada;
@@ -1112,66 +1112,7 @@
                 row.insertCell().innerHTML = formatStatus(sub.status||'รอตรวจ');
                 const ac = row.insertCell();
                 const vb = document.createElement('button'); vb.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ'; vb.className='custom-button'; vb.onclick=()=>showSubmissionDetail(sub.id); ac.appendChild(vb);
-                const pb = document.createElement('button'); 
-                pb.innerHTML='<i class="fa-solid fa-print"></i> พิมพ์ปะหน้า'; 
-                pb.className='custom-button'; 
-                pb.style.backgroundColor = '#198754';
-                pb.onclick=() => {
-                    const params = new URLSearchParams();
-                    params.append('name', sub.fullName || '');
-                    params.append('area', sub.learningArea || '');
-                    params.append('status', sub.status || '');
-                    window.open('memo_design.html?' + params.toString(), '_blank');
-                };
-                ac.appendChild(pb);
-                // ปุ่มดูออนไลน์ + ดาวน์โหลด PDF เฉพาะงานที่อนุมัติแล้ว
-                if (sub.status === 'อนุมัติแล้ว') {
-                    // ส่ง sig data ผ่าน sessionStorage แทน URL params เพื่อหลีกเลี่ยง URL ยาวเกิน
-                    const memoData = {
-                        name:           sub.fullName       || '',
-                        area:           sub.learningArea   || '',
-                        term:           String(currentTerm),
-                        year:           String(currentYear),
-                        headSig:        sub.sigHead        || '',
-                        deputySig:      sub.sigDeputy      || '',
-                        directorSig:    sub.sigDirector    || '',
-                        headSignerName: sub.headSignerName || '',
-                        adminComment:   sub.adminComment   || ''
-                    };
-                    const memoBaseUrl = 'memo_design.html?from=system&name=' + encodeURIComponent(sub.fullName || '');
-
-                    const viewBtn = document.createElement('button');
-                    viewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> ดูออนไลน์';
-                    viewBtn.className = 'custom-button';
-                    viewBtn.style.backgroundColor = '#0dcaf0';
-                    viewBtn.style.color = '#000';
-                    viewBtn.style.marginLeft = '4px';
-                    viewBtn.onclick = () => {
-                        console.log('🚀 Sending memo data:', memoData);
-                        // ใช้ localStorage แทน sessionStorage เพราะ sessionStorage ไม่ส่งข้าม tab ใหม่
-                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
-                        const newWindow = window.open(memoBaseUrl, '_blank');
-                        // ลบข้อมูลหลังจาก 5 วินาที (กันข้อมูลค้างค่า)
-                        setTimeout(() => {
-                            localStorage.removeItem('memo_sig_data');
-                        }, 5000);
-                    };
-                    ac.appendChild(viewBtn);
-
-                    const dlBtn = document.createElement('button');
-                    dlBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> PDF';
-                    dlBtn.className = 'custom-button';
-                    dlBtn.style.backgroundColor = '#d32f2f';
-                    dlBtn.style.marginLeft = '4px';
-                    dlBtn.onclick = () => {
-                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
-                        printMemoAsPdf(memoBaseUrl, sub.fullName);
-                        setTimeout(() => {
-                            localStorage.removeItem('memo_sig_data');
-                        }, 5000);
-                    };
-                    ac.appendChild(dlBtn);
-                }
+                // ลบปุ่มดูออนไลน์/พิมพ์ปะหน้าออกตามความต้องการ
                 const db = document.createElement('button'); db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ'; db.className='custom-button delete-button'; db.onclick=()=>confirmDeleteSubmission(sub.id); ac.appendChild(db);
             });
         }
@@ -1248,42 +1189,8 @@
                         </div>
                     </div>
                 </div>
-                                <!-- Signature Pad -->
-                <div id="signature-container" style="margin-top:15px;display:none;">
-                    <!-- ชื่อหัวหน้าสาระ (แสดงเฉพาะเมื่อล็อกอินเป็นหัวหน้า) -->
-                    <div id="head-name-input-container" style="display:none; margin-bottom:12px;">
-                        <label style="font-weight:600;color:var(--text-color);margin-bottom:6px;display:block;">👤 ชื่อหัวหน้ากลุ่มสาระผู้ตรวจ:</label>
-                        <input type="text" id="head-signer-name" placeholder="เช่น นายสมชาย ใจดี" style="width:100%;padding:10px 14px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);font-family:var(--font-family);font-size:1rem;">
-                    </div>
-                    <label style="font-weight:600;color:var(--text-color);margin-bottom:8px;display:block;">✍️ ลายเซ็นผู้บริหาร (วาดหรือแนบไฟล์):</label>
-                    <div style="border:2px dashed var(--medium-gray);border-radius:var(--border-radius);background:#fff;overflow:hidden;position:relative;">
-                        <canvas id="signature-pad-canvas" width="500" height="180" style="touch-action:none;width:100%;display:block;cursor:crosshair;"></canvas>
-                    </div>
-                    <div style="margin-top:8px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
-                        <button type="button" onclick="clearSignaturePad()" class="custom-button" style="background:#e74c3c;padding:6px 14px;font-size:0.85rem;"><i class="fas fa-eraser"></i> ล้างลายเซ็น</button>
-                        <label style="font-size:0.85rem;color:var(--dark-gray);cursor:pointer;border:1px solid var(--medium-gray);border-radius:8px;padding:6px 12px;">
-                            📎 แนบไฟล์ลายเซ็น (PNG/JPG)
-                            <input type="file" id="signature-file-upload" accept="image/png,image/jpeg" style="display:none;" onchange="handleSigFileUpload(event)">
-                        </label>
-                    </div>
-                </div>
                 <button type="button" id="updateStatusButtonModal" class="custom-button"><i class="fa-solid fa-floppy-disk"></i>บันทึกการเปลี่ยนแปลง</button>
                 <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>`;
-            // Show signature pad for admin
-                const sigC = document.getElementById('signature-container');
-                if (sigC && currentAdminRole) { 
-                    sigC.style.display = 'block'; 
-                    setTimeout(initSignaturePad, 200);
-                    const headNameContainer = document.getElementById('head-name-input-container');
-                    if (headNameContainer) {
-                        headNameContainer.style.display = currentAdminRole === 'head' ? 'block' : 'none';
-                        if (currentAdminRole === 'head') {
-                            // auto-fill ชื่อหัวหน้าสาระจาก map ตาม learningArea ของงานนี้
-                            const autoName = HEAD_OF_AREA[sub.learningArea] || '';
-                            document.getElementById('head-signer-name').value = autoName;
-                        }
-                    }
-                }
                 // โหลด saved comment ของ role นี้จาก localStorage (ถ้ามี)
                 const savedKey = 'savedComment_' + currentAdminRole;
                 const saved = localStorage.getItem(savedKey);
@@ -1297,111 +1204,18 @@
                 loadAdminSubmissions();
             };
         }
-        // ===== MEMO PDF HELPER =====
-        function printMemoAsPdf(memoUrl, teacherName) {
-            const win = window.open(memoUrl, '_blank');
-            if (!win) {
-                Swal.fire('แจ้งเตือน', 'กรุณาอนุญาต Popup แล้วลองใหม่', 'warning');
-                return;
-            }
-            win.addEventListener('load', () => {
-                setTimeout(() => win.print(), 600);
-            });
-        }
-
-        // ===== SAVED COMMENT (localStorage per role) =====
-        function saveCurrentComment() {
-            const text = (document.getElementById('adminCommentTextModal') || {}).value || '';
-            if (!text.trim()) { Swal.fire('แจ้งเตือน', 'กรุณาพิมพ์ข้อความก่อนบันทึก', 'warning'); return; }
-            const key = 'savedComment_' + currentAdminRole;
-            localStorage.setItem(key, text.trim());
-            const hint = document.getElementById('savedCommentHint');
-            if (hint) hint.textContent = `บันทึกแล้ว: "${text.trim().substring(0,30)}${text.trim().length>30?'...':''}"`;
-            Swal.fire({ title:'บันทึกสำเร็จ!', text:'ข้อความนี้จะถูกเรียกใช้ครั้งต่อไปโดยอัตโนมัติ', icon:'success', timer:1500, showConfirmButton:false });
-        }
-        function loadSavedComment() {
-            const key = 'savedComment_' + currentAdminRole;
-            const saved = localStorage.getItem(key);
-            if (!saved) { Swal.fire('แจ้งเตือน', 'ยังไม่มีข้อความที่บันทึกไว้สำหรับ role นี้', 'info'); return; }
-            const ta = document.getElementById('adminCommentTextModal');
-            if (ta) ta.value = saved;
-        }
-
-        // ===== SIGNATURE PAD LOGIC =====
-        let _signaturePad = null;
-        let _uploadedSigDataUrl = null;
-
-        function initSignaturePad() {
-            const canvas = document.getElementById('signature-pad-canvas');
-            if (!canvas) return;
-            // destroy object เก่าทุกครั้ง เพราะ canvas ถูก inject ใหม่แต่ละครั้งที่เปิด detail
-            if (_signaturePad) {
-                try { _signaturePad.off(); } catch(e) {}
-                _signaturePad = null;
-            }
-            _uploadedSigDataUrl = null;
-            _signaturePad = new SignaturePad(canvas, { backgroundColor: 'rgb(255,255,255)', penColor: 'rgb(0,0,139)' });
-            function resizeSigCanvas() {
-                const ratio = Math.max(window.devicePixelRatio || 1, 1);
-                canvas.width  = canvas.offsetWidth * ratio;
-                canvas.height = 180 * ratio;
-                canvas.getContext('2d').scale(ratio, ratio);
-                _signaturePad.clear();
-            }
-            window.addEventListener('resize', resizeSigCanvas);
-            setTimeout(resizeSigCanvas, 100);
-        }
-        function clearSignaturePad() {
-            if (_signaturePad) _signaturePad.clear();
-            _uploadedSigDataUrl = null;
-            const fileInput = document.getElementById('signature-file-upload');
-            if (fileInput) fileInput.value = '';
-        }
-        function handleSigFileUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                _uploadedSigDataUrl = e.target.result;
-                if (_signaturePad) {
-                    _signaturePad.clear();
-                    _signaturePad.fromDataURL(_uploadedSigDataUrl);
-                }
-            };
-            reader.readAsDataURL(file);
-        }
-        function getSignatureData() {
-            if (_uploadedSigDataUrl) return _uploadedSigDataUrl;
-            if (_signaturePad && !_signaturePad.isEmpty()) {
-                // บีบอัดเป็น JPEG 50% และลดขนาด canvas ก่อนส่ง
-                const canvas = _signaturePad.canvas;
-                const smallCanvas = document.createElement('canvas');
-                const scale = Math.min(1, 400 / canvas.width); // จำกัดกว้างสูงสุด 400px
-                smallCanvas.width  = Math.round(canvas.width  * scale);
-                smallCanvas.height = Math.round(canvas.height * scale);
-                const ctx = smallCanvas.getContext('2d');
-                ctx.drawImage(canvas, 0, 0, smallCanvas.width, smallCanvas.height);
-                return smallCanvas.toDataURL('image/jpeg', 0.5);
-            }
-            return '';
-        }
-
         async function updateSubmissionStatus(submissionId) {
             const newStatus    = document.getElementById('newStatusModal').value;
             const adminComment = document.getElementById('adminCommentTextModal').value;
             Swal.fire({ title:'กำลังอัปเดต...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const sigData = getSignatureData();
                 const payload = buildPayload({
                     action: 'updateSubmission',
                     submissionId,
                     newStatus,
                     adminComment,
-                    adminRole: currentAdminRole,
-                    headSignerName: (document.getElementById('head-signer-name') ? document.getElementById('head-signer-name').value : '')
+                    adminRole: currentAdminRole
                 });
-                // append signature แยกต่างหากเพื่อป้องกัน URLSearchParams encode ขนาดใหญ่
-                if (sigData) payload.append('adminSignature', sigData);
                 const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: payload });
                 const result = await res.json();
                 if (result.success) {
