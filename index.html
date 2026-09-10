@@ -413,13 +413,7 @@
                 </h2>
             </div>
             <div id="admin-login">
-                <label for="adminRole">เข้าสู่ระบบในฐานะ:</label>
-                <select id="adminRole" style="margin-bottom: 15px;">
-                    <option value="head">หัวหน้ากลุ่มสาระการเรียนรู้</option>
-                    <option value="deputy">รองผู้อำนวยการฝ่ายบริหารงานวิชาการ</option>
-                    <option value="director">ผู้อำนวยการโรงเรียนสา</option>
-                </select>
-                <label for="adminPassword">รหัสผ่าน:</label>
+                <label for="adminPassword">รหัสผ่านผู้บริหาร:</label>
                 <input type="password" id="adminPassword" name="adminPassword" placeholder="กรอกรหัสผ่าน">
                 <button type="button" id="loginButton"><i class="fa-solid fa-wand-magic-sparkles"></i>เข้าสู่ระบบ</button>
             </div>
@@ -559,11 +553,7 @@
 
     <script>
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7qN5tVTKT9BQ0kgDKp69t8OWfIstvlRNITxlqq7km6sATM5P9uPTPCngWTVdAfqP/exec';
-        const ROLE_PASSWORDS = {
-            'head': 'head999',
-            'deputy': 'deputy999',
-            'director': 'admin999'
-        };
+        
 
         // ===== หัวหน้ากลุ่มสาระแต่ละกลุ่ม (แก้ไขได้ที่นี่) =====
         const HEAD_OF_AREA = {
@@ -1012,11 +1002,8 @@
             c.innerHTML = html;
         }
         function updateDashboardForRole() {
-            const filter = document.getElementById('statusFilter');
-            if (currentAdminRole === 'head') filter.value = 'รอหัวหน้าตรวจ';
-            else if (currentAdminRole === 'deputy') filter.value = 'รอรองฯตรวจ';
-            else if (currentAdminRole === 'director') filter.value = 'รอผอ.อนุมัติ';
-            else filter.value = 'ทั้งหมด';
+            // ไม่ต้องกรองตาม Role แล้ว
+            document.getElementById('statusFilter').value = 'ทั้งหมด';
         }
 
         function formatStatus(status) {
@@ -1067,12 +1054,11 @@
 
         // ===== ADMIN LOGIN =====
         document.getElementById('loginButton').addEventListener('click', () => {
-            const selectedRole = document.getElementById('adminRole').value;
             const pw = document.getElementById('adminPassword').value;
-            if (pw === ROLE_PASSWORDS[selectedRole]) {
-                currentAdminRole = selectedRole;
-                currentAdminRoleName = document.getElementById('adminRole').options[document.getElementById('adminRole').selectedIndex].text;
-                Swal.fire({ title:'เข้าสู่ระบบสำเร็จ!', text: `ยินดีต้อนรับ ${currentAdminRoleName}`, icon:'success', timer:1500, showConfirmButton:false });
+            if (pw === 'admin999') {
+                currentAdminRole = 'director';
+                currentAdminRoleName = 'ผู้บริหาร';
+                Swal.fire({ title:'เข้าสู่ระบบสำเร็จ!', text: `ยินดีต้อนรับ ผู้บริหาร`, icon:'success', timer:1500, showConfirmButton:false });
                 document.getElementById('admin-login').style.display = 'none';
                 document.getElementById('admin-section-content').style.display = 'block';
                 document.getElementById('admin-dashboard').style.display = 'block';
@@ -1166,15 +1152,15 @@
                 <div style="margin-top:1.5rem;">
                     <label><strong>เปลี่ยนสถานะเป็น:</strong></label>
                     <select id="newStatusModal" style="width:100%;padding:10px;margin-bottom:15px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);">
-                        ${currentAdminRole === 'head' ? `<option value="รอรองฯตรวจ">ผ่านเบื้องต้น - ส่งต่อให้รองฯ ตรวจ 🟠</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
-                        ${currentAdminRole === 'deputy' ? `<option value="รอผอ.อนุมัติ">ผ่าน - ส่งต่อให้ ผอ. อนุมัติ 🔵</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
-                        ${currentAdminRole === 'director' ? `<option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>` : ''}
-                        ${!currentAdminRole ? `<option value="รอหัวหน้าตรวจ">รอหัวหน้าตรวจ 🟡</option><option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option><option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option><option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option><option value="รอแก้ไข">รอแก้ไข ❗</option>` : ''}
+                        <option value="รอตรวจ">รอตรวจ 🟡</option>
+                        <option value="กำลังดำเนินการ">กำลังดำเนินการ 🟠</option>
+                        <option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option>
+                        <option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>
                     </select>
                     <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
                     <div style="position:relative;">
                         <textarea id="adminCommentTextModal" rows="3"
-                            placeholder="${currentAdminRole === 'head' ? 'เช่น ตรวจแล้ว ถูกต้องครบถ้วน' : currentAdminRole === 'deputy' ? 'เช่น อนุมัติ นำไปใช้ในกระบวนการจัดการเรียนการสอน' : currentAdminRole === 'director' ? 'เช่น อนุมัติ' : 'ระบุข้อคิดเห็น (ถ้ามี)'}"
+                            placeholder="ระบุข้อคิดเห็น (ถ้ามี)"
                             style="width:100%;box-sizing:border-box;padding:10px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);"></textarea>
                         <div style="margin-top:6px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
                             <button type="button" onclick="loadSavedComment()" class="custom-button"
