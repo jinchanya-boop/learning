@@ -1007,12 +1007,17 @@
         }
 
         function formatStatus(status) {
-            if (status === 'รอหัวหน้าตรวจ') return `<span class="status-pending">รอหัวหน้าตรวจ 🟡</span>`;
-            if (status === 'รอรองฯตรวจ')   return `<span class="status-pending" style="background:#fd7e14;color:white;">รอรองฯตรวจ 🟠</span>`;
-            if (status === 'รอผอ.อนุมัติ')  return `<span class="status-pending" style="background:#0dcaf0;color:white;">รอผอ.อนุมัติ 🔵</span>`;
-            if (status === 'รอแก้ไข')       return `<span class="status-revision">รอแก้ไข ❗</span>`;
-            if (status === 'อนุมัติแล้ว')   return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
-            return status || 'รอหัวหน้าตรวจ 🟡';
+            if (status === 'รอตรวจ')         return `<span class="status-pending">รอตรวจ 🟡</span>`;
+            if (status === 'กำลังดำเนินการ') return `<span class="status-pending" style="background:#fd7e14;color:white;">กำลังดำเนินการ 🟠</span>`;
+            if (status === 'รอแก้ไข')        return `<span class="status-revision">รอแก้ไข ❗</span>`;
+            if (status === 'อนุมัติแล้ว')    return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
+            
+            // กรณีเป็นค่าเก่า (เผื่อมีค้างในฐานข้อมูล) ให้แปลงเป็นรอตรวจ
+            if (status === 'รอหัวหน้าตรวจ' || status === 'รอรองฯตรวจ' || status === 'รอผอ.อนุมัติ') {
+                 return `<span class="status-pending">รอตรวจ 🟡</span>`;
+            }
+            
+            return status || 'รอตรวจ 🟡';
         }
 
         // ===== FORM SUBMIT =====
