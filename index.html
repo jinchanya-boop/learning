@@ -431,9 +431,8 @@
                     <label for="statusFilter">กรองตามสถานะ:</label>
                     <select id="statusFilter">
                         <option value="ทั้งหมด">ทั้งหมด</option>
-                        <option value="รอหัวหน้าตรวจ">รอหัวหน้าตรวจ 🟡</option>
-                        <option value="รอรองฯตรวจ">รอรองฯตรวจ 🟠</option>
-                        <option value="รอผอ.อนุมัติ">รอผอ.อนุมัติ 🔵</option>
+                        <option value="รอตรวจ">รอตรวจ 🟡</option>
+                        <option value="กำลังดำเนินการ">กำลังดำเนินการ 🟠</option>
                         <option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option>
                         <option value="รอแก้ไข">รอแก้ไข ❗</option>
                     </select>
@@ -502,7 +501,7 @@
                 <div class="dashboard-card"><h3>ทั้งหมด</h3><p id="totalSubmissions">0</p></div>
                 <div class="dashboard-card"><h3>รอตรวจ ⭐</h3><p id="pendingSubmissions">0</p></div>
                 <div class="dashboard-card"><h3>รอแก้ไข ❗</h3><p id="revisionSubmissions">0</p></div>
-                <div class="dashboard-card"><h3>ตรวจแล้ว ✅</h3><p id="approvedSubmissions">0</p></div>
+                <div class="dashboard-card"><h3>อนุมัติแล้ว ✅</h3><p id="approvedSubmissions">0</p></div>
             </div>
             <div class="chart-container-wrapper" style="margin-top: 30px; margin-bottom: 30px; max-width: 550px; margin-left: auto; margin-right: auto;">
                 <div class="heading-wrapper">
@@ -1092,7 +1091,11 @@
             document.getElementById('submission-detail-view').style.display = 'none';
             document.getElementById('admin-dashboard').style.display = 'block';
             const fv = document.getElementById('statusFilter').value;
-            const filtered = currentAdminSubmissions.filter(s => fv==='ทั้งหมด' || (s&&s.status===fv));
+            const normalizeStatus = (st) => {
+                if (st === 'รอหัวหน้าตรวจ' || st === 'รอรองฯตรวจ' || st === 'รอผอ.อนุมัติ') return 'รอตรวจ';
+                return st;
+            };
+            const filtered = currentAdminSubmissions.filter(s => fv==='ทั้งหมด' || (s && normalizeStatus(s.status)===fv));
             if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ไม่พบรายการตามเงื่อนไข</td></tr>'; return; }
             filtered.forEach(sub => {
                 const row = tbody.insertRow();
