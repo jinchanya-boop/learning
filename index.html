@@ -883,20 +883,44 @@
             Object.entries(params).forEach(([k,v]) => fd.append(k,v));
             return fd;
         }
-        // POST helper ที่จัดการ redirect ของ Google Apps Script
-        async function postToAppsScript(body) {
-            const res = await fetch(APPS_SCRIPT_URL, {
-                method: 'POST',
-                body: body,
-                redirect: 'follow'
-            });
-            const text = await res.text();
-            try {
-                return JSON.parse(text);
-            } catch(e) {
-                // กรณี redirect ไปหน้า HTML → ลองดึง JSON จาก response
-                throw new Error('เซิร์ฟเวอร์ตอบกลับผิดปกติ กรุณา Deploy code.gs เวอร์ชันใหม่');
+
+        // ===== ระบบ Retry อัตโนมัติ สำหรับ Google Apps Script =====
+        async function fetchWithRetry(url, options = {}, maxRetries = 3) {
+            for (let attempt = 1; attempt <= maxRetries; attempt++) {
+                try {
+                    const res = await fetch(url, { ...options, redirect: 'follow' });
+                    const text = await res.text();
+                    // ตรวจสอบว่าเป็น JSON จริงหรือไม่
+                    if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                        return JSON.parse(text);
+                    }
+                    // ถ้าไม่ใช่ JSON (ได้ HTML กลับมา) ให้ลองใหม่
+                    if (attempt < maxRetries) {
+                        console.warn(`ครั้งที่ ${attempt}: ได้ HTML กลับมา ลองใหม่ใน ${attempt}วินาที...`);
+                        await new Promise(r => setTimeout(r, attempt * 1000));
+                        continue;
+                    }
+                    throw new Error('เซิร์ฟเวอร์ไม่ตอบกลับ กรุณาลองใหม่อีกครั้ง');
+                } catch(e) {
+                    if (attempt < maxRetries && (e.message.includes('Failed to fetch') || e.message.includes('ไม่ตอบกลับ'))) {
+                        console.warn(`ครั้งที่ ${attempt}: ${e.message} ลองใหม่...`);
+                        await new Promise(r => setTimeout(r, attempt * 1000));
+                        continue;
+                    }
+                    throw e;
+                }
             }
+        }
+
+        // POST helper
+        async function postToAppsScript(body) {
+            return fetchWithRetry(APPS_SCRIPT_URL, { method: 'POST', body: body });
+        }
+
+        // GET helper
+        async function getFromAppsScript(params) {
+            const url = buildUrl(params);
+            return fetchWithRetry(url);
         }
 
         // ===== UPDATE BADGES =====
@@ -1090,8 +1114,7 @@
         async function loadAdminSubmissions() {
             Swal.fire({ title:'กำลังโหลดข้อมูล...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const res = await fetch(buildUrl({ action:'getAdminSubmissions' }));
-                const result = await res.json();
+                const result = await getFromAppsScript({ action:'getAdminSubmissions' });
                 if (result.success) { currentAdminSubmissions = result.data||[]; displayFilteredSubmissions(); Swal.close(); }
                 else throw new Error(result.message);
             } catch(err) {
@@ -1253,8 +1276,7 @@
         }
         async function loadSummaryStats() {
             try {
-                const res = await fetch(buildUrl({ action:'getSummaryStats' }));
-                const result = await res.json();
+                const result = await getFromAppsScript({ action:'getSummaryStats' });
                 if (result.success) { pdfSummaryData = result.data; displaySummaryStats(result.data); }
                 else throw new Error(result.message);
             } catch(err) { document.getElementById('statsContent').innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${err.message}</p>`; }
@@ -1334,8 +1356,7 @@
         async function loadDashboardData() {
             Swal.fire({ toast:true, position:'top-end', icon:'info', title:'กำลังโหลดสถิติ...', showConfirmButton:false, timer:1500 });
             try {
-                const res = await fetch(buildUrl({ action:'getDashboardData' }));
-                const result = await res.json();
+                const result = await getFromAppsScript({ action:'getDashboardData' });
                 if (result.success&&result.data) {
                     const d = result.data;
                     document.getElementById('totalSubmissions').textContent    = d.total||0;
@@ -1351,8 +1372,7 @@
             if (!canvas) return;
             const ctx = canvas.getContext('2d');
             try {
-                const res = await fetch(buildUrl({ action:'getLearningAreaStats' }));
-                const result = await res.json();
+                const result = await getFromAppsScript({ action:'getLearningAreaStats' });
                 if (learningSystemAreaChartInstance) learningSystemAreaChartInstance.destroy();
                 if (result.success&&result.counts&&Object.keys(result.counts).length>0) {
                     learningSystemAreaChartInstance = new Chart(ctx, {
@@ -1374,16 +1394,14 @@
         async function searchByName(searchTerm) {
             if (!searchTerm.trim()) { loadAllSubmissions(); return; }
             try {
-                const res = await fetch(buildUrl({ action:'searchSubmissions', searchTerm:encodeURIComponent(searchTerm) }));
-                const result = await res.json();
+                const result = await getFromAppsScript({ action:'searchSubmissions', searchTerm:encodeURIComponent(searchTerm) });
                 if (result.success) { allRecentSubmissions=result.data||[]; displaySubmissions(allRecentSubmissions); showSearchResultInfo(searchTerm,allRecentSubmissions.length); isSearchActive=true; }
                 else throw new Error(result.message);
             } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', `การค้นหา: ${err.message}`, 'error'); }
         }
         async function loadAllSubmissions() {
             try {
-                const res = await fetch(buildUrl({ action:'getAllSubmissions' }));
-                const result = await res.json();
+                const result = await getFromAppsScript({ action:'getAllSubmissions' });
                 if (result.success) { allRecentSubmissions=result.data||[]; displaySubmissions(allRecentSubmissions); hideSearchResultInfo(); isSearchActive=false; }
             } catch(err) { console.error(err); }
         }
