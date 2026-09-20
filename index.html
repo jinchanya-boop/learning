@@ -883,6 +883,21 @@
             Object.entries(params).forEach(([k,v]) => fd.append(k,v));
             return fd;
         }
+        // POST helper ที่จัดการ redirect ของ Google Apps Script
+        async function postToAppsScript(body) {
+            const res = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: body,
+                redirect: 'follow'
+            });
+            const text = await res.text();
+            try {
+                return JSON.parse(text);
+            } catch(e) {
+                // กรณี redirect ไปหน้า HTML → ลองดึง JSON จาก response
+                throw new Error('เซิร์ฟเวอร์ตอบกลับผิดปกติ กรุณา Deploy code.gs เวอร์ชันใหม่');
+            }
+        }
 
         // ===== UPDATE BADGES =====
         function updateAllBadges() {
@@ -1045,8 +1060,7 @@
             }
             if (!hasData) { Swal.fire('ข้อมูลไม่ครบถ้วน','กรุณากรอกข้อมูลวิชาและ/หรือแนบไฟล์อย่างน้อย 1 รายการ','warning'); return; }
             try {
-                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:fd });
-                const result = await res.json();
+                const result = await postToAppsScript(fd);
                 if (result.success) {
                     Swal.fire('สำเร็จ!','ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว!','success');
                     this.reset(); setTimestamp(); createCourseBlocks();
@@ -1117,8 +1131,7 @@
         async function deleteSubmissionOnServer(id) {
             Swal.fire({ title:'กำลังลบข้อมูล...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:buildPayload({ action:'deleteSubmission', submissionId:id }) });
-                const result = await res.json();
+                const result = await postToAppsScript(buildPayload({ action:'deleteSubmission', submissionId:id }));
                 if (result.success) {
                     Swal.fire('ลบแล้ว!','ข้อมูลการส่งงานถูกลบออกแล้ว','success');
                     const row = document.querySelector(`tr[data-id="${id}"]`); if (row) row.remove();
@@ -1210,8 +1223,7 @@
                     adminComment,
                     adminRole: currentAdminRole
                 });
-                const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: payload });
-                const result = await res.json();
+                const result = await postToAppsScript(payload);
                 if (result.success) {
                     Swal.fire('สำเร็จ!','อัปเดตสถานะแล้ว','success');
                     document.getElementById('submission-detail-view').style.display = 'none';
@@ -1292,8 +1304,7 @@
             try {
                 const fd = buildPayload({ action:'generatePdf', summaryTerm:term, summaryYear:year, summaryCheckNumber:checkNumber });
                 points.forEach((p,i) => fd.append(`summaryPoint${i+1}`, p));
-                const res = await fetch(APPS_SCRIPT_URL, { method:'POST', body:fd });
-                const result = await res.json();
+                const result = await postToAppsScript(fd);
                 if (result.success) {
                     const a = document.createElement('a'); a.href=result.fileUrl; a.download=result.fileName;
                     document.body.appendChild(a); a.click(); document.body.removeChild(a);
