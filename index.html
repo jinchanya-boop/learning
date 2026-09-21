@@ -400,14 +400,6 @@
                     <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์
                 </button>
             </div>
-            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
-                <i class="fa-solid fa-file-pdf" style="font-size: 4em; color: #d32f2f; margin-bottom: 15px;"></i>
-                <h3 style="margin-top: 10px; color: var(--primary-color);">เอกสาร PDF</h3>
-                <p style="color: var(--dark-gray); margin-bottom: 25px;">คู่มือและเอกสารประกอบการใช้งาน</p>
-                <button type="button" onclick="downloadPdfFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px; background-color: #d32f2f;">
-                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (PDF)
-                </button>
-            </div>
         </section>
 
         <!-- ADMIN SECTION -->
@@ -578,7 +570,6 @@
         let currentAdminRoleName = '';
         const GOOGLE_DOC_ID_BASIC = '1IyWlYMn9JxRnXVylsBjsviG5awQRLYNG';
         const GOOGLE_DOC_ID_ADDITIONAL = '1lhNI1iYvlLaUCZReHQqHMoZPoGYCT5AG';
-        const GOOGLE_DRIVE_PDF_ID = '1RFdYMPyk9u5-cmGaJoF-bPUJCH0MYALc';
 
         // ===== STATE =====
         let currentYear = 2569;
@@ -1000,17 +991,6 @@
                 Swal.fire({ position:'top-end', icon:'success', title:'ดาวน์โหลดเสร็จสิ้น!', showConfirmButton:false, timer:2000 });
             }, 500);
         }
-        function downloadPdfFile() {
-            const url = `https://drive.google.com/uc?export=download&id=${GOOGLE_DRIVE_PDF_ID}`;
-            Swal.fire({ title:'กำลังดาวน์โหลด...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
-            setTimeout(() => {
-                const a = document.createElement('a'); a.href = url; a.download = 'เอกสารประกอบการใช้งาน.pdf';
-                document.body.appendChild(a); a.click(); document.body.removeChild(a);
-                Swal.close();
-                Swal.fire({ position:'top-end', icon:'success', title:'ดาวน์โหลดเสร็จสิ้น!', showConfirmButton:false, timer:2000 });
-            }, 500);
-        }
-
         // ===== UTILS =====
         function toBase64(file) {
             return new Promise((res,rej) => {
