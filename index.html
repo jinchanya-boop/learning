@@ -386,10 +386,18 @@
             </div>
             <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray); margin-bottom: 25px;">
                 <i class="fa-solid fa-file-word" style="font-size: 4em; color: #2b5797; margin-bottom: 15px;"></i>
-                <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้</h3>
+                <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้วิชาพื้นฐาน</h3>
                 <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2569</p>
-                <button type="button" onclick="downloadFormFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px;">
-                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์ (ODT)
+                <button type="button" onclick="downloadBasicCourseFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์
+                </button>
+            </div>
+            <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray); margin-bottom: 25px;">
+                <i class="fa-solid fa-file-word" style="font-size: 4em; color: #2b5797; margin-bottom: 15px;"></i>
+                <h3 style="margin-top: 10px; color: var(--primary-color);">แบบฟอร์มระบบเรียนรู้วิชาเพิ่มเติม</h3>
+                <p style="color: var(--dark-gray); margin-bottom: 25px;">สำหรับภาคเรียนที่ 2 ปีการศึกษา 2569</p>
+                <button type="button" onclick="downloadAdditionalCourseFile()" class="custom-button" style="font-size: 1.1em; padding: 12px 25px;">
+                    <i class="fa-solid fa-download"></i> ดาวน์โหลดไฟล์
                 </button>
             </div>
             <div style="text-align: center; padding: 40px 20px; background-color: #f8f9fa; border-radius: var(--border-radius); border: 2px dashed var(--medium-gray);">
@@ -568,7 +576,8 @@
         };
         let currentAdminRole = null;
         let currentAdminRoleName = '';
-        const GOOGLE_DOC_ID = '1UTxFsp2OcMqZS41HlPKUFy03jMaas5Hy';
+        const GOOGLE_DOC_ID_BASIC = '1IyWlYMn9JxRnXVylsBjsviG5awQRLYNG';
+        const GOOGLE_DOC_ID_ADDITIONAL = '1lhNI1iYvlLaUCZReHQqHMoZPoGYCT5AG';
         const GOOGLE_DRIVE_PDF_ID = '1RFdYMPyk9u5-cmGaJoF-bPUJCH0MYALc';
 
         // ===== STATE =====
@@ -971,11 +980,21 @@
         }
 
         // ===== DOWNLOAD =====
-        function downloadFormFile() {
-            const url = `https://docs.google.com/document/d/${GOOGLE_DOC_ID}/export?format=odt`;
+        function downloadBasicCourseFile() {
+            const url = `https://docs.google.com/document/d/${GOOGLE_DOC_ID_BASIC}/export?format=doc`;
             Swal.fire({ title:'กำลังดาวน์โหลด...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             setTimeout(() => {
-                const a = document.createElement('a'); a.href = url; a.download = 'แบบฟอร์มระบบเรียนรู้_2569.odt';
+                const a = document.createElement('a'); a.href = url; a.download = 'แบบฟอร์มระบบเรียนรู้วิชาพื้นฐาน_2569.doc';
+                document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                Swal.close();
+                Swal.fire({ position:'top-end', icon:'success', title:'ดาวน์โหลดเสร็จสิ้น!', showConfirmButton:false, timer:2000 });
+            }, 500);
+        }
+        function downloadAdditionalCourseFile() {
+            const url = `https://docs.google.com/document/d/${GOOGLE_DOC_ID_ADDITIONAL}/export?format=doc`;
+            Swal.fire({ title:'กำลังดาวน์โหลด...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            setTimeout(() => {
+                const a = document.createElement('a'); a.href = url; a.download = 'แบบฟอร์มระบบเรียนรู้วิชาเพิ่มเติม_2569.doc';
                 document.body.appendChild(a); a.click(); document.body.removeChild(a);
                 Swal.close();
                 Swal.fire({ position:'top-end', icon:'success', title:'ดาวน์โหลดเสร็จสิ้น!', showConfirmButton:false, timer:2000 });
