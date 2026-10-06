@@ -517,7 +517,7 @@
                 <h3>ค้นหาผู้ส่งงาน</h3>
             </div>
             <div class="search-container">
-                <input type="text" id="searchNameInput" placeholder="ค้นหาชื่อผู้ส่งงาน..." />
+                <input type="text" id="searchNameInput" placeholder="ค้นหาชื่อผู้ส่ง ชื่อวิชา หรือกลุ่มสาระ..." />
                 <button type="button" id="searchButton"><i class="fa-solid fa-search"></i>ค้นหา</button>
                 <button type="button" id="clearSearchButton"><i class="fa-solid fa-times"></i>ล้างการค้นหา</button>
             </div>
@@ -551,8 +551,21 @@
     </footer>
 
     <script>
+        // =====================================================================
+        // 📝 บันทึกการแก้ไข (ค้นหาคำว่า "[แก้ไข]" หรือ "[เพิ่มใหม่]")
+        //   - [เพิ่มใหม่] ADMIN_PASSWORD_HASH        : ปุ่ม "ผู้ดูแล" หน้าเลขที่บันทึกข้อความใช้งานได้แล้ว
+        //   - [เพิ่มใหม่] normalizeName(), escapeHtml()
+        //   - [แก้ไข]   searchByName()               : ค้นหาไม่เจอเพราะคำค้นถูก encode ซ้ำ 2 ชั้น
+        //   - [แก้ไข]   showSearchResultInfo()       : บอกปี/ภาค/ครั้ง + คำแนะนำเมื่อไม่พบ
+        //   - [แก้ไข]   loadAdminSubmissions()       : ข้อความ error ไม่ถูกปิดทิ้งทันทีอีกต่อไป
+        //   - [แก้ไข]   showSubmissionDetail()       : เลือกสถานะปัจจุบันไว้ให้อัตโนมัติ
+        //   - [เพิ่มใหม่] loadSavedComment(), saveCurrentComment(), printMemoAsPdf()
+        // =====================================================================
+
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyQ7qN5tVTKT9BQ0kgDKp69t8OWfIstvlRNITxlqq7km6sATM5P9uPTPCngWTVdAfqP/exec';
-        
+
+        // ✅ [เพิ่มใหม่] รหัสผ่านผู้ดูแลหัวเรื่องบันทึกข้อความ (เดิมไม่ได้ประกาศไว้ ทำให้ปุ่ม "ผู้ดูแล" error)
+        const ADMIN_PASSWORD_HASH = 'admin999';
 
         // ===== หัวหน้ากลุ่มสาระแต่ละกลุ่ม (แก้ไขได้ที่นี่) =====
         const HEAD_OF_AREA = {
@@ -872,6 +885,7 @@
             url.searchParams.set('year', currentYear);
             url.searchParams.set('term', currentTerm);
             url.searchParams.set('round', currentRound);
+            // หมายเหตุ: searchParams.set() เข้ารหัส (encode) ค่าให้อัตโนมัติแล้ว ห้าม encodeURIComponent ซ้ำ
             Object.entries(params).forEach(([k,v]) => url.searchParams.set(k,v));
             return url.toString();
         }
@@ -1000,6 +1014,23 @@
                 r.onerror = e => rej(e);
             });
         }
+
+        // ✅ [เพิ่มใหม่] ทำชื่อให้เป็นรูปแบบมาตรฐานก่อนเปรียบเทียบ (ตัดคำนำหน้า ช่องว่าง อักขระล่องหน)
+        function normalizeName(s) {
+            return String(s || '')
+                .normalize('NFC')
+                .replace(/[\u200B-\u200D\uFEFF]/g, '')
+                .trim()
+                .replace(/^(นางสาว|น\.ส\.|นาง|นาย|ว่าที่\s*ร\.?ต\.?\s*|ว่าที่ร้อยตรี)\s*/, '')
+                .replace(/\s+/g, '')
+                .toLowerCase();
+        }
+
+        // ✅ [เพิ่มใหม่] กันข้อความที่ผู้ใช้พิมพ์ถูกตีความเป็น HTML
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        }
+
         function setTimestamp() {
             const now = new Date();
             const opts = { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone:'Asia/Bangkok' };
@@ -1110,6 +1141,7 @@
         document.getElementById('statusFilter').addEventListener('change', displayFilteredSubmissions);
         document.getElementById('refreshAdminList').addEventListener('click', loadAdminSubmissions);
 
+        // ✅ [แก้ไข] เดิมมี finally { Swal.close() } ซึ่งปิดหน้าต่างแจ้ง error ทันที ผู้ใช้จึงไม่เห็นว่าเกิดอะไรขึ้น
         async function loadAdminSubmissions() {
             Swal.fire({ title:'กำลังโหลดข้อมูล...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
@@ -1118,8 +1150,8 @@
                 else throw new Error(result.message);
             } catch(err) {
                 Swal.fire('เกิดข้อผิดพลาด!', err.message, 'error');
-                document.getElementById('adminSubmissionsTableBody').innerHTML = `<tr><td colspan="5">Error: ${err.message}</td></tr>`;
-            } finally { Swal.close(); }
+                document.getElementById('adminSubmissionsTableBody').innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(err.message)}</td></tr>`;
+            }
         }
         function displayFilteredSubmissions() {
             const tbody = document.getElementById('adminSubmissionsTableBody');
@@ -1220,6 +1252,13 @@
                 </div>
                 <button type="button" id="updateStatusButtonModal" class="custom-button"><i class="fa-solid fa-floppy-disk"></i>บันทึกการเปลี่ยนแปลง</button>
                 <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>`;
+
+                // ✅ [แก้ไข] เลือกสถานะปัจจุบันไว้ให้ (เดิมตั้งเป็น "รอตรวจ" เสมอ กดบันทึกพลาดจะย้อนสถานะงานที่อนุมัติแล้ว)
+                const legacyPending = ['รอหัวหน้าตรวจ','รอรองฯตรวจ','รอผอ.อนุมัติ'];
+                const curStatus = legacyPending.includes(sub.status) ? 'รอตรวจ' : (sub.status || 'รอตรวจ');
+                const statusSelect = document.getElementById('newStatusModal');
+                if ([...statusSelect.options].some(o => o.value === curStatus)) statusSelect.value = curStatus;
+
                 // โหลด saved comment ของ role นี้จาก localStorage (ถ้ามี)
                 const savedKey = 'savedComment_' + currentAdminRole;
                 const saved = localStorage.getItem(savedKey);
@@ -1233,6 +1272,26 @@
                 loadAdminSubmissions();
             };
         }
+
+        // ✅ [เพิ่มใหม่] ปุ่ม "ใช้ข้อความล่าสุด" (เดิมปุ่มเรียกฟังก์ชันที่ไม่มีอยู่)
+        function loadSavedComment() {
+            const saved = localStorage.getItem('savedComment_' + currentAdminRole);
+            const box = document.getElementById('adminCommentTextModal');
+            if (saved && box) { box.value = saved; box.focus(); }
+            else Swal.fire('ยังไม่มีข้อความที่บันทึกไว้', 'พิมพ์ความคิดเห็นแล้วกด "บันทึกข้อความนี้ไว้ใช้ซ้ำ" ก่อน', 'info');
+        }
+
+        // ✅ [เพิ่มใหม่] ปุ่ม "บันทึกข้อความนี้ไว้ใช้ซ้ำ"
+        function saveCurrentComment() {
+            const box = document.getElementById('adminCommentTextModal');
+            const txt = (box?.value || '').trim();
+            if (!txt) { Swal.fire('กรุณาพิมพ์ความคิดเห็นก่อน', '', 'warning'); return; }
+            localStorage.setItem('savedComment_' + currentAdminRole, txt);
+            const hint = document.getElementById('savedCommentHint');
+            if (hint) hint.textContent = `บันทึกแล้ว: "${txt.substring(0,30)}${txt.length>30?'...':''}"`;
+            Swal.fire({ toast:true, position:'top-end', icon:'success', title:'บันทึกข้อความไว้ใช้ซ้ำแล้ว', showConfirmButton:false, timer:1500 });
+        }
+
         async function updateSubmissionStatus(submissionId) {
             const newStatus    = document.getElementById('newStatusModal').value;
             const adminComment = document.getElementById('adminCommentTextModal').value;
@@ -1278,7 +1337,7 @@
                 const result = await getFromAppsScript({ action:'getSummaryStats' });
                 if (result.success) { pdfSummaryData = result.data; displaySummaryStats(result.data); }
                 else throw new Error(result.message);
-            } catch(err) { document.getElementById('statsContent').innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${err.message}</p>`; }
+            } catch(err) { document.getElementById('statsContent').innerHTML = `<p style="color:red;">เกิดข้อผิดพลาด: ${escapeHtml(err.message)}</p>`; }
         }
         function displaySummaryStats(data) {
             const sc = document.getElementById('statsContent');
@@ -1390,12 +1449,34 @@
                 ctx.fillText("ไม่สามารถโหลดข้อมูลกราฟได้", canvas.width/2, canvas.height/2);
             }
         }
+
+        // ✅ [แก้ไข] สาเหตุที่ค้นหาไม่เจอ: เดิมเรียก encodeURIComponent(searchTerm) แล้ว buildUrl() ก็ encode อีกรอบ
+        //    ฝั่ง Apps Script จึงได้ "%E0%B8%99..." แทนภาษาไทย → ไม่ตรงกับชื่อใดเลย
+        //    ตอนนี้ดึงรายการของ ปี/ภาค/ครั้ง ปัจจุบัน แล้วกรองในเบราว์เซอร์
+        //    ทำงานได้ทันทีแม้ยังไม่ได้ Deploy Apps Script ใหม่ และไม่สนคำนำหน้า/ช่องว่างที่เกิน
         async function searchByName(searchTerm) {
-            if (!searchTerm.trim()) { loadAllSubmissions(); return; }
+            const term = (searchTerm || '').trim();
+            if (!term) { loadAllSubmissions(); return; }
+
+            Swal.fire({ title:'กำลังค้นหา...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
-                const result = await getFromAppsScript({ action:'searchSubmissions', searchTerm:encodeURIComponent(searchTerm) });
-                if (result.success) { allRecentSubmissions=result.data||[]; displaySubmissions(allRecentSubmissions); showSearchResultInfo(searchTerm,allRecentSubmissions.length); isSearchActive=true; }
-                else throw new Error(result.message);
+                const result = await getFromAppsScript({ action:'getAllSubmissions' });
+                if (!result.success) throw new Error(result.message);
+
+                const rawKey  = term.replace(/\s+/g, '').toLowerCase();
+                const nameKey = normalizeName(term) || rawKey; // ถ้าพิมพ์แค่ "นาง" ให้ใช้คำดิบ
+                const found = (result.data || []).filter(s =>
+                    normalizeName(s.fullName).includes(nameKey) ||
+                    String(s.fullName || '').replace(/\s+/g, '').toLowerCase().includes(rawKey) ||
+                    String(s.courseName || '').replace(/\s+/g, '').toLowerCase().includes(rawKey) ||
+                    String(s.learningArea || '').replace(/\s+/g, '').toLowerCase().includes(rawKey)
+                );
+
+                allRecentSubmissions = found;
+                displaySubmissions(found);
+                showSearchResultInfo(term, found.length);
+                isSearchActive = true;
+                Swal.close();
             } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', `การค้นหา: ${err.message}`, 'error'); }
         }
         async function loadAllSubmissions() {
@@ -1468,9 +1549,41 @@
                 }
             });
         }
+
+        // ✅ [เพิ่มใหม่] ปุ่ม PDF (เดิมเรียกฟังก์ชันที่ไม่มีอยู่ กดแล้วไม่เกิดอะไรขึ้น)
+        //    เปิดหน้า memo_design.html ในแท็บใหม่ แล้วเปิดหน้าต่างพิมพ์ให้อัตโนมัติ → เลือก "บันทึกเป็น PDF"
+        function printMemoAsPdf(memoUrl, name) {
+            const w = window.open(memoUrl, '_blank');
+            if (!w) {
+                Swal.fire('เบราว์เซอร์บล็อกหน้าต่างใหม่', 'กรุณาอนุญาต Pop-up สำหรับเว็บนี้ แล้วกดปุ่ม PDF อีกครั้ง', 'warning');
+                return;
+            }
+            Swal.fire({
+                toast:true, position:'top-end', icon:'info',
+                title:`กำลังเปิดบันทึกข้อความของ ${name || ''}`,
+                text:'ในหน้าต่างพิมพ์ ให้เลือกปลายทาง "บันทึกเป็น PDF"',
+                showConfirmButton:false, timer:3500
+            });
+            const tryPrint = () => { try { w.focus(); w.print(); } catch(e) { console.warn('พิมพ์อัตโนมัติไม่ได้:', e); } };
+            try {
+                // รอให้ฟอนต์และลายเซ็นโหลดเสร็จก่อนสั่งพิมพ์
+                w.addEventListener('load', () => setTimeout(tryPrint, 1200));
+            } catch(e) {
+                setTimeout(tryPrint, 2500);
+            }
+        }
+
+        // ✅ [แก้ไข] แสดงว่ากำลังค้นใน ปี/ภาค/ครั้ง ใด และแนะนำเมื่อไม่พบ
         function showSearchResultInfo(term, count) {
             const el = document.getElementById('searchResultInfo');
-            if (el) { el.style.display='block'; el.innerHTML=`<i class="fa-solid fa-info-circle"></i> ผลการค้นหา "${term}": พบ ${count} รายการ`; }
+            if (!el) return;
+            el.style.display = 'block';
+            let html = `<i class="fa-solid fa-info-circle"></i> ผลการค้นหา "${escapeHtml(term)}": พบ ${count} รายการ
+                <span style="opacity:.75;">(ปีการศึกษา ${currentYear} ภาคเรียนที่ ${currentTerm} ครั้งที่ ${currentRound})</span>`;
+            if (count === 0) {
+                html += `<br><small style="color:#c0392b;">หากครูท่านนี้ส่งงานแล้ว ลองเปลี่ยนปีการศึกษา ภาคเรียน หรือครั้งที่ส่ง ที่ด้านบนของหน้า</small>`;
+            }
+            el.innerHTML = html;
         }
         function hideSearchResultInfo() { const el=document.getElementById('searchResultInfo'); if (el) el.style.display='none'; }
         document.getElementById('searchButton').addEventListener('click', () => searchByName(document.getElementById('searchNameInput').value));
