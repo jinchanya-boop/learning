@@ -150,6 +150,26 @@
         .memo-topic-card .topic-arrow { position: absolute; right: 16px; top: 50%; transform: translateY(-50%); color: var(--primary-color); font-size: 1.3em; opacity: 0.5; transition: opacity 0.2s, right 0.2s; }
         .memo-topic-card:hover .topic-arrow { opacity: 1; right: 12px; }
 
+        /* ✅ [เพิ่มใหม่] สติกเกอร์ NEW สำหรับหัวเรื่องใหม่ */
+        .memo-topic-card.is-new { border-color: #ff8a3d; background: linear-gradient(135deg, #ffffff 0%, #fff4ea 100%); }
+        .memo-topic-card.is-new::before { background: #ff6b2c; }
+        .new-sticker {
+            position: absolute; top: 14px; right: 14px;
+            background: #ff3d57; color: #fff;
+            font-weight: 700; font-size: 0.78em; letter-spacing: 0.5px;
+            padding: 4px 12px; border-radius: 999px;
+            transform: rotate(8deg);
+            box-shadow: 0 3px 8px rgba(255,61,87,0.35);
+            border: 2px solid #fff;
+            display: inline-flex; align-items: center; gap: 4px;
+            animation: newPop 2.4s ease-in-out infinite;
+        }
+        @keyframes newPop {
+            0%, 100% { transform: rotate(8deg) scale(1); }
+            50%      { transform: rotate(8deg) scale(1.08); }
+        }
+        @media (prefers-reduced-motion: reduce) { .new-sticker { animation: none; } }
+
         /* BACK BUTTON */
         .back-to-topics-btn { background-color: #6c757d; color: white; border: none; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-family: var(--font-family); font-size: 0.9em; display: inline-flex; align-items: center; gap: 6px; margin-bottom: 16px; transition: background-color 0.3s; }
         .back-to-topics-btn:hover { background-color: #5a6268; }
@@ -692,8 +712,8 @@
             { id:'topic_1', icon:'📚', title:'ส่งระบบเรียนรู้ ภาคเรียนที่ 2 ปีการศึกษา 2568', data: MEMO_TOPIC_1_DATA, createdAt:'5 มกราคม 2569' },
             { id:'topic_2', icon:'📋', title:'รายงานการพัฒนาผู้เรียนตามการวิเคราะห์ผู้เรียนรายบุคคล ภาคเรียนที่ 2 ปีการศึกษา 2568', data: MEMO_TOPIC_2_DATA, createdAt:'31 มีนาคม 2569' },
             { id:'topic_3', icon:'📝', title:'ส่งระบบเรียนรู้ ครั้งที่ 1 ภาคเรียนที่ 1 ปีการศึกษา 2569', data: MEMO_TOPIC_3_DATA, createdAt:'11 พฤษภาคม 2569' },
-            { id:'topic_4', icon:'📗', title:'ส่งระบบเรียนรู้ ครั้งที่ 2 ภาคเรียนที่ 1 ปีการศึกษา 2569', data: MEMO_TOPIC_4_DATA, createdAt:'8 ตุลาคม 2569' },
-            { id:'topic_5', icon:'📘', title:'ส่งระบบเรียนรู้ ครั้งที่ 1 ภาคเรียนที่ 2 ปีการศึกษา 2569', data: MEMO_TOPIC_5_DATA, createdAt:'9 ตุลาคม 2569' }
+            { id:'topic_4', icon:'📗', title:'ส่งระบบเรียนรู้ ครั้งที่ 2 ภาคเรียนที่ 1 ปีการศึกษา 2569', data: MEMO_TOPIC_4_DATA, createdAt:'8 ตุลาคม 2569', isNew:true },
+            { id:'topic_5', icon:'📘', title:'ส่งระบบเรียนรู้ ครั้งที่ 1 ภาคเรียนที่ 2 ปีการศึกษา 2569', data: MEMO_TOPIC_5_DATA, createdAt:'9 ตุลาคม 2569', isNew:true }
         ];
         const BUILT_IN_TOPIC_IDS = ['topic_1','topic_2','topic_3','topic_4','topic_5'];
 
@@ -724,9 +744,10 @@
             const grid = document.getElementById('memoTopicsGrid');
             if (!grid) return;
             grid.innerHTML = '';
-            MEMO_TOPICS.forEach(topic => {
+            // ✅ [แก้ไข] แสดงหัวเรื่องใหม่ล่าสุดไว้ด้านหน้า (เรียงย้อนจากท้ายรายการ)
+            [...MEMO_TOPICS].reverse().forEach(topic => {
                 const card = document.createElement('div');
-                card.className = 'memo-topic-card';
+                card.className = 'memo-topic-card' + (topic.isNew ? ' is-new' : '');
                 card.onclick = () => openMemoTopic(topic.id);
                 const firstMemo = topic.data[0]?.memoNo || '';
                 const lastMemo  = topic.data[topic.data.length-1]?.memoNo || '';
@@ -737,7 +758,8 @@
                         <span class="topic-count"><i class="fa-solid fa-users"></i> ${topic.data.length} คน</span>
                         <span class="topic-date-range">เลขที่ ${firstMemo} – ${lastMemo}</span>
                     </div>
-                    <i class="fa-solid fa-chevron-right topic-arrow"></i>`;
+                    <i class="fa-solid fa-chevron-right topic-arrow"></i>
+                    ${topic.isNew ? '<span class="new-sticker">✨ NEW</span>' : ''}`;
                 grid.appendChild(card);
             });
             renderAdminTopicList();
@@ -841,7 +863,7 @@
             const thaiMonths = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
             const today = new Date();
             MEMO_TOPICS.push({
-                id: 'topic_' + Date.now(), icon, title, data: parsedData,
+                id: 'topic_' + Date.now(), icon, title, data: parsedData, isNew: true,
                 createdAt: `${today.getDate()} ${thaiMonths[today.getMonth()]} ${today.getFullYear()+543}`
             });
             saveMemoTopicsToStorage();
