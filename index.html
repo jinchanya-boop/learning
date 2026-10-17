@@ -1396,6 +1396,9 @@
                     <h3>รายละเอียดการส่งงาน</h3>
                 </div>
                 <p><strong>ID:</strong> ${sub.id||'N/A'}</p>
+                ${(rm => `<p><strong>เลขที่บันทึกข้อความ:</strong> ${rm.memoNo ? escapeHtml(formatMemoNo(rm.memoNo)) + ' ลงวันที่ ' + escapeHtml(rm.memoDate || '-') : '<span style="color:#c0392b;">ยังไม่มี</span>'}
+                    <small style="color:#888;">(${rm.source === 'saved' ? 'บันทึกไว้แล้ว' : rm.source === 'list' ? 'ดึงจากเมนูเลขที่บันทึกข้อความ' : 'ไม่พบชื่อในรายการ'})</small>
+                    <button type="button" class="custom-button mini" style="background:#3d8bd9;" onclick="editMemoNumber('${escapeHtml(sub.id)}')"><i class="fa-solid fa-pen"></i> กรอก/แก้เลขที่</button></p>`)(resolveMemo(sub.fullName, sub.memoNo, sub.memoDate))}
                 <p><strong>วันที่ส่ง:</strong> ${sub.submissionTimestamp||'N/A'}</p>
                 <p><strong>ชื่อผู้ส่ง:</strong> ${sub.fullName||'N/A'}</p>
                 <p><strong>กลุ่มสาระฯ:</strong> ${sub.learningArea||'N/A'}</p>
@@ -1771,13 +1774,21 @@
         let teacherSigState = { name:'', exists:false, pending:null }; // pending = { imageBase64, pin }
 
         // ---------- หาเลขที่บันทึกข้อความของครูในรอบที่เลือก ----------
-        function lookupMemoNumber(fullName) {
-            const topicId = MEMO_ROUND_TOPIC[currentYear]?.[currentTerm]?.[currentRound];
+        // ✅ [แก้ไข] ระบุปี/ภาค/ครั้งได้ (ค่าเริ่มต้น = รอบที่เลือกอยู่) เพื่อใช้ตอนแสดงบันทึกข้อความด้วย
+        function lookupMemoNumber(fullName, year = currentYear, term = currentTerm, round = currentRound) {
+            const topicId = MEMO_ROUND_TOPIC[year]?.[term]?.[round];
             if (!topicId || !fullName) return null;
             const topic = MEMO_TOPICS.find(t => t.id === topicId);
             if (!topic) return null;
             const key = normalizeName(fullName);
             return topic.data.find(t => normalizeName(t.name) === key) || null;
+        }
+
+        // เลขที่ที่ใช้จริง: ค่าที่บันทึกไว้ในชีต (ส่งงาน/ผู้ตรวจกรอก) > ค้นจากเมนู "เลขที่บันทึกข้อความของครู"
+        function resolveMemo(name, memoNo, memoDate, year, term, round) {
+            if (memoNo) return { memoNo, memoDate: memoDate || '', source: 'saved' };
+            const m = lookupMemoNumber(name, year, term, round);
+            return m ? { memoNo: m.memoNo, memoDate: m.date, source: 'list' } : { memoNo: '', memoDate: memoDate || '', source: 'none' };
         }
 
         function formatMemoNo(memoNo) {
@@ -1919,7 +1930,7 @@
             const m = lookupMemoNumber(name);
             box.innerHTML = m
                 ? `<i class="fa-solid fa-circle-check" style="color:#27ae60;"></i> เลขที่บันทึกข้อความ <b>${escapeHtml(formatMemoNo(m.memoNo))}</b> ลงวันที่ <b>${escapeHtml(m.date)}</b>`
-                : `<i class="fa-solid fa-circle-info" style="color:#e67e22;"></i> ยังไม่พบเลขที่บันทึกข้อความของรอบนี้ — ปะหน้าจะเว้นช่องเลขที่ไว้ให้เขียนเอง`;
+                : `<i class="fa-solid fa-circle-info" style="color:#e67e22;"></i> ไม่พบชื่อนี้ในรายการเลขที่บันทึกข้อความของรอบนี้ — ส่งงานได้ตามปกติ ผู้ตรวจจะกรอกเลขที่ให้ภายหลัง`;
         }
 
         async function refreshTeacherSignatureBox() {
@@ -2203,7 +2214,7 @@
                     <td>${escapeHtml(sub.submissionTimestamp || '')}</td>
                     <td><b>${escapeHtml(sub.fullName || '')}</b><br><small style="color:#888;">${escapeHtml(sub.position || 'ครู')}</small></td>
                     <td>${escapeHtml(sub.learningArea || '')}</td>
-                    <td>${sub.memoNo ? escapeHtml(formatMemoNo(sub.memoNo)) : '<span style="color:#aaa;">—</span>'}</td>
+                    <td>${(m => m ? escapeHtml(formatMemoNo(m)) : '<span style="color:#c0392b;font-size:0.85em;">ยังไม่มีเลขที่</span>')(resolveMemo(sub.fullName, sub.memoNo, sub.memoDate).memoNo)}</td>
                     <td>${progressChips(sub)}</td>
                     <td style="white-space:nowrap;">
                         <button type="button" class="custom-button mini" onclick="openDocViewer('${escapeHtml(sub.id)}','signer')"><i class="fa-solid fa-eye"></i> ดูออนไลน์</button>
@@ -2319,6 +2330,8 @@
             const roundText = Number(d.round) === 2 ? 'ครั้งที่ 2 ' : '';
             const termYear = `ภาคเรียนที่ ${d.term} ปีการศึกษา ${d.year}`;
             const subject = `ส่งระบบเรียนรู้ ${roundText}${termYear}`;
+            const rm = resolveMemo(d.teacherName, d.memoNo, d.memoDate, d.year, d.term, d.round);
+            d = { ...d, memoNo: rm.memoNo, memoDate: rm.memoDate };
             const memoNoHtml = d.memoNo ? e(formatMemoNo(d.memoNo)) : `วช <span class="dots" style="min-width:22mm;"></span>/${e(d.year)}`;
             const dateHtml = d.memoDate ? e(d.memoDate) : '<span class="dots" style="min-width:45mm;"></span>';
             const position = d.position || 'ครู';
@@ -2582,12 +2595,13 @@ ${autoPrint ? `<script>
             showMsg('<span><i class="fa-solid fa-spinner fa-spin"></i>&nbsp; กำลังเปิดเอกสาร...</span>');
             if (key === 'memo') {
                 try {
-                    let url = docViewer.memoCache[sub.id + '|' + sub.status];
+                    const cacheKey = [sub.id, sub.status, sub.memoNo, sub.memoDate].join('|');
+                    let url = docViewer.memoCache[cacheKey];
                     if (!url) {
                         const r = await getFromAppsScript({ action:'getMemoData', submissionId: sub.id });
                         if (!r.success) throw new Error(r.message);
                         url = URL.createObjectURL(new Blob([buildMemoHtml(r.data, false, true)], { type:'text/html;charset=utf-8' }));
-                        docViewer.memoCache[sub.id + '|' + sub.status] = url;
+                        docViewer.memoCache[cacheKey] = url;
                     }
                     if (docViewer.id === sub.id && docViewer.tab === 'memo') frame.src = url;
                 } catch (e) { showMsg(`<span style="color:#c0392b;">เปิดบันทึกข้อความไม่สำเร็จ: ${escapeHtml(e.message)}</span>`); }
@@ -2601,7 +2615,8 @@ ${autoPrint ? `<script>
 
         function renderDocViewerActions(sub) {
             const el = document.getElementById('dvActions');
-            const memoBtn = `<button type="button" class="custom-button" style="background:#6c757d;" onclick="openMemo('${escapeHtml(sub.id)}', true)"><i class="fa-solid fa-print"></i> พิมพ์บันทึก</button>`;
+            let memoBtn = `<button type="button" class="custom-button" style="background:#6c757d;" onclick="openMemo('${escapeHtml(sub.id)}', true)"><i class="fa-solid fa-print"></i> พิมพ์บันทึก</button>`;
+            if (docViewer.context === 'admin') memoBtn = `<button type="button" class="custom-button" style="background:#3d8bd9;" onclick="editMemoNumber('${escapeHtml(sub.id)}')"><i class="fa-solid fa-hashtag"></i> เลขที่บันทึก</button>` + memoBtn;
             let buttons = '', hint = '';
             if (docViewer.context === 'signer' && currentSigner && isMyQueue(sub)) {
                 hint = 'อ่านเอกสารครบแล้ว ลงนามหรือส่งกลับได้จากที่นี่ ระบบจะเปิดรายการถัดไปให้อัตโนมัติ';
@@ -2628,6 +2643,36 @@ ${autoPrint ? `<script>
             const nextId = before.slice(start + 1).concat(before.slice(0, start)).find(x => remaining.includes(x) && x !== id);
             if (nextId) { docViewer.id = nextId; docViewer.tab = 'memo'; renderDocViewer(); }
             else { closeDocViewer(); Swal.fire({ icon:'success', title:'ครบทุกรายการในคิวแล้ว 🎉', timer:1800, showConfirmButton:false }); }
+        }
+
+        // ✅ [เพิ่มใหม่] ผู้ตรวจกรอก/แก้เลขที่บันทึกข้อความ (กรณีชื่อครูไม่อยู่ในรายการ หรือออกเลขใหม่)
+        async function editMemoNumber(id) {
+            const sub = currentAdminSubmissions.find(s => s.id === id);
+            if (!sub) return;
+            const rm = resolveMemo(sub.fullName, sub.memoNo, sub.memoDate);
+            const r = await Swal.fire({
+                title: 'เลขที่บันทึกข้อความ',
+                html: `<div style="text-align:left;font-size:0.92em;">
+                    <p style="margin:0 0 10px;"><b>${escapeHtml(sub.fullName)}</b> — ${escapeHtml(sub.learningArea || '')}</p>
+                    <label style="font-weight:600;">เลขที่ (เช่น วช540/2569)</label>
+                    <input id="mnNo" class="swal2-input" style="margin:4px 0 10px;width:100%;" value="${escapeHtml(rm.memoNo)}">
+                    <label style="font-weight:600;">ลงวันที่ (เช่น 9 ตุลาคม 2569)</label>
+                    <input id="mnDate" class="swal2-input" style="margin:4px 0 8px;width:100%;" value="${escapeHtml(rm.memoDate)}">
+                    <small style="color:#888;">ลบทั้งสองช่องแล้วบันทึก = กลับไปใช้เลขจากเมนู "เลขที่บันทึกข้อความของครู" อัตโนมัติ</small></div>`,
+                showCancelButton: true, confirmButtonText: 'บันทึก', cancelButtonText: 'ยกเลิก',
+                preConfirm: () => ({ memoNo: document.getElementById('mnNo').value.trim(), memoDate: document.getElementById('mnDate').value.trim() })
+            });
+            if (!r.isConfirmed) return;
+            Swal.fire({ title:'กำลังบันทึก...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            try {
+                const res = await postToAppsScript(buildPayload({ action:'setMemoNumber', password: currentSigner.password, submissionId: id, memoNo: r.value.memoNo, memoDate: r.value.memoDate }));
+                if (!res.success) throw new Error(res.message);
+                sub.memoNo = r.value.memoNo; sub.memoDate = r.value.memoDate;
+                Swal.fire({ icon:'success', title:'บันทึกเลขที่แล้ว', timer:1200, showConfirmButton:false });
+                if (!document.getElementById('docViewer').hidden && docViewer.id === id) renderDocViewer();
+                else if (document.getElementById('submission-detail-view').style.display === 'block') showSubmissionDetail(id);
+                loadAdminSubmissions(true);
+            } catch (e) { Swal.fire('บันทึกไม่สำเร็จ', e.message, 'error'); }
         }
 
         // ✅ [เพิ่มใหม่] กล่องความเห็นในแดชบอร์ด: ผู้ตรวจ (สีเหลือง) + ผู้ลงนาม (สีฟ้า)
