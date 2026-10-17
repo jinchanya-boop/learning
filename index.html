@@ -233,6 +233,23 @@
         .chips { display: inline-flex; gap: 3px; flex-wrap: wrap; }
         .chip { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: #eee; color: #888; white-space: nowrap; }
         .chip.done { background: #d6f3e6; color: #0b7a5a; font-weight: 600; }
+        /* ✅ [เพิ่มใหม่] ฟอร์มรายงาน 7.5 */
+        .r75-course { background: #fff; border: 1px solid #dfe2fb; border-radius: 12px; padding: 12px 14px; margin-bottom: 12px; }
+        .r75-course-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; color: var(--primary-color); }
+        .r75-grid3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 14px; }
+        .r75-form label { font-size: 0.9em; margin-bottom: 0; }
+        .r75-form input, .r75-form select, .r75-form textarea { margin: 3px 0 8px; }
+        .r75-sub { font-weight: 600; color: #444; margin: 8px 0 6px; font-size: 0.92em; }
+        .r75-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .r75-table th, .r75-table td { border: 1px solid #e0e3fa; padding: 4px 6px; text-align: center; }
+        .r75-table th { background: #f3f4ff; color: var(--primary-color); }
+        .r75-table input { width: 90px; margin: 0; padding: 4px 6px; text-align: center; }
+        .r75-calc { color: #0b5a43; font-weight: 600; min-width: 60px; }
+        .r75-goals { display: flex; gap: 6px; flex-wrap: wrap; font-size: 0.8em; }
+        .r75-goals span { padding: 2px 8px; border-radius: 10px; }
+        .r75-goals .ok { background: #d6f3e6; color: #0b7a5a; }
+        .r75-goals .no { background: #fde2e2; color: #c0392b; }
+
         /* ✅ [เพิ่มใหม่] หน้าต่างดูเอกสารออนไลน์ */
         .dv { position: fixed; inset: 0; z-index: 1000; background: rgba(20,22,60,.55); display: flex; padding: 14px; }
         .dv[hidden] { display: none; }
@@ -461,6 +478,13 @@
                 <div id="course-blocks-container"></div>
                 <label for="additionalLink">ลิงก์ URL เพิ่มเติม (ถ้ามี):</label>
                 <input type="url" id="additionalLink" name="additionalLink" placeholder="เช่น https://www.example.com/บทเรียน">
+                <!-- ✅ [เพิ่มใหม่] ครั้งที่ 2: แบบรายงานผลการพัฒนาคุณภาพผู้เรียน (เอกสาร 7.5) -->
+                <div class="sig-card r75-only" id="r75Card">
+                    <h4><i class="fa-solid fa-chart-column"></i> แบบรายงานผลการพัฒนาคุณภาพผู้เรียนตามการวิเคราะห์ผู้เรียน (เอกสาร 7.5)</h4>
+                    <p class="sig-hint">ครั้งที่ 2 ใช้รายงานนี้เป็นบันทึกข้อความปะหน้า กรอกข้อมูลแล้วระบบจะจัดหน้าให้ตามแบบของโรงเรียน</p>
+                    <div class="r75-root" id="r75Root"></div>
+                    <button type="button" class="custom-button" style="background:#6c757d;margin-top:10px;" onclick="previewReport75FromForm()"><i class="fa-solid fa-eye"></i> ดูตัวอย่างบันทึก 7.5</button>
+                </div>
                 <!-- ✅ [เพิ่มใหม่] ลายเซ็นผู้ส่ง -->
                 <div class="sig-card sig-only">
                     <h4><i class="fa-solid fa-signature"></i> ลายเซ็นผู้ส่ง (ใช้ในบันทึกข้อความปะหน้า)</h4>
@@ -1115,6 +1139,10 @@
         function applyRoundMode() {
             const on = isSignatureRound();
             document.querySelectorAll('.sig-only').forEach(el => { el.style.display = on ? '' : 'none'; });
+            const r75on = isReport75Round();
+            document.querySelectorAll('.r75-only').forEach(el => { el.style.display = r75on ? '' : 'none'; });
+            const r75root = document.getElementById('r75Root');
+            if (r75on && r75root && !r75root.children.length) r75Mount(r75root, r75Blank());
             const btn = document.querySelector('#submitFormBtn span');
             if (btn) btn.textContent = on ? 'ลงนามและส่งข้อมูล' : 'ส่งข้อมูล';
             const head = document.getElementById('adminStatusHead');
@@ -1295,6 +1323,13 @@
             const fullNameVal = document.getElementById('fullName').value.trim();
             if (!fullNameVal) { Swal.fire('กรุณากรอกชื่อ-นามสกุล', '', 'warning'); return; }
             const sigRound = isSignatureRound();
+            // ✅ [เพิ่มใหม่] ครั้งที่ 2 ต้องกรอกรายงาน 7.5 ให้ครบ
+            let report75 = null;
+            if (isReport75Round()) {
+                report75 = r75Collect(document.getElementById('r75Root'));
+                const err = r75Validate(report75);
+                if (err) { Swal.fire('รายงาน 7.5 ยังไม่ครบ', err, 'warning'); document.getElementById('r75Card').scrollIntoView({ behavior:'smooth' }); return; }
+            }
             let signaturePin = '';
             if (sigRound) {
                 Swal.fire({ title:'กำลังตรวจลายเซ็น...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
@@ -1308,6 +1343,7 @@
             fd.append('position', document.getElementById('teacherPosition').value);
             fd.append('memoNo', memoInfo ? memoInfo.memoNo : '');
             fd.append('memoDate', memoInfo ? memoInfo.date : '');
+            if (report75) fd.append('report75', JSON.stringify(report75));
             fd.append('submissionTimestamp', document.getElementById('submissionTimestamp').value);
             fd.append('fullName', document.getElementById('fullName').value.trim());
             fd.append('learningArea', document.getElementById('learningArea').value);
@@ -1335,6 +1371,7 @@
                     else Swal.fire('สำเร็จ!','ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว!','success');
                     this.reset(); setTimestamp(); createCourseBlocks();
                     teacherSigState = { name:'', exists:false, pending:null }; refreshTeacherSignatureBox(); renderMemoNumberBox();
+                    if (isReport75Round()) r75Mount(document.getElementById('r75Root'), r75Blank());
                     loadDashboardData(true); loadAndDrawLearningSystemAreaChart();
                     if (document.getElementById('admin-section-content').style.display === 'block') loadAdminSubmissions();
                 } else throw new Error(result.message);
@@ -1743,6 +1780,15 @@
                 viewBtn.style.cssText = 'background:#3d8bd9;padding:5px 12px;font-size:0.82rem;';
                 viewBtn.onclick = () => openMemo(s.id);
                 btnContainer.appendChild(viewBtn);
+                // ✅ [เพิ่มใหม่] ครั้งที่ 2: ครูแก้รายงาน 7.5 ได้จนกว่าหัวหน้ากลุ่มสาระจะลงนาม
+                if (isReport75Round() && normalizeQueueStatus(s.status) === SIG_STATUS.HEAD) {
+                    const eb = document.createElement('button');
+                    eb.innerHTML = `<i class="fa-solid fa-pen-to-square"></i> ${s.hasReport75 ? 'แก้' : 'กรอก'}รายงาน 7.5`;
+                    eb.className = 'custom-button';
+                    eb.style.cssText = 'background:#e67e22;padding:5px 12px;font-size:0.82rem;';
+                    eb.onclick = () => editReport75(s.id, s.fullName);
+                    btnContainer.appendChild(eb);
+                }
                 if (s.status === 'อนุมัติแล้ว') {
                     const pdfBtn = document.createElement('button');
                     pdfBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> PDF';
@@ -2389,11 +2435,280 @@
             }
         }
 
+        // =====================================================================
+        // 📊 [เพิ่มใหม่] ครั้งที่ 2: แบบรายงานผลการพัฒนาคุณภาพผู้เรียนตามการวิเคราะห์ผู้เรียน (เอกสาร 7.5)
+        // =====================================================================
+        const R75_LEVELS = [1, 2, 3, 4, 5, 6].map(n => `มัธยมศึกษาปีที่ ${n}`);
+        const R75_GROUPS = ['เก่ง', 'ปานกลาง', 'อ่อน'];
+        const isReport75Round = (y = currentYear, t = currentTerm, r = currentRound) => isSignatureRound(y, t, r) && Number(r) === 2;
+
+        function r75BlankCourse() {
+            return { code:'', name:'', level:'', students:'', before:['','',''], after:['','',''],
+                     avg:'', avgTarget:'75', pass:'', passTarget:'75', fail:'', failTarget:'5', prevAvg:'', other:'' };
+        }
+        function r75Blank() { return { courses: [r75BlankCourse()], causes:'', guidelines:'' }; }
+
+        const r75Num = v => { const n = parseFloat(String(v).replace(/,/g, '')); return isNaN(n) ? null : n; };
+        const r75Fix = v => { const n = r75Num(v); return n === null ? '' : n.toFixed(2); };
+
+        // คำนวณร้อยละของแต่ละกลุ่ม (เทียบกับผลรวมของคอลัมน์) ผลการพัฒนา และผลเทียบเป้าหมาย 5 ข้อ
+        function r75Compute(c) {
+            const sum = arr => arr.reduce((s, v) => s + (r75Num(v) || 0), 0);
+            const tb = sum(c.before), ta = sum(c.after);
+            const pct = (v, t) => t ? ((r75Num(v) || 0) / t * 100).toFixed(2) : '';
+            const pb = c.before.map(v => pct(v, tb)), pa = c.after.map(v => pct(v, ta));
+            const trend = pb.map((b, i) => (b === '' || pa[i] === '') ? '' : (+pa[i] > +b ? 'เพิ่มขึ้น' : +pa[i] < +b ? 'ลดลง' : 'คงที่'));
+            const met = ok => ok ? 'บรรลุเป้าหมาย' : 'ไม่บรรลุเป้าหมาย';
+            const avg = r75Num(c.avg), pass = r75Num(c.pass), fail = r75Num(c.fail), prev = r75Num(c.prevAvg);
+            const g1 = avg !== null && avg >= (r75Num(c.avgTarget) ?? 0);
+            const g2 = pass !== null && pass >= (r75Num(c.passTarget) ?? 0);
+            const g3 = fail !== null && fail <= (r75Num(c.failTarget) ?? 0);
+            const diff = (avg !== null && prev !== null) ? avg - prev : null;
+            const g4 = diff !== null && diff > 0;
+            const subj = c.name || '..........';
+            const goals = [
+                { ok: g1, text: `ผลการเรียนเฉลี่ยของรายวิชา ${subj} เพิ่มขึ้นเป็นร้อยละ ${c.avg || '....'} เป้าหมาย ร้อยละ ${c.avgTarget || '....'} ${met(g1)}` },
+                { ok: g2, text: `จำนวนร้อยละของนักเรียนที่มีผลการเรียนเป็นไปตามมาตรฐานสถานศึกษากำหนด (2.5 ขึ้นไป) เพิ่มขึ้นเป็นร้อยละ ${c.pass || '....'} เป้าหมาย ร้อยละ ${c.passTarget || '....'} ${met(g2)}` },
+                { ok: g3, text: `จำนวนร้อยละของนักเรียนที่ไม่ผ่านการประเมินขั้นต่ำตามที่สถานศึกษากำหนด ร้อยละ ${c.fail || '....'} เป้าหมายไม่เกินร้อยละ ${c.failTarget || '....'} ${met(g3)}` },
+                { ok: g4, text: `ผลการเรียนเฉลี่ยเปรียบเทียบกับรายวิชา ${subj} รหัสวิชา ${c.code || '....'} ในปีการศึกษาที่ผ่านมา จากร้อยละ ${r75Fix(c.prevAvg) || '....'} เป็นร้อยละ ${r75Fix(c.avg) || '....'} ${diff === null ? 'เพิ่มขึ้นร้อยละ ....' : (diff >= 0 ? 'เพิ่มขึ้น' : 'ลดลง') + 'ร้อยละ ' + Math.abs(diff).toFixed(2)} ${met(g4)}` },
+                { ok: true, other: true, text: `อื่น ๆ ${c.other ? c.other : '...........................-......................................'}` }
+            ];
+            return { pb, pa, trend, goals, allMet: g1 && g2 && g3 && g4 };
+        }
+
+        // ฟอร์มกรอก (ใช้ทั้งในหน้าส่งงาน และหน้าต่างแก้ไขรายงาน)
+        function r75FormHtml(data) {
+            const d = data || r75Blank();
+            const inp = (f, v, ph, extra = '') => `<input type="text" data-f="${f}" value="${escapeHtml(v ?? '')}" placeholder="${ph}" ${extra}>`;
+            const courseHtml = (c, i) => {
+                const comp = r75Compute(c);
+                return `<div class="r75-course" data-i="${i}">
+                    <div class="r75-course-head"><b>รายวิชาที่ ${i + 1}</b>
+                        ${d.courses.length > 1 ? `<button type="button" class="sig-link" style="color:#c0392b;" onclick="r75RemoveCourse(this, ${i})">ลบรายวิชานี้</button>` : ''}</div>
+                    <div class="r75-grid3">
+                        <label>รหัสวิชา ${inp('code', c.code, 'เช่น ว22104')}</label>
+                        <label>ชื่อรายวิชา ${inp('name', c.name, 'เช่น เทคโนโลยี (วิทยาการคำนวณ)')}</label>
+                        <label>ระดับชั้น <select data-f="level"><option value="">เลือก</option>${R75_LEVELS.map(l => `<option ${c.level === l ? 'selected' : ''}>${l}</option>`).join('')}</select></label>
+                        <label>จำนวนนักเรียนทั้งหมด (คน) ${inp('students', c.students, 'เช่น 284', 'inputmode="numeric"')}</label>
+                    </div>
+                    <p class="r75-sub">ผลการพัฒนาผู้เรียนจากการทดสอบหลังเรียน/ผลสัมฤทธิ์ทางการเรียน (กรอกจำนวนคน ระบบคำนวณร้อยละให้)</p>
+                    <table class="r75-table"><thead><tr><th>กลุ่ม</th><th>ก่อน (คน)</th><th>ร้อยละ</th><th>หลัง (คน)</th><th>ร้อยละ</th><th>ผลการพัฒนา</th></tr></thead><tbody>
+                    ${R75_GROUPS.map((g, k) => `<tr><td>${g}</td>
+                        <td><input type="text" inputmode="numeric" data-f="before.${k}" value="${escapeHtml(c.before[k] ?? '')}"></td><td class="r75-calc" data-pb="${k}">${comp.pb[k]}</td>
+                        <td><input type="text" inputmode="numeric" data-f="after.${k}" value="${escapeHtml(c.after[k] ?? '')}"></td><td class="r75-calc" data-pa="${k}">${comp.pa[k]}</td>
+                        <td class="r75-calc" data-tr="${k}">${comp.trend[k]}</td></tr>`).join('')}
+                    </tbody></table>
+                    <p class="r75-sub">ผลเทียบกับเป้าหมาย (ร้อยละ)</p>
+                    <div class="r75-grid3">
+                        <label>1. ผลการเรียนเฉลี่ยของรายวิชา ${inp('avg', c.avg, 'เช่น 77')}</label>
+                        <label>เป้าหมาย ${inp('avgTarget', c.avgTarget, '75')}</label>
+                        <label>2. ร้อยละนักเรียนได้ 2.5 ขึ้นไป ${inp('pass', c.pass, 'เช่น 89.08')}</label>
+                        <label>เป้าหมาย ${inp('passTarget', c.passTarget, '75')}</label>
+                        <label>3. ร้อยละนักเรียนไม่ผ่านขั้นต่ำ ${inp('fail', c.fail, 'เช่น 3.87')}</label>
+                        <label>เป้าหมายไม่เกิน ${inp('failTarget', c.failTarget, '5')}</label>
+                        <label>4. ผลการเรียนเฉลี่ยปีการศึกษาที่ผ่านมา ${inp('prevAvg', c.prevAvg, 'เช่น 71')}</label>
+                        <label style="grid-column: span 2;">5. อื่น ๆ (ถ้ามี) ${inp('other', c.other, '')}</label>
+                    </div>
+                    <div class="r75-goals">${comp.goals.slice(0, 4).map(g => `<span class="${g.ok ? 'ok' : 'no'}">${g.ok ? '✓' : '✗'}</span>`).join('')}</div>
+                </div>`;
+            };
+            return `<div class="r75-form">
+                ${d.courses.map(courseHtml).join('')}
+                ${d.courses.length < 6 ? `<button type="button" class="custom-button mini" style="background:#3d8bd9;" onclick="r75AddCourse(this)"><i class="fa-solid fa-plus"></i> เพิ่มรายวิชา</button>` : ''}
+                <p class="r75-sub" style="margin-top:14px;">ข้อค้นพบที่สำคัญในการพัฒนากิจกรรมการเรียนรู้ <span class="r75-overall"></span></p>
+                <label>สาเหตุ <textarea data-f="causes" rows="3" placeholder="เช่น การจัดการเรียนรู้แบบ Active Learning ...">${escapeHtml(d.causes || '')}</textarea></label>
+                <label>แนวทางการพัฒนา <textarea data-f="guidelines" rows="3" placeholder="เช่น มุ่งเน้นการขยายผล ...">${escapeHtml(d.guidelines || '')}</textarea></label>
+            </div>`;
+        }
+
+        function r75Collect(root) {
+            const form = root.querySelector('.r75-form') || root;
+            const courses = [...form.querySelectorAll('.r75-course')].map(el => {
+                const c = r75BlankCourse();
+                el.querySelectorAll('[data-f]').forEach(inp => {
+                    const [f, k] = inp.dataset.f.split('.');
+                    if (k !== undefined) c[f][Number(k)] = inp.value.trim(); else c[f] = inp.value.trim();
+                });
+                return c;
+            });
+            return { courses, causes: (form.querySelector('[data-f="causes"]')?.value || '').trim(),
+                     guidelines: (form.querySelector('[data-f="guidelines"]')?.value || '').trim() };
+        }
+
+        function r75Validate(d) {
+            for (const [i, c] of d.courses.entries()) {
+                const n = `รายวิชาที่ ${i + 1}: `;
+                if (!c.code || !c.name || !c.level) return n + 'กรุณากรอกรหัสวิชา ชื่อวิชา และระดับชั้น';
+                if (r75Num(c.students) === null) return n + 'กรุณากรอกจำนวนนักเรียนทั้งหมด';
+                if ([...c.before, ...c.after].some(v => r75Num(v) === null)) return n + 'กรุณากรอกจำนวนนักเรียนกลุ่มเก่ง ปานกลาง อ่อน ทั้งก่อนและหลังให้ครบ';
+                if ([c.avg, c.pass, c.fail, c.prevAvg].some(v => r75Num(v) === null)) return n + 'กรุณากรอกผลเทียบเป้าหมายข้อ 1–4 ให้ครบ (เป็นตัวเลข)';
+            }
+            if (!d.causes || !d.guidelines) return 'กรุณากรอกสาเหตุ และแนวทางการพัฒนา';
+            return '';
+        }
+
+        // อัปเดตร้อยละ/ผลการพัฒนาทันทีที่พิมพ์
+        function r75Refresh(root) {
+            const d = r75Collect(root);
+            root.querySelectorAll('.r75-course').forEach((el, i) => {
+                const comp = r75Compute(d.courses[i]);
+                [0, 1, 2].forEach(k => {
+                    el.querySelector(`[data-pb="${k}"]`).textContent = comp.pb[k];
+                    el.querySelector(`[data-pa="${k}"]`).textContent = comp.pa[k];
+                    el.querySelector(`[data-tr="${k}"]`).textContent = comp.trend[k];
+                });
+                el.querySelector('.r75-goals').innerHTML = comp.goals.slice(0, 4).map((g, j) => `<span class="${g.ok ? 'ok' : 'no'}" title="เป้าหมายข้อ ${j + 1}">${j + 1} ${g.ok ? '✓' : '✗'}</span>`).join('');
+            });
+            const all = d.courses.every(c => r75Compute(c).allMet);
+            const o = root.querySelector('.r75-overall');
+            if (o) o.innerHTML = `— จากผลการพัฒนาที่ <b style="color:${all ? '#0b7a5a' : '#c0392b'}">${all ? 'บรรลุเป้าหมาย' : 'ไม่บรรลุเป้าหมาย'}</b>`;
+        }
+        function r75Mount(root, data) {
+            root.innerHTML = r75FormHtml(data);
+            root.oninput = () => r75Refresh(root);
+            root.onchange = () => r75Refresh(root);
+            r75Refresh(root);
+        }
+        function r75AddCourse(btn) {
+            const root = btn.closest('.r75-root');
+            const d = r75Collect(root); d.courses.push(r75BlankCourse());
+            r75Mount(root, d);
+        }
+        function r75RemoveCourse(btn, i) {
+            const root = btn.closest('.r75-root');
+            const d = r75Collect(root); d.courses.splice(i, 1);
+            r75Mount(root, d);
+        }
+
+        // ดูตัวอย่างบันทึก 7.5 จากข้อมูลที่กรอก (ยังไม่มีลายเซ็น)
+        function previewReport75FromForm() {
+            const name = document.getElementById('fullName').value.trim();
+            const m = lookupMemoNumber(name);
+            const d = {
+                year: currentYear, term: currentTerm, round: currentRound, status: '',
+                teacherName: name || '....................', position: document.getElementById('teacherPosition').value,
+                learningArea: document.getElementById('learningArea').value,
+                memoNo: m ? m.memoNo : '', memoDate: m ? m.date : '',
+                headName: HEAD_OF_AREA[document.getElementById('learningArea').value] || '',
+                headPosition: '', deputyName: 'นางสาวอริศรา ยากับ', directorName: 'นางรัชนีวรรณ บุญทวี',
+                report75: r75Collect(document.getElementById('r75Root'))
+            };
+            const w = window.open('', '_blank');
+            if (!w) { Swal.fire('เบราว์เซอร์บล็อกหน้าต่างใหม่', 'กรุณาอนุญาต Pop-up แล้วลองอีกครั้ง', 'warning'); return; }
+            w.location.href = URL.createObjectURL(new Blob([buildMemoHtml(d, false)], { type: 'text/html;charset=utf-8' }));
+        }
+
+        // ครูแก้รายงาน 7.5 หลังส่งงาน (ก่อนหัวหน้ากลุ่มสาระลงนาม) — ยืนยันด้วย PIN ลายเซ็น
+        async function editReport75(id, name) {
+            const p = await Swal.fire({ title: 'แก้รายงาน 7.5', html: `<p style="margin:0 0 8px;">${escapeHtml(name || '')}</p>`,
+                input: 'password', inputLabel: 'PIN ลายเซ็นของคุณ', inputAttributes: { inputmode: 'numeric', maxlength: 6 },
+                showCancelButton: true, confirmButtonText: 'ถัดไป', cancelButtonText: 'ยกเลิก',
+                inputValidator: v => !/^\d{4,6}$/.test(v || '') && 'กรุณากรอก PIN 4–6 หลัก' });
+            if (!p.isConfirmed) return;
+            const pin = p.value;
+            Swal.fire({ title: 'กำลังโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            let cur;
+            try {
+                cur = await postToAppsScript(buildPayload({ action: 'getReport75', submissionId: id, pin }));
+                if (!cur.success) throw new Error(cur.message);
+            } catch (e) { Swal.fire('เปิดรายงานไม่สำเร็จ', e.message, 'error'); return; }
+            const r = await Swal.fire({
+                title: 'แบบรายงานผลการพัฒนาคุณภาพผู้เรียน (7.5)', width: 980,
+                html: '<div class="r75-root" id="r75EditRoot" style="text-align:left;"></div>',
+                didOpen: () => r75Mount(document.getElementById('r75EditRoot'), cur.data || r75Blank()),
+                showCancelButton: true, confirmButtonText: 'บันทึกรายงาน', cancelButtonText: 'ยกเลิก',
+                preConfirm: () => {
+                    const d = r75Collect(document.getElementById('r75EditRoot'));
+                    const err = r75Validate(d);
+                    if (err) { Swal.showValidationMessage(err); return false; }
+                    return d;
+                }
+            });
+            if (!r.isConfirmed) return;
+            Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await postToAppsScript(buildPayload({ action: 'saveReport75', submissionId: id, pin, report75: JSON.stringify(r.value) }));
+                if (!res.success) throw new Error(res.message);
+                Swal.fire({ icon: 'success', title: 'บันทึกรายงาน 7.5 แล้ว', timer: 1500, showConfirmButton: false });
+                loadAllSubmissions();
+            } catch (e) { Swal.fire('บันทึกไม่สำเร็จ', e.message, 'error'); }
+        }
+
+        // ---------- บันทึกข้อความ 7.5 (2 หน้า) ----------
+        function buildReport75Body(d) {
+            const e = escapeHtml;
+            const rep = d.report75 || { courses: [], causes: '', guidelines: '' };
+            const courses = rep.courses || [];
+            const n = courses.length || '....';
+            const allMet = courses.length && courses.every(c => r75Compute(c).allMet);
+            const dots = '<span class="dots" style="min-width:40mm;"></span>';
+            const courseBlocks = courses.map((c, i) => {
+                const comp = r75Compute(c);
+                return `
+                <p class="indent"><b>${i + 1}) รหัสวิชา</b> ${e(c.code)} <b>รายวิชา</b> ${e(c.name)} <b>ชั้น${e(c.level || '')}</b> จำนวนนักเรียนทั้งหมด ${e(c.students)} คน</p>
+                <p class="indent">ผลการพัฒนาผู้เรียนตามการวิเคราะห์ผู้เรียนจากการทดสอบหลังเรียน/ผลสัมฤทธิ์ทางการเรียน เป็นดังนี้</p>
+                <table class="r75">
+                    <thead>
+                        <tr><th rowspan="2" style="width:10mm;">ที่</th><th rowspan="2">กลุ่มนักเรียน</th><th colspan="2">ก่อน</th><th colspan="2">หลัง</th><th rowspan="2">ผลการพัฒนา</th></tr>
+                        <tr><th>จำนวน</th><th>ร้อยละ</th><th>จำนวน</th><th>ร้อยละ</th></tr>
+                    </thead>
+                    <tbody>${R75_GROUPS.map((g, k) => `<tr><td>${k + 1}</td><td>${g}</td><td>${e(c.before[k])}</td><td>${comp.pb[k]}</td><td>${e(c.after[k])}</td><td>${comp.pa[k]}</td><td>${comp.trend[k]}</td></tr>`).join('')}</tbody>
+                </table>
+                <p class="indent">จากผลการพัฒนาผู้เรียนข้างต้นสรุปผลการพัฒนาเทียบกับเป้าหมายที่กำหนดไว้ เป็นดังนี้</p>
+                ${comp.goals.map((g, j) => `<p class="indent">${j + 1}. ${e(g.text)}</p>`).join('')}`;
+            }).join('');
+
+            return `
+  <div class="doc-ref">แบบบันทึกระบบเรียนรู้ โรงเรียนสา อำเภอเวียงสา จังหวัดน่าน<br>เอกสารหมายเลข 7.5</div>
+  <div class="doc-title">แบบรายงานผลการพัฒนาคุณภาพผู้เรียนตามการวิเคราะห์ผู้เรียน</div>
+  <div class="head-wrap">
+    <img class="garuda75" src="${GARUDA_IMG}" alt="">
+    <h1>บันทึกข้อความ</h1>
+  </div>
+  <div class="row"><b>ส่วนราชการ</b><span class="fill">โรงเรียนสา อำเภอเวียงสา จังหวัดน่าน</span><b style="margin-left:4mm;">โทร</b><span class="fill" style="flex:0 0 32mm;">054-718546</span></div>
+  <div class="half">
+    <div><b style="font-size:20pt;margin-right:3mm;">ที่</b><span class="fill">${d.memoNo ? e(formatMemoNo(d.memoNo)) : `วช <span class="dots" style="min-width:22mm;"></span>/${e(d.year)}`}</span></div>
+    <div><b style="font-size:20pt;margin-right:3mm;">วันที่</b><span class="fill">${d.memoDate ? e(d.memoDate) : ''}</span></div>
+  </div>
+  <div class="row"><b>เรื่อง</b><span class="fill" style="border:0;">รายงานการพัฒนาผู้เรียนตามการวิเคราะห์ผู้เรียนรายบุคคล ภาคเรียนที่ ${e(d.term)} ปีการศึกษา ${e(d.year)}</span></div>
+  <div class="rule"></div>
+  <div class="to"><b style="font-size:20pt;margin-right:3mm;">เรียน</b> ผู้อำนวยการโรงเรียนสา</div>
+  <p class="indent">ด้วยข้าพเจ้า ${e(d.teacherName)} รับผิดชอบการสอนในกลุ่มสาระการเรียนรู้ ${e(d.learningArea || '')} จำนวน ${n} รายวิชา ได้ทำการวิเคราะห์ผู้เรียนก่อนการเรียนการสอน ภาคเรียนที่ ${e(d.term)} ปีการศึกษา ${e(d.year)} จำนวน ${n} รายวิชา ดังนี้</p>
+  ${courseBlocks || `<p class="indent" style="color:#c0392b;">(ยังไม่มีข้อมูลรายงาน 7.5 — ครูกรอกได้จากเมนู "สถิติ" → "แก้รายงาน 7.5")</p>`}
+  <p class="indent">ข้อค้นพบที่สำคัญในการพัฒนากิจกรรมการเรียนรู้</p>
+  <p class="indent">จากผลการพัฒนาที่ ${courses.length ? (allMet ? 'บรรลุเป้าหมาย' : 'ไม่บรรลุเป้าหมาย') : dots} มีเงื่อนไขที่ค้นพบดังนี้</p>
+  <p class="indent">สาเหตุ</p>
+  <p class="indent pre">- ${e(rep.causes || '')}</p>
+  <p class="indent">แนวทางการพัฒนา</p>
+  <p class="indent pre">- ${e(rep.guidelines || '')}</p>
+  <div class="sig75">
+    <div class="sig-pair">
+      ${memoSig(d.teacherSig, d.teacherName, [e(d.position || 'ครู')], '(ลงชื่อ)')}
+      ${memoSig(d.headSig, d.headName, [e(d.headPosition || '')], '(ลงชื่อ)')}
+    </div>
+    <div class="sig-center">${memoSig(d.deputySig, d.deputyName, [e(d.deputyPosition || 'รองผู้อำนวยการกลุ่มงานบริหารวิชาการ')], '(ลงชื่อ)')}</div>
+    <div class="comment-line">${e((d.directorComment || '').trim())}</div><div class="comment-line"></div><div class="comment-line"></div>
+    <div class="sig-center">${memoSig(d.directorSig, d.directorName, [e(d.directorPosition || 'ผู้อำนวยการโรงเรียนสา')], '(ลงชื่อ)')}</div>
+  </div>`;
+        }
+
+        // ช่องลงนาม (ใช้ร่วมกันทั้งบันทึกครั้งที่ 1 และรายงาน 7.5)
+        function memoSig(img, name, lines, label = 'ลงชื่อ') {
+            return `
+                <div class="sig">
+                    <div class="sig-line">${label}<span class="sig-dots">${img ? `<img src="${img}" alt="">` : ''}</span></div>
+                    <div>(${name ? escapeHtml(name) : '<span class="dots" style="min-width:52mm;"></span>'})</div>
+                    ${lines.map(l => `<div>${l}</div>`).join('')}
+                </div>`;
+        }
+
+        // ✅ [แก้ไข] ครั้งที่ 1 = บันทึก "ส่งระบบเรียนรู้" (1 หน้า) • ครั้งที่ 2 = แบบรายงาน 7.5 (2 หน้า)
         function buildMemoHtml(d, autoPrint, embedded) {
             const e = escapeHtml;
-            const roundText = Number(d.round) === 2 ? 'ครั้งที่ 2 ' : '';
+            const isR75 = isReport75Round(d.year, d.term, d.round);
+            const roundText = '';
             const termYear = `ภาคเรียนที่ ${d.term} ปีการศึกษา ${d.year}`;
-            const subject = `ส่งระบบเรียนรู้ ${roundText}${termYear}`;
+            const subject = isR75 ? `รายงานการพัฒนาผู้เรียนตามการวิเคราะห์ผู้เรียนรายบุคคล ${termYear}` : `ส่งระบบเรียนรู้ ${termYear}`;
             const rm = resolveMemo(d.teacherName, d.memoNo, d.memoDate, d.year, d.term, d.round);
             d = { ...d, memoNo: rm.memoNo, memoDate: rm.memoDate };
             const memoNoHtml = d.memoNo ? e(formatMemoNo(d.memoNo)) : `วช <span class="dots" style="min-width:22mm;"></span>/${e(d.year)}`;
@@ -2401,12 +2716,7 @@
             const position = d.position || 'ครู';
             const complete = d.status === 'อนุมัติแล้ว';
 
-            const sig = (img, name, lines) => `
-                <div class="sig">
-                    <div class="sig-line">ลงชื่อ<span class="sig-dots">${img ? `<img src="${img}" alt="">` : ''}</span></div>
-                    <div>(${name ? e(name) : '<span class="dots" style="min-width:52mm;"></span>'})</div>
-                    ${lines.map(l => `<div>${l}</div>`).join('')}
-                </div>`;
+            const sig = (img, name, lines) => memoSig(img, name, lines);
 
             const commentLines = (() => {
                 const c = (d.directorComment || '').trim();
@@ -2470,13 +2780,31 @@
     .page { margin: 0; box-shadow: none; }
   }
   @media screen and (max-width: 820px) { .page { transform: scale(.48); transform-origin: top left; margin: 8px; } }
+  /* ---- รายงาน 7.5 (หลายหน้า) ---- */
+  .page75 { padding: 12mm 19mm 14mm 25mm; }
+  .doc-ref { text-align: right; font-size: 14pt; line-height: 1.2; }
+  .doc-title { text-align: center; font-weight: bold; font-size: 18pt; margin: 3mm 0 2mm; }
+  .head-wrap { position: relative; }
+  .garuda75 { position: absolute; left: 0; top: -2mm; height: 15mm; }
+  .rule { border-bottom: 1.5px solid #000; margin: 1mm 0 3mm; }
+  table.r75 { border-collapse: collapse; margin: 2mm auto 2mm; width: 80%; }
+  table.r75 th, table.r75 td { border: 1px solid #000; padding: 0 2mm; text-align: center; font-weight: normal; line-height: 1.2; }
+  table.r75 th { font-weight: bold; }
+  .pre { white-space: pre-wrap; }
+  .sig75 { break-inside: avoid; page-break-inside: avoid; margin-top: 8mm; }
+  .sig-center { width: 100mm; margin: 6mm auto 0; }
+  .sig75 .comment-line { margin-top: 2mm; }
+  .stamp75 { margin-top: 6mm; font-family: sans-serif; font-size: 7.5pt; color: #8a8a8a; }
+  ${isR75 ? `@media print { @page { margin: 12mm 19mm 12mm 25mm; } .page75 { padding: 0; width: auto; min-height: 0; } }` : ''}
 </style></head><body>
 <div class="toolbar"${embedded ? ' style="display:none"' : ''}>
   <button onclick="window.print()">🖨️ พิมพ์ / บันทึกเป็น PDF</button>
   <button onclick="window.close()">ปิด</button>
   <span class="st">${statusText}</span>
 </div>
-<div class="page">
+${isR75 ? `<div class="page page75">${buildReport75Body(d)}
+  ${stamp ? `<div class="stamp75">ลงนามอิเล็กทรอนิกส์ผ่านระบบส่งระบบเรียนรู้ โรงเรียนสา — ${stamp}</div>` : ''}
+</div>` : `<div class="page">
   <img class="garuda" src="${GARUDA_IMG}" alt="">
   <h1>บันทึกข้อความ</h1>
   <div class="row"><b>ส่วนราชการ</b><span class="fill">โรงเรียนสา อำเภอเวียงสา จังหวัดน่าน</span></div>
@@ -2502,7 +2830,7 @@
   <div class="sig-director">${sig(d.directorSig, d.directorName, [e(d.directorPosition || '')])}</div>
 
   ${stamp ? `<div class="stamp">ลงนามอิเล็กทรอนิกส์ผ่านระบบส่งระบบเรียนรู้ โรงเรียนสา — ${stamp}</div>` : ''}
-</div>
+</div>`}
 ${autoPrint ? `<script>
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(() => window.print(), 400));
 <\/script>` : ''}
@@ -2633,7 +2961,7 @@ ${autoPrint ? `<script>
 
             const courses = (sub.courses || []);
             // รอบเดิม (ก่อนใช้ระบบลงนาม) ไม่มีบันทึกข้อความ
-            const tabs = (isSignatureRound() ? [{ key:'memo', icon:'fa-file-signature', label:'บันทึกข้อความ', sub:'ปะหน้า พร้อมลายเซ็นที่ลงแล้ว' }] : [])
+            const tabs = (isSignatureRound() ? [{ key:'memo', icon:'fa-file-signature', label: isReport75Round() ? 'รายงาน 7.5' : 'บันทึกข้อความ', sub: isReport75Round() ? 'บันทึกปะหน้า 2 หน้า พร้อมลายเซ็น' : 'ปะหน้า พร้อมลายเซ็นที่ลงแล้ว' }] : [])
                 .concat(courses.map((c, i) => ({ key:'c' + i, icon:'fa-file-pdf', label: c.name || ('วิชาที่ ' + (i + 1)), sub: (c.code || '') + (c.fileUrl ? '' : ' • ไม่มีไฟล์') })));
             if (sub.additionalLink) tabs.push({ key:'link', icon:'fa-link', label:'ลิงก์เพิ่มเติม', sub:'เปิดในแท็บใหม่' });
             document.getElementById('dvTabs').innerHTML = tabs.map(t => `
@@ -2662,7 +2990,7 @@ ${autoPrint ? `<script>
             showMsg('<span><i class="fa-solid fa-spinner fa-spin"></i>&nbsp; กำลังเปิดเอกสาร...</span>');
             if (key === 'memo') {
                 try {
-                    const cacheKey = [sub.id, sub.status, sub.memoNo, sub.memoDate].join('|');
+                    const cacheKey = [sub.id, sub.status, sub.memoNo, sub.memoDate, sub.hasReport75].join('|');
                     let url = docViewer.memoCache[cacheKey];
                     if (!url) {
                         const r = await getFromAppsScript({ action:'getMemoData', submissionId: sub.id });
