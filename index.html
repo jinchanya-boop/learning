@@ -207,6 +207,33 @@
             .term-btn { width: 100%; }
             .memo-topics-grid { grid-template-columns: 1fr; }
         }
+
+        /* ✅ [เพิ่มใหม่] ลายเซ็น • คิวผู้ลงนาม */
+        .sig-card { border: 2px solid #c9cdf5; background: #f7f8ff; border-radius: var(--border-radius); padding: 16px; margin: 20px 0; }
+        .sig-card h4 { margin: 0 0 8px; color: var(--primary-color); font-size: 1.05em; display: flex; gap: 8px; align-items: center; }
+        .sig-hint { color: #666; font-size: 0.92em; margin: 4px 0 10px; }
+        .sig-ok { color: #0b7a5a; font-weight: 600; }
+        .sig-link { background: none; border: 0; color: var(--primary-color); text-decoration: underline; cursor: pointer; padding: 4px 0; font-family: var(--font-family); font-size: 0.92em; margin-right: 10px; }
+        .sig-link:hover { background: none; color: #2f3590; }
+        .sig-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+        .sig-preview { height: 70px; max-width: 240px; background: #fff; border: 1px solid #dde; border-radius: 10px; padding: 4px 10px; }
+        .memo-number-box { background: #fff; border: 1px dashed #c9cdf5; border-radius: 10px; padding: 8px 12px; margin: -4px 0 14px; font-size: 0.92em; }
+        .signer-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+                       background: #f7f8ff; border: 1px solid #dfe2fb; border-radius: var(--border-radius); padding: 14px 18px; margin-bottom: 16px; }
+        .signer-tabs { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+        .signer-tab { background: #eef0ff; color: var(--primary-color); border: 1px solid #d5d9fb; }
+        .signer-tab:hover { background: #e2e5ff; }
+        .signer-tab.active { background: var(--primary-color); color: #fff; }
+        .signer-tab .count { background: rgba(255,255,255,.25); border-radius: 10px; padding: 0 8px; margin-left: 4px; }
+        .signer-tab:not(.active) .count { background: #d9dcfb; }
+        .signer-bulk { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; background: #eafaf3; border: 1px solid #bfe8d4;
+                       border-radius: 12px; padding: 10px 14px; margin-bottom: 10px; }
+        .signer-bulk button:disabled { opacity: .45; cursor: not-allowed; }
+        .custom-button.mini { padding: 5px 10px; font-size: 0.82rem; margin: 2px; }
+        .chips { display: inline-flex; gap: 3px; flex-wrap: wrap; }
+        .chip { font-size: 0.75em; padding: 2px 7px; border-radius: 10px; background: #eee; color: #888; white-space: nowrap; }
+        .chip.done { background: #d6f3e6; color: #0b7a5a; font-weight: 600; }
+        .chip.now { background: #fff1d6; color: #b36b00; font-weight: 600; outline: 1px solid #f0c070; }
     </style>
 </head>
 <body>
@@ -388,13 +415,27 @@
                     <option value="สุขศึกษาและพลศึกษา">สุขศึกษาและพลศึกษา</option>
                     <option value="กิจกรรมพัฒนาผู้เรียน">กิจกรรมพัฒนาผู้เรียน</option>
                 </select>
+                <!-- ✅ [เพิ่มใหม่] ตำแหน่ง (แสดงในบันทึกข้อความ) + เลขที่บันทึกข้อความ -->
+                <label for="teacherPosition">ตำแหน่ง:</label>
+                <select id="teacherPosition" name="teacherPosition">
+                    <option value="ครู">ครู</option>
+                    <option value="ครูผู้ช่วย">ครูผู้ช่วย</option>
+                    <option value="พนักงานราชการ">พนักงานราชการ</option>
+                    <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
+                </select>
+                <div id="memoNumberBox" class="memo-number-box"></div>
                 <p style="text-align: center; color: var(--dark-gray); background-color: #f0f0f0; padding: 10px; border-radius: var(--border-radius); margin-top: 20px; margin-bottom: 20px;">
                     กรอกข้อมูลเฉพาะวิชาที่ต้องการส่ง ไม่จำเป็นต้องกรอกครบทุกช่อง
                 </p>
                 <div id="course-blocks-container"></div>
                 <label for="additionalLink">ลิงก์ URL เพิ่มเติม (ถ้ามี):</label>
                 <input type="url" id="additionalLink" name="additionalLink" placeholder="เช่น https://www.example.com/บทเรียน">
-                <button type="submit"><i class="fa-solid fa-paper-plane"></i>ส่งข้อมูล</button>
+                <!-- ✅ [เพิ่มใหม่] ลายเซ็นผู้ส่ง -->
+                <div class="sig-card">
+                    <h4><i class="fa-solid fa-signature"></i> ลายเซ็นผู้ส่ง (ใช้ในบันทึกข้อความปะหน้า)</h4>
+                    <div id="teacherSigBox"><p class="sig-hint">กรอกชื่อ-นามสกุลด้านบนก่อน แล้วระบบจะตรวจลายเซ็นของคุณ</p></div>
+                </div>
+                <button type="submit"><i class="fa-solid fa-paper-plane"></i>ลงนามและส่งข้อมูล</button>
             </form>
         </section>
 
@@ -433,9 +474,36 @@
                 </h2>
             </div>
             <div id="admin-login">
-                <label for="adminPassword">รหัสผ่านผู้บริหาร:</label>
+                <p class="sig-hint" style="margin-top:0;">สำหรับหัวหน้ากลุ่มสาระ รองผู้อำนวยการ ผู้อำนวยการ และผู้ดูแลระบบ</p>
+                <label for="adminPassword">รหัสผ่าน:</label>
                 <input type="password" id="adminPassword" name="adminPassword" placeholder="กรอกรหัสผ่าน">
                 <button type="button" id="loginButton"><i class="fa-solid fa-wand-magic-sparkles"></i>เข้าสู่ระบบ</button>
+            </div>
+            <!-- ✅ [เพิ่มใหม่] หน้าลงนามสำหรับหัวหน้ากลุ่มสาระ / รองฯ / ผอ. -->
+            <div id="signer-panel" style="display:none;">
+                <div class="signer-head" id="signerHeader"></div>
+                <div class="signer-tabs">
+                    <button type="button" class="signer-tab active" data-view="queue" onclick="setSignerView('queue')">✍️ รอฉันลงนาม <span class="count" id="signerQueueCount">0</span></button>
+                    <button type="button" class="signer-tab" data-view="all" onclick="setSignerView('all')">📋 ทั้งหมดในรอบนี้ <span class="count" id="signerAllCount">0</span></button>
+                    <button type="button" class="custom-button" style="background:#6c757d;margin-left:auto;" onclick="loadSignerSubmissions()"><i class="fa-solid fa-arrows-rotate"></i> โหลดใหม่</button>
+                </div>
+                <div class="signer-bulk" id="signerBulkBar" style="display:none;">
+                    <label style="display:flex;align-items:center;gap:6px;margin:0;color:#0b5a43;font-weight:600;">
+                        <input type="checkbox" id="signerSelectAll" onchange="toggleSignerSelectAll(this.checked)" style="width:18px;height:18px;"> เลือกทั้งหมด
+                    </label>
+                    <button type="button" id="signerApproveBtn" class="custom-button" style="background:#0b7a5a;" onclick="signerApproveSelected()" disabled>
+                        <i class="fa-solid fa-pen-nib"></i> ลงนามอนุมัติที่เลือก (<span id="signerSelectedCount">0</span>)
+                    </button>
+                    <span class="sig-hint" style="margin:0;">เปิดอ่าน "บันทึก" และ "ไฟล์" ก่อนลงนามได้ทุกรายการ</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="admin-table">
+                        <thead><tr>
+                            <th style="width:40px;"></th><th>วันที่ส่ง</th><th>ผู้ส่ง</th><th>กลุ่มสาระ</th><th>เลขที่</th><th>การลงนาม</th><th>ดำเนินการ</th>
+                        </tr></thead>
+                        <tbody id="signerTableBody"></tbody>
+                    </table>
+                </div>
             </div>
             <div id="admin-section-content">
                 <div style="margin-bottom: 20px;">
@@ -451,10 +519,11 @@
                     <label for="statusFilter">กรองตามสถานะ:</label>
                     <select id="statusFilter">
                         <option value="ทั้งหมด">ทั้งหมด</option>
-                        <option value="รอตรวจ">รอตรวจ 🟡</option>
-                        <option value="กำลังดำเนินการ">กำลังดำเนินการ 🟠</option>
-                        <option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option>
-                        <option value="รอแก้ไข">รอแก้ไข ❗</option>
+                        <option value="รอหัวหน้าตรวจ">รอหัวหน้ากลุ่มสาระลงนาม</option>
+                        <option value="รอรองฯตรวจ">รอรองฯ ลงนาม</option>
+                        <option value="รอผอ.อนุมัติ">รอ ผอ. ลงนาม</option>
+                        <option value="อนุมัติแล้ว">เอกสารสมบูรณ์ ✅</option>
+                        <option value="รอแก้ไข">ส่งกลับแก้ไข ❗</option>
                     </select>
                     <button type="button" id="refreshAdminList"><i class="fa-solid fa-arrows-rotate"></i>โหลดข้อมูล</button>
                 </div>
@@ -1010,6 +1079,9 @@
             setTimestamp(); createCourseBlocks();
             loadDashboardData(); loadAndDrawLearningSystemAreaChart();
             if (document.getElementById('admin-section-content').style.display === 'block') loadAdminSubmissions();
+            if (currentSigner && currentSigner.role !== 'admin') loadSignerSubmissions();
+            teacherSigState = { name:'', exists:false, pending:null };
+            renderMemoNumberBox(); refreshTeacherSignatureBox();
         }
 
         // ===== DOWNLOAD =====
@@ -1102,25 +1174,34 @@
             document.getElementById('statusFilter').value = 'ทั้งหมด';
         }
 
+        // ✅ [แก้ไข] สถานะตามขั้นการลงนาม
         function formatStatus(status) {
-            if (status === 'รอตรวจ')         return `<span class="status-pending">รอตรวจ 🟡</span>`;
-            if (status === 'กำลังดำเนินการ') return `<span class="status-pending" style="background:#fd7e14;color:white;">กำลังดำเนินการ 🟠</span>`;
-            if (status === 'รอแก้ไข')        return `<span class="status-revision">รอแก้ไข ❗</span>`;
-            if (status === 'อนุมัติแล้ว')    return `<span class="status-approved">อนุมัติแล้ว ✅</span>`;
-            
-            // กรณีเป็นค่าเก่า (เผื่อมีค้างในฐานข้อมูล) ให้แปลงเป็นรอตรวจ
-            if (status === 'รอหัวหน้าตรวจ' || status === 'รอรองฯตรวจ' || status === 'รอผอ.อนุมัติ') {
-                 return `<span class="status-pending">รอตรวจ 🟡</span>`;
-            }
-            
-            return status || 'รอตรวจ 🟡';
+            const st = normalizeQueueStatus(status);
+            if (st === SIG_STATUS.HEAD)     return `<span class="status-pending">รอหัวหน้ากลุ่มสาระลงนาม ✍️</span>`;
+            if (st === SIG_STATUS.DEPUTY)   return `<span class="status-pending">รอรองฯ ลงนาม ✍️</span>`;
+            if (st === SIG_STATUS.DIRECTOR) return `<span class="status-pending">รอ ผอ. ลงนาม ✍️</span>`;
+            if (st === SIG_STATUS.DONE)     return `<span class="status-approved">เอกสารสมบูรณ์ ✅</span>`;
+            if (st === SIG_STATUS.REVISE)   return `<span class="status-revision">ส่งกลับแก้ไข ❗</span>`;
+            return escapeHtml(st);
         }
 
         // ===== FORM SUBMIT =====
         document.getElementById('submissionForm').addEventListener('submit', async function(e) {
             e.preventDefault();
+            // ✅ [เพิ่มใหม่] ต้องมีลายเซ็น + PIN ก่อนส่ง
+            const fullNameVal = document.getElementById('fullName').value.trim();
+            if (!fullNameVal) { Swal.fire('กรุณากรอกชื่อ-นามสกุล', '', 'warning'); return; }
+            Swal.fire({ title:'กำลังตรวจลายเซ็น...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            let signaturePin;
+            try { signaturePin = await ensureTeacherSignatureReady(fullNameVal); }
+            catch (err) { Swal.fire('ยังส่งไม่ได้', err.message, 'warning'); return; }
             Swal.fire({ title:'กำลังส่งข้อมูล...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             const fd = buildPayload({ action:'submitForm' });
+            const memoInfo = lookupMemoNumber(fullNameVal);
+            fd.append('signaturePin', signaturePin);
+            fd.append('position', document.getElementById('teacherPosition').value);
+            fd.append('memoNo', memoInfo ? memoInfo.memoNo : '');
+            fd.append('memoDate', memoInfo ? memoInfo.date : '');
             fd.append('submissionTimestamp', document.getElementById('submissionTimestamp').value);
             fd.append('fullName', document.getElementById('fullName').value.trim());
             fd.append('learningArea', document.getElementById('learningArea').value);
@@ -1144,28 +1225,23 @@
             try {
                 const result = await postToAppsScript(fd);
                 if (result.success) {
-                    Swal.fire('สำเร็จ!','ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว!','success');
+                    Swal.fire('ส่งงานและลงนามเรียบร้อย!','ระบบส่งต่อให้หัวหน้ากลุ่มสาระลงนามแล้ว ติดตามสถานะได้ที่เมนู "สถิติ"','success');
                     this.reset(); setTimestamp(); createCourseBlocks();
-                    loadDashboardData(); loadAndDrawLearningSystemAreaChart();
+                    teacherSigState = { name:'', exists:false, pending:null }; refreshTeacherSignatureBox(); renderMemoNumberBox();
+                    loadDashboardData(true); loadAndDrawLearningSystemAreaChart();
                     if (document.getElementById('admin-section-content').style.display === 'block') loadAdminSubmissions();
                 } else throw new Error(result.message);
             } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', err.message||'ไม่สามารถเชื่อมต่อได้', 'error'); }
         });
 
         // ===== ADMIN LOGIN =====
+        // ✅ [แก้ไข] ตรวจรหัสที่เซิร์ฟเวอร์ แยกบทบาท ผู้ดูแล / หัวหน้ากลุ่มสาระ / รองฯ / ผอ.
         document.getElementById('loginButton').addEventListener('click', () => {
-            const pw = document.getElementById('adminPassword').value;
-            if (pw === 'admin999') {
-                currentAdminRole = 'director';
-                currentAdminRoleName = 'ผู้บริหาร';
-                Swal.fire({ title:'เข้าสู่ระบบสำเร็จ!', text: `ยินดีต้อนรับ ผู้บริหาร`, icon:'success', timer:1500, showConfirmButton:false });
-                document.getElementById('admin-login').style.display = 'none';
-                document.getElementById('admin-section-content').style.display = 'block';
-                document.getElementById('admin-dashboard').style.display = 'block';
-                updateDashboardForRole();
-                loadAdminSubmissions();
-            } else { Swal.fire('รหัสผ่านไม่ถูกต้อง!','กรุณาลองใหม่อีกครั้ง','error'); }
+            const pw = document.getElementById('adminPassword').value.trim();
+            if (!pw) { Swal.fire('กรุณากรอกรหัสผ่าน', '', 'warning'); return; }
+            loginWithPassword(pw);
         });
+        document.getElementById('adminPassword').addEventListener('keypress', e => { if (e.key === 'Enter') document.getElementById('loginButton').click(); });
         document.getElementById('statusFilter').addEventListener('change', displayFilteredSubmissions);
         document.getElementById('refreshAdminList').addEventListener('click', loadAdminSubmissions);
 
@@ -1187,10 +1263,7 @@
             document.getElementById('submission-detail-view').style.display = 'none';
             document.getElementById('admin-dashboard').style.display = 'block';
             const fv = document.getElementById('statusFilter').value;
-            const normalizeStatus = (st) => {
-                if (st === 'รอหัวหน้าตรวจ' || st === 'รอรองฯตรวจ' || st === 'รอผอ.อนุมัติ') return 'รอตรวจ';
-                return st;
-            };
+            const normalizeStatus = normalizeQueueStatus;
             const filtered = currentAdminSubmissions.filter(s => fv==='ทั้งหมด' || (s && normalizeStatus(s.status)===fv));
             if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ไม่พบรายการตามเงื่อนไข</td></tr>'; return; }
             filtered.forEach(sub => {
@@ -1202,7 +1275,7 @@
                 row.insertCell().innerHTML = formatStatus(sub.status||'รอตรวจ');
                 const ac = row.insertCell();
                 const vb = document.createElement('button'); vb.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ'; vb.className='custom-button'; vb.onclick=()=>showSubmissionDetail(sub.id); ac.appendChild(vb);
-                // ลบปุ่มดูออนไลน์/พิมพ์ปะหน้าออกตามความต้องการ
+                const mb = document.createElement('button'); mb.innerHTML='<i class="fa-solid fa-file-lines"></i> บันทึกข้อความ'; mb.className='custom-button'; mb.style.background='#3d8bd9'; mb.onclick=()=>openMemo(sub.id); ac.appendChild(mb);
                 const db = document.createElement('button'); db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ'; db.className='custom-button delete-button'; db.onclick=()=>confirmDeleteSubmission(sub.id); ac.appendChild(db);
             });
         }
@@ -1217,7 +1290,7 @@
                 if (result.success) {
                     Swal.fire('ลบแล้ว!','ข้อมูลการส่งงานถูกลบออกแล้ว','success');
                     const row = document.querySelector(`tr[data-id="${id}"]`); if (row) row.remove();
-                    loadDashboardData(); loadAndDrawLearningSystemAreaChart();
+                    loadDashboardData(true); loadAndDrawLearningSystemAreaChart();
                 } else throw new Error(result.message);
             } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', err.message, 'error'); }
         }
@@ -1253,11 +1326,10 @@
                 <p><strong>สถานะปัจจุบัน:</strong> ${formatStatus(sub.status||'รอตรวจ')}</p>
                 <p><strong>ความคิดเห็นผู้บริหาร (เดิม):</strong> ${sub.adminComment||'ยังไม่มี'}</p>
                 <div style="margin-top:1.5rem;">
-                    <label><strong>เปลี่ยนสถานะเป็น:</strong></label>
+                    <label><strong>เปลี่ยนสถานะเป็น:</strong> <small style="color:#888;">(การอนุมัติทำได้เฉพาะผู้ลงนามแต่ละขั้น)</small></label>
                     <select id="newStatusModal" style="width:100%;padding:10px;margin-bottom:15px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);">
-                        <option value="รอตรวจ">รอตรวจ 🟡</option>
-                        <option value="กำลังดำเนินการ">กำลังดำเนินการ 🟠</option>
-                        <option value="อนุมัติแล้ว">อนุมัติแล้ว ✅</option>
+                        <option value="__keep__">คงสถานะเดิม (บันทึกเฉพาะความคิดเห็น)</option>
+                        <option value="รอหัวหน้าตรวจ">เริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ</option>
                         <option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>
                     </select>
                     <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
@@ -1282,10 +1354,8 @@
                 <button type="button" id="backToListButtonModal" class="custom-button" style="background-color:#6c757d;"><i class="fa-solid fa-arrow-left"></i>กลับไปที่รายการ</button>`;
 
                 // ✅ [แก้ไข] เลือกสถานะปัจจุบันไว้ให้ (เดิมตั้งเป็น "รอตรวจ" เสมอ กดบันทึกพลาดจะย้อนสถานะงานที่อนุมัติแล้ว)
-                const legacyPending = ['รอหัวหน้าตรวจ','รอรองฯตรวจ','รอผอ.อนุมัติ'];
-                const curStatus = legacyPending.includes(sub.status) ? 'รอตรวจ' : (sub.status || 'รอตรวจ');
-                const statusSelect = document.getElementById('newStatusModal');
-                if ([...statusSelect.options].some(o => o.value === curStatus)) statusSelect.value = curStatus;
+                document.getElementById('newStatusModal').value = '__keep__';
+                document.getElementById('newStatusModal').dataset.current = sub.status || '';
 
                 // โหลด saved comment ของ role นี้จาก localStorage (ถ้ามี)
                 const savedKey = 'savedComment_' + currentAdminRole;
@@ -1321,7 +1391,8 @@
         }
 
         async function updateSubmissionStatus(submissionId) {
-            const newStatus    = document.getElementById('newStatusModal').value;
+            const sel          = document.getElementById('newStatusModal');
+            const newStatus    = sel.value === '__keep__' ? (sel.dataset.current || 'รอหัวหน้าตรวจ') : sel.value;
             const adminComment = document.getElementById('adminCommentTextModal').value;
             Swal.fire({ title:'กำลังอัปเดต...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
@@ -1337,7 +1408,7 @@
                     Swal.fire('สำเร็จ!','อัปเดตสถานะแล้ว','success');
                     document.getElementById('submission-detail-view').style.display = 'none';
                     document.getElementById('admin-dashboard').style.display = 'block';
-                    loadAdminSubmissions(); loadDashboardData(); loadAndDrawLearningSystemAreaChart();
+                    loadAdminSubmissions(); loadDashboardData(true); loadAndDrawLearningSystemAreaChart();
                 } else throw new Error(result.message);
             } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', err.message, 'error'); }
         }
@@ -1439,8 +1510,9 @@
         document.getElementById('refreshDashboardButton')?.addEventListener('click', () => {
             loadDashboardData(); loadAndDrawLearningSystemAreaChart();
         });
-        async function loadDashboardData() {
-            Swal.fire({ toast:true, position:'top-end', icon:'info', title:'กำลังโหลดสถิติ...', showConfirmButton:false, timer:1500 });
+        // ✅ [แก้ไข] silent=true ไม่แสดง toast (เดิม toast นี้ไปปิดหน้าต่างแจ้งผลสำเร็จ ผู้ใช้จึงไม่เห็นผล)
+        async function loadDashboardData(silent) {
+            if (!silent) Swal.fire({ toast:true, position:'top-end', icon:'info', title:'กำลังโหลดสถิติ...', showConfirmButton:false, timer:1500 });
             try {
                 const result = await getFromAppsScript({ action:'getDashboardData' });
                 if (result.success&&result.data) {
@@ -1529,52 +1601,25 @@
                 row.insertCell().innerHTML = formatStatus(s.status);
                 const cc = row.insertCell();
                 const ac = s.adminComment||'';
-                cc.innerHTML = ac.trim() ? `<div style="background-color:#fff3cd;padding:12px;border-radius:8px;border-left:4px solid #ffc107;word-wrap:break-word;line-height:1.6;"><i class="fa-solid fa-comment-dots" style="color:#ff9800;margin-right:8px;"></i><span style="color:#856404;font-size:0.95em;">${ac}</span></div>` : '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
-                // ปุ่มดูออนไลน์ + PDF เฉพาะงานที่อนุมัติแล้ว
+                cc.innerHTML = ac.trim() ? `<div style="background-color:#fff3cd;padding:12px;border-radius:8px;border-left:4px solid #ffc107;word-wrap:break-word;line-height:1.6;"><i class="fa-solid fa-comment-dots" style="color:#ff9800;margin-right:8px;"></i><span style="color:#856404;font-size:0.95em;">${escapeHtml(ac)}</span></div>` : '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
+                // ✅ [แก้ไข] ดูบันทึกข้อความได้ทุกสถานะ (ลายเซ็นปรากฏตามขั้นที่ลงนามแล้ว) • PDF เมื่อเอกสารสมบูรณ์
+                const btnContainer = document.createElement('div');
+                btnContainer.style.cssText = 'margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;';
+                const viewBtn = document.createElement('button');
+                viewBtn.innerHTML = '<i class="fa-solid fa-file-lines"></i> บันทึกข้อความ';
+                viewBtn.className = 'custom-button';
+                viewBtn.style.cssText = 'background:#3d8bd9;padding:5px 12px;font-size:0.82rem;';
+                viewBtn.onclick = () => openMemo(s.id);
+                btnContainer.appendChild(viewBtn);
                 if (s.status === 'อนุมัติแล้ว') {
-                    const memoData = {
-                        name:           s.fullName       || '',
-                        area:           s.learningArea   || '',
-                        term:           String(currentTerm),
-                        year:           String(currentYear),
-                        headSig:        s.sigHead        || '',
-                        deputySig:      s.sigDeputy      || '',
-                        directorSig:    s.sigDirector    || '',
-                        headSignerName: s.headSignerName || '',
-                        adminComment:   s.adminComment   || ''
-                    };
-                    const memoBaseUrl = 'memo_design.html?from=system&name=' + encodeURIComponent(s.fullName || '');
-                    
-                    // สร้าง container div
-                    const btnContainer = document.createElement('div');
-                    btnContainer.style.cssText = 'margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;';
-                    
-                    // ปุ่มดูออนไลน์
-                    const viewBtn = document.createElement('button');
-                    viewBtn.innerHTML = '<i class="fa-solid fa-eye"></i> ดูออนไลน์';
-                    viewBtn.className = 'custom-button';
-                    viewBtn.style.cssText = 'background:#0dcaf0;color:#000;padding:5px 12px;font-size:0.82rem;';
-                    viewBtn.onclick = () => {
-                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
-                        window.open(memoBaseUrl, '_blank');
-                        setTimeout(() => { localStorage.removeItem('memo_sig_data'); }, 5000);
-                    };
-                    btnContainer.appendChild(viewBtn);
-                    
-                    // ปุ่มดาวน์โหลด PDF
                     const pdfBtn = document.createElement('button');
                     pdfBtn.innerHTML = '<i class="fa-solid fa-file-pdf"></i> PDF';
                     pdfBtn.className = 'custom-button';
                     pdfBtn.style.cssText = 'background:#d32f2f;padding:5px 12px;font-size:0.82rem;';
-                    pdfBtn.onclick = () => {
-                        localStorage.setItem('memo_sig_data', JSON.stringify(memoData));
-                        printMemoAsPdf(memoBaseUrl, s.fullName);
-                        setTimeout(() => { localStorage.removeItem('memo_sig_data'); }, 5000);
-                    };
+                    pdfBtn.onclick = () => openMemo(s.id, true);
                     btnContainer.appendChild(pdfBtn);
-                    
-                    cc.appendChild(btnContainer);
                 }
+                cc.appendChild(btnContainer);
             });
         }
 
@@ -1618,6 +1663,657 @@
         document.getElementById('clearSearchButton').addEventListener('click', () => { document.getElementById('searchNameInput').value=''; loadAllSubmissions(); });
         document.getElementById('searchNameInput').addEventListener('keypress', e => { if (e.key==='Enter') searchByName(e.target.value); });
 
+        // =====================================================================
+        // ✍️ [เพิ่มใหม่] ระบบลายเซ็น • การลงนามอนุมัติ 4 ขั้น • ปะหน้าบันทึกข้อความ
+        // =====================================================================
+
+        // รอบการส่ง → หัวเรื่องเลขที่บันทึกข้อความ (ใช้ดึงเลขที่ วช และวันที่ ของครูแต่ละคน)
+        // เพิ่มรอบใหม่ได้ที่นี่ เมื่อเพิ่มหัวเรื่องใน MEMO_TOPICS แล้ว
+        const MEMO_ROUND_TOPIC = {
+            2568: { 2: { 1: 'topic_1', 2: 'topic_2' } },
+            2569: { 1: { 1: 'topic_3', 2: 'topic_4' }, 2: { 1: 'topic_5' } }
+        };
+
+        const GARUDA_IMG = 'data:image/jpeg;base64,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';
+
+        const SIG_STATUS = { HEAD:'รอหัวหน้าตรวจ', DEPUTY:'รอรองฯตรวจ', DIRECTOR:'รอผอ.อนุมัติ', DONE:'อนุมัติแล้ว', REVISE:'รอแก้ไข' };
+        const LEGACY_HEAD = ['รอตรวจ', 'กำลังดำเนินการ', ''];
+        const normalizeQueueStatus = st => LEGACY_HEAD.includes(String(st || '').trim()) ? SIG_STATUS.HEAD : String(st).trim();
+        const ROLE_LABEL = { head:'หัวหน้ากลุ่มสาระ', deputy:'รองผู้อำนวยการ', director:'ผู้อำนวยการ', admin:'ผู้ดูแลระบบ' };
+        const ROLE_QUEUE = { head: SIG_STATUS.HEAD, deputy: SIG_STATUS.DEPUTY, director: SIG_STATUS.DIRECTOR };
+
+        let currentSigner = null;          // { role, name, area, position, hasSignature, password }
+        let signerSubmissions = [];
+        let signerView = 'queue';          // 'queue' | 'all'
+        let teacherSigState = { name:'', exists:false, pending:null }; // pending = { imageBase64, pin }
+
+        // ---------- หาเลขที่บันทึกข้อความของครูในรอบที่เลือก ----------
+        function lookupMemoNumber(fullName) {
+            const topicId = MEMO_ROUND_TOPIC[currentYear]?.[currentTerm]?.[currentRound];
+            if (!topicId || !fullName) return null;
+            const topic = MEMO_TOPICS.find(t => t.id === topicId);
+            if (!topic) return null;
+            const key = normalizeName(fullName);
+            return topic.data.find(t => normalizeName(t.name) === key) || null;
+        }
+
+        function formatMemoNo(memoNo) {
+            return String(memoNo || '').replace(/^วช\s*/, 'วช ');
+        }
+
+        // ---------- แผ่นเซ็นชื่อ (วาดด้วยนิ้ว/เมาส์ หรืออัปโหลดรูป) ----------
+        function attachSignaturePad(canvas) {
+            const ctx = canvas.getContext('2d');
+            let drawing = false, last = null, dirty = false;
+            const resize = () => {
+                const ratio = window.devicePixelRatio || 1;
+                const w = canvas.clientWidth || 460, h = canvas.clientHeight || 180;
+                canvas.width = w * ratio; canvas.height = h * ratio;
+                ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+                ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0b2a8a'; ctx.lineWidth = 2.6;
+            };
+            resize();
+            const pos = e => { const r = canvas.getBoundingClientRect(); return { x: e.clientX - r.left, y: e.clientY - r.top }; };
+            canvas.addEventListener('pointerdown', e => { drawing = true; last = pos(e); canvas.setPointerCapture(e.pointerId); e.preventDefault(); });
+            canvas.addEventListener('pointermove', e => {
+                if (!drawing) return;
+                const p = pos(e);
+                ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+                last = p; dirty = true; e.preventDefault();
+            });
+            ['pointerup', 'pointerleave', 'pointercancel'].forEach(t => canvas.addEventListener(t, () => { drawing = false; }));
+            return {
+                clear() { ctx.save(); ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.restore(); dirty = false; },
+                isEmpty() { return !dirty; },
+                drawImage(img) {
+                    this.clear();
+                    const w = canvas.clientWidth, h = canvas.clientHeight;
+                    const s = Math.min(w / img.width, h / img.height) * 0.92;
+                    ctx.drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
+                    dirty = true;
+                },
+                toTrimmedPng() { return trimSignatureCanvas(canvas); }
+            };
+        }
+
+        // ตัดพื้นขาวให้โปร่งใส + ตัดขอบว่าง + ย่อขนาด แล้วคืนค่า base64 (ไม่มีส่วนหัว data:)
+        function trimSignatureCanvas(src) {
+            const w = src.width, h = src.height;
+            const sctx = src.getContext('2d');
+            const img = sctx.getImageData(0, 0, w, h);
+            const d = img.data;
+            let minX = w, minY = h, maxX = -1, maxY = -1;
+            for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+                const i = (y * w + x) * 4;
+                if (d[i] > 225 && d[i+1] > 225 && d[i+2] > 225) d[i+3] = 0;   // ขาว → โปร่งใส
+                if (d[i+3] > 20) { if (x < minX) minX = x; if (x > maxX) maxX = x; if (y < minY) minY = y; if (y > maxY) maxY = y; }
+            }
+            if (maxX < 0) return '';
+            sctx.putImageData(img, 0, 0);
+            const pad = 6;
+            minX = Math.max(0, minX - pad); minY = Math.max(0, minY - pad);
+            maxX = Math.min(w - 1, maxX + pad); maxY = Math.min(h - 1, maxY + pad);
+            const cw = maxX - minX + 1, ch = maxY - minY + 1;
+            const scale = Math.min(1, 600 / cw, 220 / ch);
+            const out = document.createElement('canvas');
+            out.width = Math.round(cw * scale); out.height = Math.round(ch * scale);
+            out.getContext('2d').drawImage(src, minX, minY, cw, ch, 0, 0, out.width, out.height);
+            return out.toDataURL('image/png').split(',')[1];
+        }
+
+        // เปิดหน้าต่างเซ็นชื่อ  mode: 'new' (ตั้ง PIN ใหม่) | 'change' (ใส่ PIN เดิม) | 'signer' (ผู้ลงนาม)
+        function openSignatureDialog({ title, mode, needPin }) {
+            return Swal.fire({
+                title: title || 'เซ็นชื่อของคุณ',
+                width: 620,
+                html: `
+                    <div style="text-align:left;font-size:0.92em;">
+                        <p style="margin:0 0 8px;color:#555;">เซ็นในกรอบด้านล่างด้วยนิ้วหรือเมาส์ หรืออัปโหลดรูปลายเซ็น (เซ็นบนกระดาษขาวแล้วถ่ายรูป)</p>
+                        <canvas id="sigCanvas" style="width:100%;height:180px;border:2px dashed #aab;border-radius:12px;background:#fff;touch-action:none;cursor:crosshair;"></canvas>
+                        <div style="display:flex;gap:8px;margin:8px 0 12px;flex-wrap:wrap;">
+                            <button type="button" id="sigClear" class="swal2-styled" style="background:#6c757d;margin:0;">ล้าง</button>
+                            <label class="swal2-styled" style="background:#515ada;margin:0;cursor:pointer;">อัปโหลดรูป
+                                <input type="file" id="sigUpload" accept="image/*" style="display:none;"></label>
+                        </div>
+                        ${mode === 'change' ? `
+                            <label style="font-weight:600;">PIN เดิม</label>
+                            <input id="sigOldPin" type="password" inputmode="numeric" maxlength="6" class="swal2-input" style="margin:4px 0 8px;width:100%;" placeholder="PIN ที่ตั้งไว้">` : ''}
+                        ${(mode === 'new' || (mode === 'signer' && needPin)) ? `
+                            <label style="font-weight:600;">ตั้ง PIN ลายเซ็น (ตัวเลข 4–6 หลัก)</label>
+                            <input id="sigPin1" type="password" inputmode="numeric" maxlength="6" class="swal2-input" style="margin:4px 0 8px;width:100%;" placeholder="เช่น 2569">
+                            <input id="sigPin2" type="password" inputmode="numeric" maxlength="6" class="swal2-input" style="margin:0 0 6px;width:100%;" placeholder="ยืนยัน PIN อีกครั้ง">
+                            <small style="color:#888;">ใช้ PIN นี้ทุกครั้งที่ส่งงาน เพื่อยืนยันว่าเป็นคุณที่นำลายเซ็นไปใช้</small>` : ''}
+                    </div>`,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกลายเซ็น',
+                cancelButtonText: 'ยกเลิก',
+                didOpen: () => {
+                    const canvas = document.getElementById('sigCanvas');
+                    const pad = attachSignaturePad(canvas);
+                    Swal.getPopup()._pad = pad;
+                    document.getElementById('sigClear').onclick = () => pad.clear();
+                    document.getElementById('sigUpload').onchange = e => {
+                        const f = e.target.files[0]; if (!f) return;
+                        const img = new Image();
+                        img.onload = () => pad.drawImage(img);
+                        img.src = URL.createObjectURL(f);
+                    };
+                },
+                preConfirm: () => {
+                    const pad = Swal.getPopup()._pad;
+                    if (pad.isEmpty()) { Swal.showValidationMessage('กรุณาเซ็นชื่อก่อน'); return false; }
+                    const imageBase64 = pad.toTrimmedPng();
+                    if (!imageBase64) { Swal.showValidationMessage('ไม่พบลายเส้นลายเซ็น'); return false; }
+                    const out = { imageBase64 };
+                    if (document.getElementById('sigOldPin')) {
+                        out.oldPin = document.getElementById('sigOldPin').value.trim();
+                        if (!/^\d{4,6}$/.test(out.oldPin)) { Swal.showValidationMessage('กรุณากรอก PIN เดิม'); return false; }
+                    }
+                    if (document.getElementById('sigPin1')) {
+                        const p1 = document.getElementById('sigPin1').value.trim(), p2 = document.getElementById('sigPin2').value.trim();
+                        if (!/^\d{4,6}$/.test(p1)) { Swal.showValidationMessage('PIN ต้องเป็นตัวเลข 4–6 หลัก'); return false; }
+                        if (p1 !== p2) { Swal.showValidationMessage('PIN ทั้งสองช่องไม่ตรงกัน'); return false; }
+                        out.pin = p1;
+                    }
+                    return out;
+                }
+            }).then(r => r.isConfirmed ? r.value : null);
+        }
+
+        // ---------- ส่วนลายเซ็นในฟอร์มส่งงาน ----------
+        let sigCheckTimer = null;
+        function scheduleTeacherSignatureCheck() {
+            clearTimeout(sigCheckTimer);
+            sigCheckTimer = setTimeout(refreshTeacherSignatureBox, 600);
+            renderMemoNumberBox();
+        }
+
+        function renderMemoNumberBox() {
+            const box = document.getElementById('memoNumberBox');
+            if (!box) return;
+            const name = document.getElementById('fullName').value.trim();
+            if (!name) { box.innerHTML = '<span style="color:#888;">กรอกชื่อ-นามสกุลแล้วระบบจะค้นหาเลขที่บันทึกข้อความให้</span>'; return; }
+            const m = lookupMemoNumber(name);
+            box.innerHTML = m
+                ? `<i class="fa-solid fa-circle-check" style="color:#27ae60;"></i> เลขที่บันทึกข้อความ <b>${escapeHtml(formatMemoNo(m.memoNo))}</b> ลงวันที่ <b>${escapeHtml(m.date)}</b>`
+                : `<i class="fa-solid fa-circle-info" style="color:#e67e22;"></i> ยังไม่พบเลขที่บันทึกข้อความของรอบนี้ — ปะหน้าจะเว้นช่องเลขที่ไว้ให้เขียนเอง`;
+        }
+
+        async function refreshTeacherSignatureBox() {
+            const box = document.getElementById('teacherSigBox');
+            if (!box) return;
+            const name = document.getElementById('fullName').value.trim();
+            if (teacherSigState.name !== name) teacherSigState = { name, exists:false, pending:null, checked:false };
+            if (!name) {
+                box.innerHTML = '<p class="sig-hint">กรอกชื่อ-นามสกุลด้านบนก่อน แล้วระบบจะตรวจลายเซ็นของคุณ</p>';
+                return;
+            }
+            if (teacherSigState.pending) { renderTeacherSigBox(); return; }
+            box.innerHTML = '<p class="sig-hint"><i class="fa-solid fa-spinner fa-spin"></i> กำลังตรวจลายเซ็น...</p>';
+            try {
+                const r = await getFromAppsScript({ action:'getSignatureStatus', name });
+                if (document.getElementById('fullName').value.trim() !== name) return;
+                teacherSigState.exists = !!(r.success && r.exists);
+                teacherSigState.updated = r.updated || '';
+                teacherSigState.checked = true;
+            } catch (e) {
+                teacherSigState.checked = false;
+            }
+            renderTeacherSigBox();
+        }
+
+        function renderTeacherSigBox() {
+            const box = document.getElementById('teacherSigBox');
+            const s = teacherSigState;
+            if (s.pending) {
+                box.innerHTML = `
+                    <div class="sig-row">
+                        <img src="data:image/png;base64,${s.pending.imageBase64}" class="sig-preview" alt="ลายเซ็น">
+                        <div>
+                            <div class="sig-ok"><i class="fa-solid fa-pen-nib"></i> เซ็นชื่อแล้ว — จะบันทึกพร้อมการส่งงาน</div>
+                            <button type="button" class="sig-link" onclick="startTeacherNewSignature()">เซ็นใหม่</button>
+                            <button type="button" class="sig-link" onclick="saveTeacherSignatureOnly()">บันทึกลายเซ็นอย่างเดียว (ส่งงานไปแล้ว)</button>
+                        </div>
+                    </div>`;
+            } else if (s.exists) {
+                box.innerHTML = `
+                    <div class="sig-ok"><i class="fa-solid fa-circle-check"></i> มีลายเซ็นของคุณในระบบแล้ว ${s.updated ? `<small style="color:#888;">(อัปเดต ${escapeHtml(s.updated)})</small>` : ''}</div>
+                    <label for="sigPinSubmit" style="margin-top:10px;">PIN ลายเซ็น (เพื่อยืนยันการลงนามในบันทึกข้อความ)</label>
+                    <input type="password" id="sigPinSubmit" inputmode="numeric" maxlength="6" placeholder="PIN 4–6 หลัก" style="max-width:220px;">
+                    <div><button type="button" class="sig-link" onclick="startTeacherChangeSignature()">เปลี่ยนลายเซ็น</button>
+                    <span class="sig-hint" style="display:inline;">ลืม PIN? แจ้งผู้ดูแลระบบให้รีเซ็ต</span></div>`;
+            } else if (s.checked) {
+                box.innerHTML = `
+                    <p class="sig-hint">ยังไม่มีลายเซ็นของ <b>${escapeHtml(s.name)}</b> ในระบบ — เซ็นครั้งแรกครั้งเดียว รอบต่อไประบบจะใช้ลายเซ็นนี้ให้อัตโนมัติ</p>
+                    <button type="button" class="custom-button" style="background:#0b7a5a;" onclick="startTeacherNewSignature()">
+                        <i class="fa-solid fa-signature"></i> เซ็นชื่อ
+                    </button>`;
+            } else {
+                box.innerHTML = `<p class="sig-hint" style="color:#c0392b;">ตรวจลายเซ็นไม่สำเร็จ <button type="button" class="sig-link" onclick="refreshTeacherSignatureBox()">ลองอีกครั้ง</button></p>`;
+            }
+        }
+
+        async function startTeacherNewSignature() {
+            const v = await openSignatureDialog({ title:'เซ็นชื่อ (ครั้งแรกครั้งเดียว)', mode:'new' });
+            if (!v) return;
+            teacherSigState.pending = { imageBase64: v.imageBase64, pin: v.pin };
+            renderTeacherSigBox();
+        }
+
+        // สำหรับครูที่ส่งงานก่อนเปิดระบบลายเซ็น: เพิ่มลายเซ็นโดยไม่ต้องส่งงานซ้ำ
+        async function saveTeacherSignatureOnly() {
+            const name = document.getElementById('fullName').value.trim();
+            const p = teacherSigState.pending;
+            if (!name || !p) return;
+            Swal.fire({ title:'กำลังบันทึกลายเซ็น...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            try {
+                const r = await postToAppsScript(buildPayload({ action:'saveSignature', name, imageBase64: p.imageBase64, pin: p.pin }));
+                if (!r.success) throw new Error(r.message);
+                teacherSigState = { name, exists:true, pending:null, checked:true };
+                renderTeacherSigBox();
+                Swal.fire('บันทึกลายเซ็นแล้ว', 'งานที่ส่งไว้ก่อนหน้านี้จะใช้ลายเซ็นนี้เมื่อหัวหน้ากลุ่มสาระลงนาม', 'success');
+            } catch (e) { Swal.fire('บันทึกลายเซ็นไม่สำเร็จ', e.message, 'error'); }
+        }
+
+        async function startTeacherChangeSignature() {
+            const name = document.getElementById('fullName').value.trim();
+            const v = await openSignatureDialog({ title:'เปลี่ยนลายเซ็น', mode:'change' });
+            if (!v) return;
+            Swal.fire({ title:'กำลังบันทึกลายเซ็น...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            try {
+                const r = await postToAppsScript(buildPayload({ action:'saveSignature', name, imageBase64: v.imageBase64, oldPin: v.oldPin }));
+                if (!r.success) throw new Error(r.message);
+                Swal.fire({ icon:'success', title:'เปลี่ยนลายเซ็นแล้ว', timer:1500, showConfirmButton:false });
+                refreshTeacherSignatureBox();
+            } catch (e) { Swal.fire('เปลี่ยนลายเซ็นไม่สำเร็จ', e.message, 'error'); }
+        }
+
+        // เรียกก่อนส่งฟอร์ม: คืนค่า PIN ที่ใช้ยืนยัน หรือ null ถ้ายังไม่พร้อม
+        async function ensureTeacherSignatureReady(fullName) {
+            if (teacherSigState.name !== fullName || (!teacherSigState.checked && !teacherSigState.pending)) {
+                await refreshTeacherSignatureBox();
+            }
+            const s = teacherSigState;
+            if (s.pending) {
+                const r = await postToAppsScript(buildPayload({ action:'saveSignature', name: fullName, imageBase64: s.pending.imageBase64, pin: s.pending.pin }));
+                if (!r.success) throw new Error(r.message);
+                const pin = s.pending.pin;
+                teacherSigState = { name: fullName, exists:true, pending:null, checked:true };
+                return pin;
+            }
+            if (s.exists) {
+                const pin = (document.getElementById('sigPinSubmit')?.value || '').trim();
+                if (!/^\d{4,6}$/.test(pin)) throw new Error('กรุณากรอก PIN ลายเซ็นก่อนส่งงาน');
+                return pin;
+            }
+            throw new Error('กรุณาเซ็นชื่อในช่อง "ลายเซ็นผู้ส่ง" ก่อนส่งงาน');
+        }
+
+        // ---------- ผู้ลงนาม: เข้าสู่ระบบ ----------
+        async function loginWithPassword(pw) {
+            Swal.fire({ title:'กำลังเข้าสู่ระบบ...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            try {
+                const r = await postToAppsScript(buildPayload({ action:'signerLogin', password: pw }));
+                if (!r.success) { Swal.fire('รหัสผ่านไม่ถูกต้อง!', 'กรุณาลองใหม่อีกครั้ง', 'error'); return; }
+                document.getElementById('admin-login').style.display = 'none';
+                if (r.role === 'admin') {
+                    currentAdminRole = 'admin';
+                    currentAdminRoleName = 'ผู้ดูแลระบบ';
+                    currentSigner = { role:'admin', name:'ผู้ดูแลระบบ', password: pw };
+                    document.getElementById('admin-section-content').style.display = 'block';
+                    document.getElementById('admin-dashboard').style.display = 'block';
+                    updateDashboardForRole();
+                    Swal.fire({ title:'เข้าสู่ระบบสำเร็จ', text:'ผู้ดูแลระบบ', icon:'success', timer:1200, showConfirmButton:false });
+                    loadAdminSubmissions();
+                } else {
+                    currentAdminRole = r.role;
+                    currentAdminRoleName = ROLE_LABEL[r.role];
+                    currentSigner = { ...r, password: pw };
+                    document.getElementById('signer-panel').style.display = 'block';
+                    Swal.fire({ title:`สวัสดีค่ะ ${r.name}`, text: r.position, icon:'success', timer:1400, showConfirmButton:false });
+                    renderSignerHeader();
+                    loadSignerSubmissions();
+                    if (!r.hasSignature) setTimeout(() => promptSignerSignature(true), 1500);
+                }
+            } catch (e) { Swal.fire('เกิดข้อผิดพลาด!', e.message, 'error'); }
+        }
+
+        function signerLogout() {
+            currentSigner = null; currentAdminRole = null;
+            document.getElementById('signer-panel').style.display = 'none';
+            document.getElementById('admin-section-content').style.display = 'none';
+            document.getElementById('admin-login').style.display = 'block';
+            document.getElementById('adminPassword').value = '';
+        }
+
+        function renderSignerHeader() {
+            const s = currentSigner;
+            document.getElementById('signerHeader').innerHTML = `
+                <div>
+                    <div style="font-size:1.15em;font-weight:600;color:var(--primary-color);">${escapeHtml(s.name)}</div>
+                    <div style="color:#666;">${escapeHtml(s.position)}</div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    ${s.hasSignature
+                        ? '<span class="sig-ok"><i class="fa-solid fa-circle-check"></i> มีลายเซ็นในระบบ</span>'
+                        : '<span style="color:#c0392b;font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> ยังไม่มีลายเซ็น</span>'}
+                    <button type="button" class="custom-button" style="background:#0b7a5a;padding:7px 14px;" onclick="promptSignerSignature(false)">
+                        <i class="fa-solid fa-signature"></i> ${s.hasSignature ? 'เปลี่ยนลายเซ็น' : 'เพิ่มลายเซ็น'}</button>
+                    <button type="button" class="custom-button" style="background:#6c757d;padding:7px 14px;" onclick="signerLogout()">
+                        <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+                </div>`;
+        }
+
+        async function promptSignerSignature(firstTime) {
+            const s = currentSigner;
+            if (firstTime) {
+                const ok = await Swal.fire({ icon:'info', title:'เพิ่มลายเซ็นก่อนเริ่มลงนาม',
+                    text:'เซ็นครั้งเดียว ระบบจะนำไปวางในบันทึกข้อความทุกฉบับที่ท่านอนุมัติ', confirmButtonText:'เซ็นชื่อตอนนี้', showCancelButton:true, cancelButtonText:'ภายหลัง' });
+                if (!ok.isConfirmed) return;
+            }
+            const v = await openSignatureDialog({ title:`ลายเซ็นของ ${s.name}`, mode:'signer', needPin: !s.hasSignature });
+            if (!v) return;
+            Swal.fire({ title:'กำลังบันทึกลายเซ็น...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            try {
+                const r = await postToAppsScript(buildPayload({ action:'saveSignature', name: s.name, imageBase64: v.imageBase64, pin: v.pin || '', signerPassword: s.password }));
+                if (!r.success) throw new Error(r.message);
+                s.hasSignature = true;
+                renderSignerHeader();
+                Swal.fire({ icon:'success', title:'บันทึกลายเซ็นแล้ว', timer:1400, showConfirmButton:false });
+            } catch (e) { Swal.fire('บันทึกลายเซ็นไม่สำเร็จ', e.message, 'error'); }
+        }
+
+        // ---------- ผู้ลงนาม: รายการ ----------
+        async function loadSignerSubmissions() {
+            const tbody = document.getElementById('signerTableBody');
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#888;"><i class="fa-solid fa-spinner fa-spin"></i> กำลังโหลด...</td></tr>';
+            try {
+                const r = await getFromAppsScript({ action:'getAdminSubmissions' });
+                if (!r.success) throw new Error(r.message);
+                signerSubmissions = r.data || [];
+                renderSignerTable();
+            } catch (e) {
+                tbody.innerHTML = `<tr><td colspan="8" style="color:#c0392b;">โหลดข้อมูลไม่สำเร็จ: ${escapeHtml(e.message)}</td></tr>`;
+            }
+        }
+
+        function isInMyScope(sub) {
+            return currentSigner.role !== 'head' || !currentSigner.area || sub.learningArea === currentSigner.area;
+        }
+        function isMyQueue(sub) {
+            return isInMyScope(sub) && normalizeQueueStatus(sub.status) === ROLE_QUEUE[currentSigner.role];
+        }
+
+        function progressChips(sub) {
+            const st = normalizeQueueStatus(sub.status);
+            const order = [SIG_STATUS.HEAD, SIG_STATUS.DEPUTY, SIG_STATUS.DIRECTOR, SIG_STATUS.DONE];
+            const reached = st === SIG_STATUS.REVISE ? -1 : order.indexOf(st);
+            const steps = [['ครู', true], ['หัวหน้าฯ', reached >= 1], ['รองฯ', reached >= 2], ['ผอ.', reached >= 3]];
+            if (st === SIG_STATUS.REVISE) return '<span class="status-revision">ส่งกลับแก้ไข ❗</span>';
+            return '<span class="chips">' + steps.map(([l, done], i) =>
+                `<span class="chip ${done ? 'done' : (i === reached + 1 ? 'now' : '')}">${done ? '✓ ' : ''}${l}</span>`).join('') + '</span>';
+        }
+
+        function renderSignerTable() {
+            const tbody = document.getElementById('signerTableBody');
+            const mine = signerSubmissions.filter(isMyQueue);
+            const scope = signerSubmissions.filter(isInMyScope);
+            document.getElementById('signerQueueCount').textContent = mine.length;
+            document.getElementById('signerAllCount').textContent = scope.length;
+            document.querySelectorAll('.signer-tab').forEach(b => b.classList.toggle('active', b.dataset.view === signerView));
+            const list = signerView === 'queue' ? mine : scope;
+            document.getElementById('signerBulkBar').style.display = signerView === 'queue' && mine.length ? 'flex' : 'none';
+            document.getElementById('signerSelectAll').checked = false;
+            updateSignerSelectedCount();
+            if (!list.length) {
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:#666;">${signerView === 'queue'
+                    ? '🎉 ไม่มีรายการรอท่านลงนามในรอบนี้' : 'ยังไม่มีรายการในรอบนี้'}</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = list.map(sub => {
+                const canSign = isMyQueue(sub);
+                return `<tr data-id="${escapeHtml(sub.id)}">
+                    <td style="text-align:center;">${canSign ? `<input type="checkbox" class="signer-check" value="${escapeHtml(sub.id)}" onchange="updateSignerSelectedCount()" style="width:18px;height:18px;">` : ''}</td>
+                    <td>${escapeHtml(sub.submissionTimestamp || '')}</td>
+                    <td><b>${escapeHtml(sub.fullName || '')}</b><br><small style="color:#888;">${escapeHtml(sub.position || 'ครู')}</small></td>
+                    <td>${escapeHtml(sub.learningArea || '')}</td>
+                    <td>${sub.memoNo ? escapeHtml(formatMemoNo(sub.memoNo)) : '<span style="color:#aaa;">—</span>'}</td>
+                    <td>${progressChips(sub)}</td>
+                    <td style="white-space:nowrap;">
+                        <button type="button" class="custom-button mini" onclick="openMemo('${escapeHtml(sub.id)}')"><i class="fa-solid fa-file-lines"></i> บันทึก</button>
+                        <button type="button" class="custom-button mini" style="background:#3d8bd9;" onclick="showSubmissionFiles('${escapeHtml(sub.id)}')"><i class="fa-solid fa-paperclip"></i> ไฟล์</button>
+                        ${canSign ? `<button type="button" class="custom-button mini" style="background:#e67e22;" onclick="signerDecide(['${escapeHtml(sub.id)}'],'revise')"><i class="fa-solid fa-rotate-left"></i> ส่งกลับ</button>` : ''}
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function setSignerView(v) { signerView = v; renderSignerTable(); }
+
+        function updateSignerSelectedCount() {
+            const n = document.querySelectorAll('.signer-check:checked').length;
+            document.getElementById('signerSelectedCount').textContent = n;
+            document.getElementById('signerApproveBtn').disabled = n === 0;
+        }
+        function toggleSignerSelectAll(on) {
+            document.querySelectorAll('.signer-check').forEach(c => c.checked = on);
+            updateSignerSelectedCount();
+        }
+
+        function showSubmissionFiles(id) {
+            const sub = signerSubmissions.find(s => s.id === id) || currentAdminSubmissions.find(s => s.id === id);
+            if (!sub) return;
+            const files = (sub.courses || []).map((c, i) => `
+                <li style="margin:6px 0;"><b>${escapeHtml(c.code || '')}</b> ${escapeHtml(c.name || 'วิชาที่ ' + (i + 1))}
+                ${c.fileUrl ? `<br><a href="${escapeHtml(c.fileUrl)}" target="_blank" rel="noopener"><i class="fa-solid fa-file-pdf"></i> ${escapeHtml(c.fileName || 'เปิดไฟล์')}</a>` : '<br><small style="color:#999;">ไม่มีไฟล์แนบ</small>'}</li>`).join('');
+            Swal.fire({
+                title: escapeHtml(sub.fullName || ''), width: 640,
+                html: `<div style="text-align:left;"><ul style="padding-left:18px;">${files || '<li>ไม่มีข้อมูลวิชา</li>'}</ul>
+                    ${sub.additionalLink ? `<p><b>ลิงก์เพิ่มเติม:</b> <a href="${escapeHtml(sub.additionalLink)}" target="_blank" rel="noopener">${escapeHtml(sub.additionalLink)}</a></p>` : ''}
+                    ${sub.adminComment ? `<p><b>ความเห็นล่าสุด:</b> ${escapeHtml(sub.adminComment)}</p>` : ''}</div>`,
+                confirmButtonText: 'ปิด'
+            });
+        }
+
+        async function signerApproveSelected() {
+            const ids = [...document.querySelectorAll('.signer-check:checked')].map(c => c.value);
+            if (ids.length) signerDecide(ids, 'approve');
+        }
+
+        async function signerDecide(ids, decision) {
+            const s = currentSigner;
+            if (decision === 'approve' && !s.hasSignature) { promptSignerSignature(true); return; }
+            const names = ids.map(id => (signerSubmissions.find(x => x.id === id) || {}).fullName).filter(Boolean);
+            const listHtml = `<div style="max-height:160px;overflow:auto;text-align:left;font-size:0.9em;background:#f7f7fb;padding:8px 12px;border-radius:8px;">${names.map(n => '• ' + escapeHtml(n)).join('<br>')}</div>`;
+            let comment = '';
+            if (decision === 'revise') {
+                const r = await Swal.fire({ title:'ส่งกลับให้แก้ไข', html: listHtml, input:'textarea', inputPlaceholder:'ระบุสิ่งที่ต้องแก้ไข (จำเป็น)',
+                    showCancelButton:true, confirmButtonText:'ส่งกลับ', cancelButtonText:'ยกเลิก', confirmButtonColor:'#e67e22',
+                    inputValidator: v => !v.trim() && 'กรุณาระบุเหตุผล' });
+                if (!r.isConfirmed) return;
+                comment = r.value.trim();
+            } else {
+                const isDirector = s.role === 'director';
+                const r = await Swal.fire({
+                    title: `ลงนามอนุมัติ ${ids.length} รายการ`,
+                    html: listHtml + `<p style="margin:12px 0 4px;text-align:left;font-weight:600;">${isDirector ? 'ความคิดเห็นของผู้อำนวยการ (แสดงในบันทึกข้อความ)' : 'ความเห็น (ถ้ามี)'}</p>`,
+                    input: 'textarea', inputValue: isDirector ? 'ทราบ อนุมัติ' : '',
+                    showCancelButton:true, confirmButtonText:'✍️ ลงนาม', cancelButtonText:'ยกเลิก', confirmButtonColor:'#0b7a5a'
+                });
+                if (!r.isConfirmed) return;
+                comment = (r.value || '').trim();
+            }
+            Swal.fire({ title:'กำลังบันทึก...', html:`0 / ${ids.length}`, allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            const results = [];
+            try {
+                // ส่งครั้งละ 10 รายการ เพื่อไม่ให้ Apps Script ทำงานนานเกินกำหนด
+                for (let i = 0; i < ids.length; i += 10) {
+                    const chunk = ids.slice(i, i + 10);
+                    const r = await postToAppsScript(buildPayload({ action:'approveSubmission', password: s.password, decision, comment, submissionIds: chunk.join(',') }));
+                    if (!r.results) throw new Error(r.message);
+                    results.push(...r.results);
+                    Swal.getHtmlContainer() && (Swal.getHtmlContainer().textContent = `${Math.min(i + 10, ids.length)} / ${ids.length}`);
+                }
+                const fails = results.filter(x => !x.ok);
+                const ok = results.length - fails.length;
+                Swal.fire({
+                    icon: fails.length ? (ok ? 'warning' : 'error') : 'success',
+                    title: decision === 'revise' ? `ส่งกลับแล้ว ${ok} รายการ` : `ลงนามแล้ว ${ok} รายการ`,
+                    html: fails.length ? '<div style="text-align:left;font-size:0.9em;">' + fails.map(f => '• ' + escapeHtml(f.message)).join('<br>') + '</div>' : ''
+                });
+            } catch (e) {
+                Swal.fire('เกิดข้อผิดพลาด!', e.message, 'error');
+            }
+            loadSignerSubmissions();
+            loadDashboardData(true);
+        }
+
+        // ---------- ปะหน้าบันทึกข้อความ ----------
+        async function openMemo(submissionId, autoPrint) {
+            const w = window.open('', '_blank');
+            if (!w) { Swal.fire('เบราว์เซอร์บล็อกหน้าต่างใหม่', 'กรุณาอนุญาต Pop-up สำหรับเว็บนี้ แล้วลองอีกครั้ง', 'warning'); return; }
+            w.document.write('<p style="font-family:sans-serif;padding:40px;color:#555;">กำลังเตรียมบันทึกข้อความ...</p>');
+            try {
+                const r = await getFromAppsScript({ action:'getMemoData', submissionId });
+                if (!r.success) throw new Error(r.message);
+                // เปิดผ่าน Blob URL (ถ้าใช้ document.write บางเบราว์เซอร์จะไม่โหลดฟอนต์ TH Sarabun)
+                const url = URL.createObjectURL(new Blob([buildMemoHtml(r.data, !!autoPrint)], { type: 'text/html;charset=utf-8' }));
+                w.location.href = url;
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            } catch (e) {
+                w.document.body.innerHTML = `<p style="font-family:sans-serif;padding:40px;color:#c0392b;">เปิดบันทึกข้อความไม่สำเร็จ: ${escapeHtml(e.message)}</p>`;
+            }
+        }
+
+        function buildMemoHtml(d, autoPrint) {
+            const e = escapeHtml;
+            const roundText = Number(d.round) === 2 ? 'ครั้งที่ 2 ' : '';
+            const termYear = `ภาคเรียนที่ ${d.term} ปีการศึกษา ${d.year}`;
+            const subject = `ส่งระบบเรียนรู้ ${roundText}${termYear}`;
+            const memoNoHtml = d.memoNo ? e(formatMemoNo(d.memoNo)) : `วช <span class="dots" style="min-width:22mm;"></span>/${e(d.year)}`;
+            const dateHtml = d.memoDate ? e(d.memoDate) : '<span class="dots" style="min-width:45mm;"></span>';
+            const position = d.position || 'ครู';
+            const complete = d.status === 'อนุมัติแล้ว';
+
+            const sig = (img, name, lines) => `
+                <div class="sig">
+                    <div class="sig-line">ลงชื่อ<span class="sig-dots">${img ? `<img src="${img}" alt="">` : ''}</span></div>
+                    <div>(${name ? e(name) : '<span class="dots" style="min-width:52mm;"></span>'})</div>
+                    ${lines.map(l => `<div>${l}</div>`).join('')}
+                </div>`;
+
+            const commentLines = (() => {
+                const c = (d.directorComment || '').trim();
+                return `<div class="comment-line">${c ? e(c) : ''}</div><div class="comment-line"></div>`;
+            })();
+
+            const stamp = [
+                d.teacherTime && `ครู ${e(d.teacherTime)}`,
+                d.headTime && `หัวหน้ากลุ่มสาระ ${e(d.headTime)}`,
+                d.deputyTime && `รองฯ ${e(d.deputyTime)}`,
+                d.directorTime && `ผอ. ${e(d.directorTime)}`
+            ].filter(Boolean).join(' • ');
+
+            const statusText = complete ? '✅ เอกสารสมบูรณ์ ลงนามครบทุกท่านแล้ว' : `⏳ ${e(formatStatusText(d.status))}`;
+
+            return `<!DOCTYPE html><html lang="th"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>บันทึกข้อความ - ${e(d.teacherName)} - ${e(subject)}</title>
+<style>
+  /* ฟอนต์ TH Sarabun New จาก jsDelivr — ไฟล์เว็บฟอนต์นี้ตัวใหญ่กว่าฟอนต์ในเครื่องราว 1.52 เท่า
+     จึงย่อด้วย size-adjust ให้ 16pt ได้ขนาดเท่ากับ TH SarabunPSK 16pt ใน Word พอดี */
+  @font-face { font-family: 'MemoSarabun'; font-weight: normal; size-adjust: 65.6%;
+    src: url('https://cdn.jsdelivr.net/npm/font-th-sarabun-new@1.0.0/fonts/THSarabunNew-webfont.woff') format('woff'); }
+  @font-face { font-family: 'MemoSarabun'; font-weight: bold; size-adjust: 65.6%;
+    src: url('https://cdn.jsdelivr.net/npm/font-th-sarabun-new@1.0.0/fonts/THSarabunNew_bold-webfont.woff') format('woff'); }
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #e9e9ef; font-family: 'MemoSarabun', 'TH SarabunPSK', 'TH Sarabun New', sans-serif; color: #000; }
+  .toolbar { position: sticky; top: 0; z-index: 5; display: flex; gap: 10px; align-items: center; flex-wrap: wrap;
+             padding: 10px 16px; background: #2f3590; color: #fff; font-family: sans-serif; font-size: 14px; }
+  .toolbar button { font: inherit; padding: 7px 14px; border: 0; border-radius: 8px; cursor: pointer; background: #fff; color: #2f3590; font-weight: 600; }
+  .toolbar .st { margin-left: auto; opacity: .95; }
+  .page { width: 210mm; min-height: 297mm; margin: 16px auto; background: #fff; padding: 17mm 19mm 10mm 25mm;
+          box-shadow: 0 4px 18px rgba(0,0,0,.15); position: relative; font-size: 16pt; line-height: 20.9pt; }
+  .garuda { position: absolute; left: 25mm; top: 12mm; height: 15mm; }
+  h1 { text-align: center; font-size: 29pt; font-weight: bold; margin: 0 0 3mm; line-height: 1.1; }
+  .row { display: flex; align-items: baseline; white-space: nowrap; }
+  .row b { font-size: 20pt; margin-right: 3mm; }
+  .fill { flex: 1; border-bottom: 1px dotted #000; padding-left: 1mm; overflow: hidden; }
+  .dots { display: inline-block; border-bottom: 1px dotted #000; height: 1em; vertical-align: baseline; }
+  .half { display: flex; gap: 6mm; }
+  .half > div { flex: 1; display: flex; align-items: baseline; }
+  p { margin: 0; text-align: justify; text-justify: inter-character; }
+  .indent { text-indent: 12.7mm; }
+  .to { margin: 1.5mm 0 0; }
+  .sig { text-align: center; line-height: 1.15; }
+  .sig-line { white-space: nowrap; }
+  .sig-dots { display: inline-block; width: 52mm; border-bottom: 1px dotted #000; position: relative; height: 1em; vertical-align: baseline; }
+  .sig-dots img { position: absolute; left: 50%; bottom: -1.5mm; transform: translateX(-50%); max-height: 12mm; max-width: 48mm; }
+  .sig-teacher { margin: 7mm 5mm 0 auto; width: 100mm; }
+  .sig-pair { display: flex; justify-content: space-between; margin-top: 6mm; }
+  .sig-pair .sig { width: 50%; }
+  .sig-pair .sig > div:last-child { font-size: 15pt; }
+  .director-title { margin-top: 3mm; }
+  .comment-line { border-bottom: 1px dotted #000; height: 1.12em; margin-top: 1mm; padding-left: 4mm; white-space: nowrap; overflow: hidden; }
+  .sig-director { margin: 6mm 5mm 0 auto; width: 100mm; }
+  .stamp { position: absolute; left: 25mm; right: 19mm; bottom: 5mm; font-family: sans-serif; font-size: 7.5pt; color: #8a8a8a; line-height: 1.3; }
+  @media print {
+    body { background: #fff; }
+    .toolbar { display: none; }
+    .page { margin: 0; box-shadow: none; }
+  }
+  @media screen and (max-width: 820px) { .page { transform: scale(.48); transform-origin: top left; margin: 8px; } }
+</style></head><body>
+<div class="toolbar">
+  <button onclick="window.print()">🖨️ พิมพ์ / บันทึกเป็น PDF</button>
+  <button onclick="window.close()">ปิด</button>
+  <span class="st">${statusText}</span>
+</div>
+<div class="page">
+  <img class="garuda" src="${GARUDA_IMG}" alt="">
+  <h1>บันทึกข้อความ</h1>
+  <div class="row"><b>ส่วนราชการ</b><span class="fill">โรงเรียนสา อำเภอเวียงสา จังหวัดน่าน</span></div>
+  <div class="half">
+    <div><b style="font-size:20pt;margin-right:3mm;">ที่</b><span class="fill">${memoNoHtml}</span></div>
+    <div><b style="font-size:20pt;margin-right:3mm;">วันที่</b><span class="fill">${dateHtml}</span></div>
+  </div>
+  <div class="row"><b>เรื่อง</b><span class="fill" style="border:0;">${e(subject)}</span></div>
+  <div class="to"><b style="font-size:20pt;margin-right:3mm;">เรียน</b> ผู้อำนวยการโรงเรียนสา</div>
+  <p class="indent">ด้วยข้าพเจ้า ${e(d.teacherName)} ตำแหน่ง ${e(position)} ได้ดำเนินการจัดทำระบบเรียนรู้ ${roundText}${termYear} ตามแนวทางหลักสูตรสถานศึกษาโรงเรียนสา และตามแบบบันทึกระบบเรียนรู้ที่โรงเรียนกำหนด ซึ่งประกอบด้วยเอกสารสำคัญ ได้แก่ (1) ด้านการวางแผนและออกแบบการเรียนรู้ ได้แก่ การวิเคราะห์ความสอดคล้องของมาตรฐานการเรียนรู้และตัวชี้วัดกับสาระการเรียนรู้ คำอธิบายรายวิชา โครงสร้างรายวิชา กำหนดการจัดการเรียนรู้ และการออกแบบกิจกรรมการเรียนรู้ (2) ด้านการจัดการเรียนรู้ ได้แก่ แผนการจัดการเรียนรู้และกิจกรรมการจัดการเรียนรู้ รวมถึงการประเมินแผนการจัดการเรียนรู้ (3) ด้านการวัดและประเมินผลการเรียนรู้ ได้แก่ การวัดและประเมินผลรายวิชา การกำหนดภาระงานที่สำคัญ แผนการวัดและประเมินผลตามสภาพจริง และการประเมินคุณภาพเครื่องมือวัดและประเมินผล (4) ด้านการวิเคราะห์และพัฒนาผู้เรียน ได้แก่ การวิเคราะห์ผู้เรียนเป็นรายบุคคล การสรุปผลการวิเคราะห์ผู้เรียน การจัดกิจกรรมปรับพื้นฐาน และรายงานผลการพัฒนาคุณภาพผู้เรียน และ (5) ด้านการสรุปและประเมินผลระบบเรียนรู้ ได้แก่ สรุปผลการวัดและประเมินผลรายวิชา สรุปการประเมินคุณลักษณะอันพึงประสงค์ สรุปการประเมินการอ่าน คิด วิเคราะห์และเขียน และสรุปการประเมินสมรรถนะสำคัญของผู้เรียน ตลอดจนการประเมินระบบเรียนรู้ด้านกระบวนการและด้านผลลัพธ์</p>
+  <p class="indent">ทั้งนี้ เพื่อใช้เป็นแนวทางในการจัดการเรียนการสอน และเป็นข้อมูลประกอบการดำเนินงานด้านวิชาการของสถานศึกษา จึงขอส่งระบบเรียนรู้ดังกล่าว</p>
+  <p class="indent">จึงเรียนมาเพื่อโปรดทราบและพิจารณา</p>
+
+  <div class="sig-teacher">${sig(d.teacherSig, d.teacherName, [`ตำแหน่ง ${e(position)}`])}</div>
+
+  <div class="sig-pair">
+    ${sig(d.headSig, d.headName, [e(d.headPosition || '')])}
+    ${sig(d.deputySig, d.deputyName, [e(d.deputyPosition || '')])}
+  </div>
+
+  <div class="director-title">ความคิดเห็นของผู้อำนวยการโรงเรียน</div>
+  ${commentLines}
+  <div class="sig-director">${sig(d.directorSig, d.directorName, [e(d.directorPosition || '')])}</div>
+
+  ${stamp ? `<div class="stamp">ลงนามอิเล็กทรอนิกส์ผ่านระบบส่งระบบเรียนรู้ โรงเรียนสา — ${stamp}</div>` : ''}
+</div>
+${autoPrint ? `<script>
+  (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(() => window.print(), 400));
+<\/script>` : ''}
+</body></html>`;
+        }
+
+        function formatStatusText(status) {
+            const st = normalizeQueueStatus(status);
+            return ({
+                [SIG_STATUS.HEAD]: 'รอหัวหน้ากลุ่มสาระลงนาม',
+                [SIG_STATUS.DEPUTY]: 'รอรองผู้อำนวยการลงนาม',
+                [SIG_STATUS.DIRECTOR]: 'รอผู้อำนวยการลงนาม',
+                [SIG_STATUS.DONE]: 'เอกสารสมบูรณ์',
+                [SIG_STATUS.REVISE]: 'ส่งกลับแก้ไข'
+            })[st] || st;
+        }
+
         // ===== INIT =====
         document.addEventListener('DOMContentLoaded', () => {
             loadMemoTopicsFromStorage();
@@ -1628,6 +2324,9 @@
             renderMemoTopics();
             showSection('home-section');
             updateAllBadges();
+            // ✅ [เพิ่มใหม่] ตรวจลายเซ็นและเลขที่บันทึกเมื่อพิมพ์ชื่อ
+            document.getElementById('fullName').addEventListener('input', scheduleTeacherSignatureCheck);
+            renderMemoNumberBox();
         });
     </script>
 </body>
