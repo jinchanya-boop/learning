@@ -2745,6 +2745,8 @@
             const n = courses.length || '....';
             const allMet = courses.length && courses.every(c => r75Compute(c).allMet);
             const dots = '<span class="dots" style="min-width:40mm;"></span>';
+            // ใส่ "- " นำหน้าให้ ยกเว้นครูพิมพ์ขีดมาเองแล้ว
+            const bullet = t => { const s = String(t || '').trim(); return e(/^[-•]/.test(s) ? s : '- ' + s); };
             const courseBlocks = courses.map((c, i) => {
                 const comp = r75Compute(c);
                 return `
@@ -2781,9 +2783,9 @@
   <p class="indent">ข้อค้นพบที่สำคัญในการพัฒนากิจกรรมการเรียนรู้</p>
   <p class="indent">จากผลการพัฒนาที่ ${courses.length ? (allMet ? 'บรรลุเป้าหมาย' : 'ไม่บรรลุเป้าหมาย') : dots} มีเงื่อนไขที่ค้นพบดังนี้</p>
   <p class="indent">สาเหตุ</p>
-  <p class="indent pre">- ${e(rep.causes || '')}</p>
+  <p class="indent pre">${bullet(rep.causes)}</p>
   <p class="indent">แนวทางการพัฒนา</p>
-  <p class="indent pre">- ${e(rep.guidelines || '')}</p>
+  <p class="indent pre">${bullet(rep.guidelines)}</p>
   <div class="sig75">
     <div class="sig-pair">
       ${memoSig(d.teacherSig, d.teacherName, [e(d.position || 'ครู')], '(ลงชื่อ)')}
@@ -2906,7 +2908,6 @@
   <span class="st">${statusText}</span>
 </div>
 ${isR75 ? `<div class="page page75">${buildReport75Body(d)}
-  ${stamp ? `<div class="stamp75">ลงนามอิเล็กทรอนิกส์ผ่านระบบส่งระบบเรียนรู้ โรงเรียนสา — ${stamp}</div>` : ''}
 </div>` : `<div class="page">
   <img class="garuda" src="${GARUDA_IMG}" alt="">
   <h1>บันทึกข้อความ</h1>
@@ -2932,7 +2933,6 @@ ${isR75 ? `<div class="page page75">${buildReport75Body(d)}
   ${commentLines}
   <div class="sig-director">${sig(d.directorSig, d.directorName, [e(d.directorPosition || '')])}</div>
 
-  ${stamp ? `<div class="stamp">ลงนามอิเล็กทรอนิกส์ผ่านระบบส่งระบบเรียนรู้ โรงเรียนสา — ${stamp}</div>` : ''}
 </div>`}
 ${autoPrint ? `<script>
   (document.fonts ? document.fonts.ready : Promise.resolve()).then(() => setTimeout(() => window.print(), 400));
