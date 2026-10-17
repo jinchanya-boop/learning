@@ -113,6 +113,19 @@
         .chart-container { position: relative; width: 100%; }
 
         .course-block { border: 2px dashed var(--medium-gray); border-radius: var(--border-radius); padding: 15px; margin-bottom: 20px; background-color: #fafafa; }
+        /* ✅ [เพิ่มใหม่] เลือกจำนวนวิชา + ช่องกรอกแบบกระชับ */
+        .course-count { display: flex; gap: 8px; flex-wrap: wrap; margin: 4px 0 14px; }
+        .course-count button { background: #fff; color: var(--primary-color); border: 2px solid #d5d9fb; padding: 7px 16px; border-radius: 999px; }
+        .course-count button:hover { background: #eef0ff; }
+        .course-count button.active { background: var(--primary-color); color: #fff; border-color: var(--primary-color); }
+        .course-block.compact { padding: 10px 14px; margin-bottom: 10px; }
+        .course-block.compact .course-block-header { font-size: 1em; margin-bottom: 8px; padding-bottom: 6px; }
+        .course-row { display: grid; grid-template-columns: 1fr 2fr 2fr; gap: 0 12px; align-items: end; }
+        .course-row label { font-size: 0.85em; margin-bottom: 2px; }
+        .course-row input { margin-bottom: 4px; }
+        @media (max-width: 768px) { .course-row { grid-template-columns: 1fr; } }
+        .r75-notice { background: #fff8e7; border: 2px solid #f6c35b; border-radius: var(--border-radius); padding: 12px 16px; margin: 16px 0; }
+        .r75-notice ol { margin: 6px 0 4px; padding-left: 22px; }
         .course-block-header { font-size: 1.2em; font-weight: 600; color: var(--primary-color); margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid var(--medium-gray); }
 
         .search-container { display: flex; gap: 10px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
@@ -472,9 +485,21 @@
                     <option value="ครูอัตราจ้าง">ครูอัตราจ้าง</option>
                 </select>
                 <div id="memoNumberBox" class="memo-number-box sig-only"></div>
-                <p style="text-align: center; color: var(--dark-gray); background-color: #f0f0f0; padding: 10px; border-radius: var(--border-radius); margin-top: 20px; margin-bottom: 20px;">
-                    กรอกข้อมูลเฉพาะวิชาที่ต้องการส่ง ไม่จำเป็นต้องกรอกครบทุกช่อง
-                </p>
+                <!-- ✅ [เพิ่มใหม่] ครั้งที่ 2: บอกครูตั้งแต่ต้นว่ามีรายงาน 7.5 ต้องกรอก -->
+                <div class="r75-only r75-notice">
+                    <b><i class="fa-solid fa-list-check"></i> การส่งครั้งที่ 2 มี 3 ส่วน</b>
+                    <ol>
+                        <li>แนบไฟล์ระบบเรียนรู้ของแต่ละวิชา</li>
+                        <li><b>กรอกแบบรายงานผลการพัฒนาคุณภาพผู้เรียน (เอกสาร 7.5)</b> ใช้เป็นบันทึกข้อความปะหน้า</li>
+                        <li>ลงนามและส่ง</li>
+                    </ol>
+                    <button type="button" class="sig-link" onclick="document.getElementById('r75Card').scrollIntoView({behavior:'smooth'})">ไปที่แบบรายงาน 7.5 ↓</button>
+                </div>
+                <!-- ✅ [แก้ไข] เลือกจำนวนวิชาก่อน แสดงช่องเฉพาะเท่าที่เลือก -->
+                <label>จำนวนวิชาที่ส่ง:</label>
+                <div class="course-count" id="courseCountPicker">
+                    <button type="button" data-n="1" class="active">1 วิชา</button><button type="button" data-n="2">2 วิชา</button><button type="button" data-n="3">3 วิชา</button><button type="button" data-n="4">4 วิชา</button><button type="button" data-n="5">5 วิชา</button><button type="button" data-n="6">6 วิชา</button>
+                </div>
                 <div id="course-blocks-container"></div>
                 <label for="additionalLink">ลิงก์ URL เพิ่มเติม (ถ้ามี):</label>
                 <input type="url" id="additionalLink" name="additionalLink" placeholder="เช่น https://www.example.com/บทเรียน">
@@ -1275,23 +1300,74 @@
                 document.body.scrollIntoView({ behavior:'smooth' });
             });
         });
+        // ✅ [แก้ไข] ช่องกรอกแบบกระชับ (แถวเดียว) และแสดงเฉพาะจำนวนวิชาที่เลือก
+        let courseCount = 1;
         function createCourseBlocks() {
             const c = document.getElementById('course-blocks-container');
             if (!c) return;
             let html = '';
             for (let i = 1; i <= 6; i++) {
-                html += `<div class="course-block">
+                html += `<div class="course-block compact" data-course="${i}">
                     <div class="course-block-header"><i class="fa-solid fa-book"></i> ระบบเรียนรู้วิชาที่ ${i}</div>
-                    <label for="courseCode${i}">รหัสวิชา:</label>
-                    <input type="text" id="courseCode${i}" name="courseCode${i}" placeholder="เช่น ว21101 (ถ้ามี)">
-                    <label for="courseName${i}">ชื่อวิชา:</label>
-                    <input type="text" id="courseName${i}" name="courseName${i}" placeholder="เช่น วิทยาศาสตร์พื้นฐาน (ถ้ามี)">
-                    <label for="file${i}">ไฟล์แนบ (.pdf ไม่เกิน 10MB):</label>
-                    <input type="file" id="file${i}" name="file${i}" accept=".pdf">
+                    <div class="course-row">
+                        <div><label for="courseCode${i}">รหัสวิชา</label>
+                        <input type="text" id="courseCode${i}" name="courseCode${i}" placeholder="เช่น ว21101" oninput="syncCourseToR75(${i})"></div>
+                        <div><label for="courseName${i}">ชื่อวิชา</label>
+                        <input type="text" id="courseName${i}" name="courseName${i}" placeholder="เช่น วิทยาศาสตร์พื้นฐาน" oninput="syncCourseToR75(${i})"></div>
+                        <div><label for="file${i}">ไฟล์แนบ (.pdf ไม่เกิน 10MB)</label>
+                        <input type="file" id="file${i}" name="file${i}" accept=".pdf"></div>
+                    </div>
                 </div>`;
             }
             c.innerHTML = html;
+            setCourseCount(1);
         }
+        function setCourseCount(n) {
+            courseCount = n;
+            document.querySelectorAll('#courseCountPicker button').forEach(b => b.classList.toggle('active', Number(b.dataset.n) === n));
+            document.querySelectorAll('#course-blocks-container .course-block').forEach(el => {
+                const i = Number(el.dataset.course);
+                const show = i <= n;
+                el.style.display = show ? '' : 'none';
+                if (!show) {   // ล้างค่าของวิชาที่ซ่อน กันส่งข้อมูลค้างโดยไม่ตั้งใจ
+                    ['courseCode', 'courseName'].forEach(f => { const x = document.getElementById(f + i); if (x) x.value = ''; });
+                    const fi = document.getElementById('file' + i); if (fi) fi.value = '';
+                }
+            });
+            // ครั้งที่ 2: จำนวนรายวิชาในรายงาน 7.5 ตามจำนวนวิชาที่ส่ง
+            const root = document.getElementById('r75Root');
+            if (isReport75Round() && root && root.children.length) {
+                const d = r75Collect(root);
+                while (d.courses.length < n) d.courses.push(r75BlankCourse());
+                while (d.courses.length > n && r75IsBlank(d.courses[d.courses.length - 1])) d.courses.pop();
+                for (let i = 1; i <= n; i++) {
+                    const c = d.courses[i - 1];
+                    if (!c.code) c.code = document.getElementById('courseCode' + i).value.trim();
+                    if (!c.name) c.name = document.getElementById('courseName' + i).value.trim();
+                }
+                r75Mount(root, d);
+            }
+        }
+        function r75IsBlank(c) {
+            // ไม่นับรหัส/ชื่อวิชา (เติมอัตโนมัติจากด้านบน) — ถ้าครูยังไม่ได้กรอกส่วนอื่น ถือว่าว่าง ลบออกได้
+            return !c.level && !c.students && [...c.before, ...c.after].every(v => !v) && !c.avg && !c.pass && !c.fail && !c.prevAvg && !c.other;
+        }
+        // พิมพ์รหัส/ชื่อวิชาด้านบน → เติมให้ในรายงาน 7.5 (ถ้าช่องนั้นในรายงานยังว่างหรือเคยเติมอัตโนมัติ)
+        function syncCourseToR75(i) {
+            if (!isReport75Round()) return;
+            const root = document.getElementById('r75Root');
+            const el = root && root.querySelectorAll('.r75-course')[i - 1];
+            if (!el) return;
+            [['code', 'courseCode'], ['name', 'courseName']].forEach(([f, src]) => {
+                const inp = el.querySelector(`[data-f="${f}"]`);
+                const v = document.getElementById(src + i).value;
+                if (inp && (!inp.value || inp.dataset.auto === '1')) { inp.value = v; inp.dataset.auto = '1'; }
+            });
+        }
+        document.addEventListener('click', e => {
+            const b = e.target.closest('#courseCountPicker button');
+            if (b) setCourseCount(Number(b.dataset.n));
+        });
         function updateDashboardForRole() {
             // ✅ [แก้ไข] ผู้ตรวจเริ่มที่รายการ "รอผู้ตรวจ" (เฉพาะรอบที่ใช้ระบบลงนาม)
             document.getElementById('statusFilter').value = isSignatureRound() ? 'รอผู้ตรวจ' : 'ทั้งหมด';
@@ -2588,7 +2664,7 @@
         }
         function r75Mount(root, data) {
             root.innerHTML = r75FormHtml(data);
-            root.oninput = () => r75Refresh(root);
+            root.oninput = ev => { if (ev && ev.target && ev.target.dataset) delete ev.target.dataset.auto; r75Refresh(root); };
             root.onchange = () => r75Refresh(root);
             r75Refresh(root);
         }
