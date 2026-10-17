@@ -520,6 +520,7 @@
                     <select id="statusFilter">
                         <option value="ทั้งหมด">ทั้งหมด</option>
                         <option value="รอหัวหน้าตรวจ">รอหัวหน้ากลุ่มสาระลงนาม</option>
+                        <option value="รอผู้ตรวจ">รอผู้ตรวจ 🔍</option>
                         <option value="รอรองฯตรวจ">รอรองฯ ลงนาม</option>
                         <option value="รอผอ.อนุมัติ">รอ ผอ. ลงนาม</option>
                         <option value="อนุมัติแล้ว">เอกสารสมบูรณ์ ✅</option>
@@ -528,10 +529,21 @@
                     <button type="button" id="refreshAdminList"><i class="fa-solid fa-arrows-rotate"></i>โหลดข้อมูล</button>
                 </div>
                 <div id="admin-dashboard" style="overflow-x:auto;">
+                    <!-- ✅ [เพิ่มใหม่] ผู้ตรวจ: ตรวจผ่านหลายรายการพร้อมกัน -->
+                    <div class="signer-bulk" id="reviewBulkBar">
+                        <button type="button" id="reviewPassBtn" class="custom-button" style="background:#0b7a5a;" onclick="reviewerDecideSelected('approve')" disabled>
+                            <i class="fa-solid fa-check-double"></i> ตรวจผ่านที่เลือก (<span id="reviewSelectedCount">0</span>) → ส่งต่อรองฯ
+                        </button>
+                        <button type="button" id="reviewReviseBtn" class="custom-button" style="background:#e67e22;" onclick="reviewerDecideSelected('revise')" disabled>
+                            <i class="fa-solid fa-rotate-left"></i> ส่งกลับแก้ไขที่เลือก
+                        </button>
+                        <span class="sig-hint" style="margin:0;">เลือกได้เฉพาะรายการสถานะ "รอผู้ตรวจ" (หัวหน้ากลุ่มสาระลงนามแล้ว)</span>
+                    </div>
                     <table class="admin-table">
                         <thead>
                             <tr>
-                                <th>วันที่ส่ง</th><th>ชื่อผู้ส่ง</th><th>วิชาที่ส่ง (วิชาแรก)</th><th>สถานะ</th><th>ดำเนินการ</th>
+                                <th style="width:40px;text-align:center;"><input type="checkbox" id="reviewSelectAll" onchange="toggleReviewSelectAll(this.checked)" style="width:18px;height:18px;" title="เลือกทั้งหมดที่รอผู้ตรวจ"></th>
+                                <th>วันที่ส่ง</th><th>ชื่อผู้ส่ง</th><th>วิชาที่ส่ง (วิชาแรก)</th><th>การลงนาม</th><th>ดำเนินการ</th>
                             </tr>
                         </thead>
                         <tbody id="adminSubmissionsTableBody"></tbody>
@@ -625,7 +637,7 @@
                             <th style="width:200px;">ชื่อวิชา (วิชาแรก)</th>
                             <th style="width:150px;">กลุ่มสาระฯ</th>
                             <th style="width:100px;">สถานะ</th>
-                            <th style="min-width:300px;">ความคิดเห็นผู้บริหาร</th>
+                            <th style="min-width:300px;">ความคิดเห็น</th>
                         </tr>
                     </thead>
                     <tbody id="recentSubmissionsTableBody"></tbody>
@@ -1170,14 +1182,15 @@
             c.innerHTML = html;
         }
         function updateDashboardForRole() {
-            // ไม่ต้องกรองตาม Role แล้ว
-            document.getElementById('statusFilter').value = 'ทั้งหมด';
+            // ✅ [แก้ไข] ผู้ตรวจเริ่มที่รายการ "รอผู้ตรวจ"
+            document.getElementById('statusFilter').value = 'รอผู้ตรวจ';
         }
 
         // ✅ [แก้ไข] สถานะตามขั้นการลงนาม
         function formatStatus(status) {
             const st = normalizeQueueStatus(status);
             if (st === SIG_STATUS.HEAD)     return `<span class="status-pending">รอหัวหน้ากลุ่มสาระลงนาม ✍️</span>`;
+            if (st === SIG_STATUS.REVIEW)   return `<span class="status-pending">รอผู้ตรวจ 🔍</span>`;
             if (st === SIG_STATUS.DEPUTY)   return `<span class="status-pending">รอรองฯ ลงนาม ✍️</span>`;
             if (st === SIG_STATUS.DIRECTOR) return `<span class="status-pending">รอ ผอ. ลงนาม ✍️</span>`;
             if (st === SIG_STATUS.DONE)     return `<span class="status-approved">เอกสารสมบูรณ์ ✅</span>`;
@@ -1246,15 +1259,15 @@
         document.getElementById('refreshAdminList').addEventListener('click', loadAdminSubmissions);
 
         // ✅ [แก้ไข] เดิมมี finally { Swal.close() } ซึ่งปิดหน้าต่างแจ้ง error ทันที ผู้ใช้จึงไม่เห็นว่าเกิดอะไรขึ้น
-        async function loadAdminSubmissions() {
-            Swal.fire({ title:'กำลังโหลดข้อมูล...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+        async function loadAdminSubmissions(silent) {
+            if (silent !== true) Swal.fire({ title:'กำลังโหลดข้อมูล...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
                 const result = await getFromAppsScript({ action:'getAdminSubmissions' });
-                if (result.success) { currentAdminSubmissions = result.data||[]; displayFilteredSubmissions(); Swal.close(); }
+                if (result.success) { currentAdminSubmissions = result.data||[]; displayFilteredSubmissions(); if (silent !== true) Swal.close(); }
                 else throw new Error(result.message);
             } catch(err) {
                 Swal.fire('เกิดข้อผิดพลาด!', err.message, 'error');
-                document.getElementById('adminSubmissionsTableBody').innerHTML = `<tr><td colspan="5">Error: ${escapeHtml(err.message)}</td></tr>`;
+                document.getElementById('adminSubmissionsTableBody').innerHTML = `<tr><td colspan="6">Error: ${escapeHtml(err.message)}</td></tr>`;
             }
         }
         function displayFilteredSubmissions() {
@@ -1265,15 +1278,24 @@
             const fv = document.getElementById('statusFilter').value;
             const normalizeStatus = normalizeQueueStatus;
             const filtered = currentAdminSubmissions.filter(s => fv==='ทั้งหมด' || (s && normalizeStatus(s.status)===fv));
-            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">ไม่พบรายการตามเงื่อนไข</td></tr>'; return; }
+            document.getElementById('reviewSelectAll').checked = false;
+            updateReviewSelectedCount();
+            if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">ไม่พบรายการตามเงื่อนไข</td></tr>'; return; }
             filtered.forEach(sub => {
                 const row = tbody.insertRow();
                 row.dataset.id = sub.id;
+                const inReview = normalizeQueueStatus(sub.status) === SIG_STATUS.REVIEW;
+                const cb = row.insertCell(); cb.style.textAlign = 'center';
+                if (inReview) cb.innerHTML = `<input type="checkbox" class="review-check" value="${escapeHtml(sub.id)}" onchange="updateReviewSelectedCount()" style="width:18px;height:18px;">`;
                 row.insertCell().textContent = sub.submissionTimestamp||'';
-                row.insertCell().textContent = sub.fullName||'';
+                row.insertCell().innerHTML = `<b>${escapeHtml(sub.fullName||'')}</b><br><small style="color:#888;">${escapeHtml(sub.learningArea||'')}</small>`;
                 row.insertCell().textContent = (sub.courses&&sub.courses.length>0) ? (sub.courses[0].name||'N/A') : 'N/A';
-                row.insertCell().innerHTML = formatStatus(sub.status||'รอตรวจ');
+                row.insertCell().innerHTML = progressChips(sub);
                 const ac = row.insertCell();
+                if (inReview) {
+                    const pb = document.createElement('button'); pb.innerHTML = '<i class="fa-solid fa-check"></i> ตรวจผ่าน'; pb.className = 'custom-button'; pb.style.background = '#0b7a5a';
+                    pb.onclick = () => reviewerDecide([sub.id], 'approve'); ac.appendChild(pb);
+                }
                 const vb = document.createElement('button'); vb.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ'; vb.className='custom-button'; vb.onclick=()=>showSubmissionDetail(sub.id); ac.appendChild(vb);
                 const mb = document.createElement('button'); mb.innerHTML='<i class="fa-solid fa-file-lines"></i> บันทึกข้อความ'; mb.className='custom-button'; mb.style.background='#3d8bd9'; mb.onclick=()=>openMemo(sub.id); ac.appendChild(mb);
                 const db = document.createElement('button'); db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ'; db.className='custom-button delete-button'; db.onclick=()=>confirmDeleteSubmission(sub.id); ac.appendChild(db);
@@ -1324,15 +1346,16 @@
                 ${filesHtml}
                 <hr>
                 <p><strong>สถานะปัจจุบัน:</strong> ${formatStatus(sub.status||'รอตรวจ')}</p>
-                <p><strong>ความคิดเห็นผู้บริหาร (เดิม):</strong> ${sub.adminComment||'ยังไม่มี'}</p>
+                <p><strong>ความเห็นผู้ตรวจ (เดิม):</strong> ${escapeHtml(sub.adminComment||'ยังไม่มี')}</p>
+                ${sub.signerNote ? `<p><strong>หมายเหตุผู้ลงนาม:</strong> ${escapeHtml(sub.signerNote)}</p>` : ''}
                 <div style="margin-top:1.5rem;">
                     <label><strong>เปลี่ยนสถานะเป็น:</strong> <small style="color:#888;">(การอนุมัติทำได้เฉพาะผู้ลงนามแต่ละขั้น)</small></label>
                     <select id="newStatusModal" style="width:100%;padding:10px;margin-bottom:15px;border:1px solid var(--medium-gray);border-radius:var(--border-radius);">
-                        <option value="__keep__">คงสถานะเดิม (บันทึกเฉพาะความคิดเห็น)</option>
+                        <option value="__keep__">คงสถานะเดิม (บันทึกเฉพาะความเห็นผู้ตรวจ)</option>
                         <option value="รอหัวหน้าตรวจ">เริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ</option>
                         <option value="รอแก้ไข">ส่งกลับให้แก้ไข ❗</option>
                     </select>
-                    <label><strong>ความคิดเห็น (${currentAdminRoleName || 'ผู้บริหาร'}):</strong></label>
+                    <label><strong>ความเห็นผู้ตรวจ</strong> <small style="color:#888;">(แสดงในหน้าสถิติให้ครูเห็น ไม่แสดงในบันทึกข้อความ)</small></label>
                     <div style="position:relative;">
                         <textarea id="adminCommentTextModal" rows="3"
                             placeholder="ระบุข้อคิดเห็น (ถ้ามี)"
@@ -1355,6 +1378,7 @@
 
                 // ✅ [แก้ไข] เลือกสถานะปัจจุบันไว้ให้ (เดิมตั้งเป็น "รอตรวจ" เสมอ กดบันทึกพลาดจะย้อนสถานะงานที่อนุมัติแล้ว)
                 document.getElementById('newStatusModal').value = '__keep__';
+                document.getElementById('adminCommentTextModal').value = sub.adminComment || '';  // แก้ไขต่อจากความเห็นเดิม
                 document.getElementById('newStatusModal').dataset.current = sub.status || '';
 
                 // โหลด saved comment ของ role นี้จาก localStorage (ถ้ามี)
@@ -1392,7 +1416,7 @@
 
         async function updateSubmissionStatus(submissionId) {
             const sel          = document.getElementById('newStatusModal');
-            const newStatus    = sel.value === '__keep__' ? (sel.dataset.current || 'รอหัวหน้าตรวจ') : sel.value;
+            const newStatus    = sel.value === '__keep__' ? '' : sel.value;
             const adminComment = document.getElementById('adminCommentTextModal').value;
             Swal.fire({ title:'กำลังอัปเดต...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             try {
@@ -1400,15 +1424,16 @@
                     action: 'updateSubmission',
                     submissionId,
                     newStatus,
+                    keepStatus: sel.value === '__keep__' ? '1' : '',
                     adminComment,
                     adminRole: currentAdminRole
                 });
                 const result = await postToAppsScript(payload);
                 if (result.success) {
-                    Swal.fire('สำเร็จ!','อัปเดตสถานะแล้ว','success');
+                    Swal.fire('สำเร็จ!', result.message || 'อัปเดตแล้ว', 'success');
                     document.getElementById('submission-detail-view').style.display = 'none';
                     document.getElementById('admin-dashboard').style.display = 'block';
-                    loadAdminSubmissions(); loadDashboardData(true); loadAndDrawLearningSystemAreaChart();
+                    loadAdminSubmissions(true); loadDashboardData(true); loadAndDrawLearningSystemAreaChart();
                 } else throw new Error(result.message);
             } catch(err) { Swal.fire('เกิดข้อผิดพลาด!', err.message, 'error'); }
         }
@@ -1600,8 +1625,8 @@
                 row.insertCell().textContent = s.learningArea;
                 row.insertCell().innerHTML = formatStatus(s.status);
                 const cc = row.insertCell();
-                const ac = s.adminComment||'';
-                cc.innerHTML = ac.trim() ? `<div style="background-color:#fff3cd;padding:12px;border-radius:8px;border-left:4px solid #ffc107;word-wrap:break-word;line-height:1.6;"><i class="fa-solid fa-comment-dots" style="color:#ff9800;margin-right:8px;"></i><span style="color:#856404;font-size:0.95em;">${escapeHtml(ac)}</span></div>` : '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
+                // ✅ [แก้ไข] แยกความเห็นผู้ตรวจ (admin) กับหมายเหตุผู้ลงนาม — ทั้งสองแสดงที่นี่ แต่ไม่อยู่ในบันทึกข้อความ
+                cc.innerHTML = commentBoxesHtml(s) || '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
                 // ✅ [แก้ไข] ดูบันทึกข้อความได้ทุกสถานะ (ลายเซ็นปรากฏตามขั้นที่ลงนามแล้ว) • PDF เมื่อเอกสารสมบูรณ์
                 const btnContainer = document.createElement('div');
                 btnContainer.style.cssText = 'margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;';
@@ -1676,7 +1701,8 @@
 
         const GARUDA_IMG = 'data:image/jpeg;base64,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';
 
-        const SIG_STATUS = { HEAD:'รอหัวหน้าตรวจ', DEPUTY:'รอรองฯตรวจ', DIRECTOR:'รอผอ.อนุมัติ', DONE:'อนุมัติแล้ว', REVISE:'รอแก้ไข' };
+        // ลำดับ: ครู → หัวหน้ากลุ่มสาระ → ผู้ตรวจ (admin999) → รองฯ → ผอ.
+        const SIG_STATUS = { HEAD:'รอหัวหน้าตรวจ', REVIEW:'รอผู้ตรวจ', DEPUTY:'รอรองฯตรวจ', DIRECTOR:'รอผอ.อนุมัติ', DONE:'อนุมัติแล้ว', REVISE:'รอแก้ไข' };
         const LEGACY_HEAD = ['รอตรวจ', 'กำลังดำเนินการ', ''];
         const normalizeQueueStatus = st => LEGACY_HEAD.includes(String(st || '').trim()) ? SIG_STATUS.HEAD : String(st).trim();
         const ROLE_LABEL = { head:'หัวหน้ากลุ่มสาระ', deputy:'รองผู้อำนวยการ', director:'ผู้อำนวยการ', admin:'ผู้ดูแลระบบ' };
@@ -2046,9 +2072,9 @@
 
         function progressChips(sub) {
             const st = normalizeQueueStatus(sub.status);
-            const order = [SIG_STATUS.HEAD, SIG_STATUS.DEPUTY, SIG_STATUS.DIRECTOR, SIG_STATUS.DONE];
+            const order = [SIG_STATUS.HEAD, SIG_STATUS.REVIEW, SIG_STATUS.DEPUTY, SIG_STATUS.DIRECTOR, SIG_STATUS.DONE];
             const reached = st === SIG_STATUS.REVISE ? -1 : order.indexOf(st);
-            const steps = [['ครู', true], ['หัวหน้าฯ', reached >= 1], ['รองฯ', reached >= 2], ['ผอ.', reached >= 3]];
+            const steps = [['ครู', true], ['หัวหน้าฯ', reached >= 1], ['ผู้ตรวจ', reached >= 2], ['รองฯ', reached >= 3], ['ผอ.', reached >= 4]];
             if (st === SIG_STATUS.REVISE) return '<span class="status-revision">ส่งกลับแก้ไข ❗</span>';
             return '<span class="chips">' + steps.map(([l, done], i) =>
                 `<span class="chip ${done ? 'done' : (i === reached + 1 ? 'now' : '')}">${done ? '✓ ' : ''}${l}</span>`).join('') + '</span>';
@@ -2110,7 +2136,7 @@
                 title: escapeHtml(sub.fullName || ''), width: 640,
                 html: `<div style="text-align:left;"><ul style="padding-left:18px;">${files || '<li>ไม่มีข้อมูลวิชา</li>'}</ul>
                     ${sub.additionalLink ? `<p><b>ลิงก์เพิ่มเติม:</b> <a href="${escapeHtml(sub.additionalLink)}" target="_blank" rel="noopener">${escapeHtml(sub.additionalLink)}</a></p>` : ''}
-                    ${sub.adminComment ? `<p><b>ความเห็นล่าสุด:</b> ${escapeHtml(sub.adminComment)}</p>` : ''}</div>`,
+                    ${commentBoxesHtml(sub)}</div>`,
                 confirmButtonText: 'ปิด'
             });
         }
@@ -2307,11 +2333,71 @@ ${autoPrint ? `<script>
             const st = normalizeQueueStatus(status);
             return ({
                 [SIG_STATUS.HEAD]: 'รอหัวหน้ากลุ่มสาระลงนาม',
+                [SIG_STATUS.REVIEW]: 'รอผู้ตรวจ',
                 [SIG_STATUS.DEPUTY]: 'รอรองผู้อำนวยการลงนาม',
                 [SIG_STATUS.DIRECTOR]: 'รอผู้อำนวยการลงนาม',
                 [SIG_STATUS.DONE]: 'เอกสารสมบูรณ์',
                 [SIG_STATUS.REVISE]: 'ส่งกลับแก้ไข'
             })[st] || st;
+        }
+
+        // ✅ [เพิ่มใหม่] ผู้ตรวจ (admin999): ตรวจผ่าน → ส่งต่อรองฯ / ส่งกลับแก้ไข (ไม่มีลายเซ็นในบันทึกข้อความ)
+        function updateReviewSelectedCount() {
+            const n = document.querySelectorAll('.review-check:checked').length;
+            const el = document.getElementById('reviewSelectedCount'); if (el) el.textContent = n;
+            ['reviewPassBtn', 'reviewReviseBtn'].forEach(id => { const b = document.getElementById(id); if (b) b.disabled = n === 0; });
+        }
+        function toggleReviewSelectAll(on) {
+            document.querySelectorAll('.review-check').forEach(c => c.checked = on);
+            updateReviewSelectedCount();
+        }
+        function reviewerDecideSelected(decision) {
+            const ids = [...document.querySelectorAll('.review-check:checked')].map(c => c.value);
+            if (ids.length) reviewerDecide(ids, decision);
+        }
+        async function reviewerDecide(ids, decision) {
+            const subs = ids.map(id => currentAdminSubmissions.find(x => x.id === id)).filter(Boolean);
+            const listHtml = `<div style="max-height:160px;overflow:auto;text-align:left;font-size:0.9em;background:#f7f7fb;padding:8px 12px;border-radius:8px;">${subs.map(s => '• ' + escapeHtml(s.fullName)).join('<br>')}</div>`;
+            const single = subs.length === 1 ? subs[0] : null;
+            const r = await Swal.fire({
+                title: decision === 'revise' ? 'ส่งกลับให้แก้ไข' : `ตรวจผ่าน ${ids.length} รายการ`,
+                html: listHtml + `<p style="margin:12px 0 4px;text-align:left;font-weight:600;">ความเห็นผู้ตรวจ ${decision === 'revise' ? '(จำเป็น)' : '(ถ้ามี)'}
+                      <small style="font-weight:normal;color:#888;"> — แสดงในหน้าสถิติ ไม่อยู่ในบันทึกข้อความ</small></p>`,
+                input: 'textarea', inputValue: single ? (single.adminComment || '') : '',
+                showCancelButton: true, cancelButtonText: 'ยกเลิก',
+                confirmButtonText: decision === 'revise' ? 'ส่งกลับ' : '✅ ตรวจผ่าน ส่งต่อรองฯ',
+                confirmButtonColor: decision === 'revise' ? '#e67e22' : '#0b7a5a',
+                inputValidator: v => decision === 'revise' && !String(v || '').trim() && 'กรุณาระบุสิ่งที่ต้องแก้ไข'
+            });
+            if (!r.isConfirmed) return;
+            Swal.fire({ title:'กำลังบันทึก...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            try {
+                const results = [];
+                for (let i = 0; i < ids.length; i += 10) {
+                    const res = await postToAppsScript(buildPayload({ action:'approveSubmission', password: currentSigner.password, decision,
+                        comment: String(r.value || '').trim(), submissionIds: ids.slice(i, i + 10).join(',') }));
+                    if (!res.results) throw new Error(res.message);
+                    results.push(...res.results);
+                }
+                const fails = results.filter(x => !x.ok);
+                Swal.fire({
+                    icon: fails.length ? 'warning' : 'success',
+                    title: `${decision === 'revise' ? 'ส่งกลับแล้ว' : 'ตรวจผ่านแล้ว'} ${results.length - fails.length} รายการ`,
+                    html: fails.length ? '<div style="text-align:left;font-size:0.9em;">' + fails.map(f => '• ' + escapeHtml(f.message)).join('<br>') + '</div>' : ''
+                });
+            } catch (e) { Swal.fire('เกิดข้อผิดพลาด!', e.message, 'error'); }
+            loadAdminSubmissions(true); loadDashboardData(true);
+        }
+
+        // ✅ [เพิ่มใหม่] กล่องความเห็นในแดชบอร์ด: ผู้ตรวจ (สีเหลือง) + ผู้ลงนาม (สีฟ้า)
+        function commentBoxesHtml(s) {
+            const box = (bg, border, color, icon, label, text) => `<div style="background:${bg};padding:10px 12px;border-radius:8px;border-left:4px solid ${border};word-wrap:break-word;line-height:1.6;margin-bottom:6px;">
+                <i class="fa-solid ${icon}" style="color:${border};margin-right:6px;"></i><b style="color:${color};font-size:0.85em;">${label}</b><br>
+                <span style="color:${color};font-size:0.95em;">${escapeHtml(text)}</span></div>`;
+            const ac = String(s.adminComment || '').trim();
+            const sn = String(s.signerNote || '').trim();
+            return (ac ? box('#fff3cd', '#ffc107', '#856404', 'fa-comment-dots', 'ความเห็นผู้ตรวจ', ac) : '') +
+                   (sn ? box('#e8f1ff', '#3d8bd9', '#1d4f8a', 'fa-pen-nib', 'หมายเหตุผู้ลงนาม', sn) : '');
         }
 
         // ===== INIT =====
