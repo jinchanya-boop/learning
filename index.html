@@ -1392,7 +1392,7 @@
                     pb.onclick = () => reviewerDecide([sub.id], 'approve'); ac.appendChild(pb);
                 }
                 const vb = document.createElement('button'); vb.innerHTML='<i class="fa-solid fa-magnifying-glass"></i> ดู/จัดการ'; vb.className='custom-button'; vb.onclick=()=>showSubmissionDetail(sub.id); ac.appendChild(vb);
-                if (sigRound) { const mb = document.createElement('button'); mb.innerHTML='<i class="fa-solid fa-eye"></i> ดูออนไลน์'; mb.className='custom-button'; mb.style.background='#3d8bd9'; mb.onclick=()=>openDocViewer(sub.id,'admin'); ac.appendChild(mb); }
+                { const mb = document.createElement('button'); mb.innerHTML='<i class="fa-solid fa-eye"></i> ดูออนไลน์'; mb.className='custom-button'; mb.style.background='#3d8bd9'; mb.onclick=()=>openDocViewer(sub.id,'admin'); ac.appendChild(mb); }
                 const db = document.createElement('button'); db.innerHTML='<i class="fa-solid fa-trash-can"></i> ลบ'; db.className='custom-button delete-button'; db.onclick=()=>confirmDeleteSubmission(sub.id); ac.appendChild(db);
             });
         }
@@ -1424,7 +1424,10 @@
                         <div class="course-block-header">วิชาที่ ${i+1}</div>
                         <p style="margin:5px 0;"><strong>รหัสวิชา:</strong> ${c.code||'ไม่ได้ระบุ'}</p>
                         <p style="margin:5px 0;"><strong>ชื่อวิชา:</strong> ${c.name||'ไม่ได้ระบุ'}</p>
-                        ${c.fileUrl ? `<p style="margin:5px 0;"><strong>ไฟล์:</strong> <a href="${c.fileUrl}" target="_blank"><i class="fa-solid fa-file-pdf fa-fw"></i>${c.fileName||'เปิดไฟล์'}</a></p>` : '<p>ไม่มีไฟล์แนบสำหรับวิชานี้</p>'}
+                        ${c.fileUrl ? `<p style="margin:5px 0;display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><strong>ไฟล์:</strong>
+                            <span><i class="fa-solid fa-file-pdf fa-fw" style="color:#d32f2f;"></i>${escapeHtml(c.fileName||'ไฟล์แนบ')}</span>
+                            <button type="button" class="custom-button mini" style="background:#3d8bd9;" onclick="openDocViewer('${escapeHtml(sub.id)}','admin','c${i}')"><i class="fa-solid fa-eye"></i> ดูออนไลน์</button>
+                            <a href="${escapeHtml(c.fileUrl)}" target="_blank" rel="noopener" style="font-size:0.85em;"><i class="fa-solid fa-download"></i> ดาวน์โหลด</a></p>` : '<p>ไม่มีไฟล์แนบสำหรับวิชานี้</p>'}
                     </div>`;
                 });
             } else { filesHtml = '<li>ไม่มีข้อมูลวิชาหรือไฟล์แนบ</li>'; }
@@ -2593,8 +2596,10 @@ ${autoPrint ? `<script>
             return pool.find(s => s.id === docViewer.id);
         }
 
-        function openDocViewer(id, context) {
-            docViewer.id = id; docViewer.context = context; docViewer.tab = 'memo';
+        // tab: 'memo' (บันทึกข้อความ) | 'c0','c1',... (ไฟล์วิชาที่ 1, 2, ...)
+        function openDocViewer(id, context, tab) {
+            docViewer.id = id; docViewer.context = context;
+            docViewer.tab = tab || (isSignatureRound() ? 'memo' : 'c0');
             document.getElementById('docViewer').hidden = false;
             document.body.style.overflow = 'hidden';
             renderDocViewer();
@@ -2609,7 +2614,7 @@ ${autoPrint ? `<script>
             const i = list.findIndex(s => s.id === docViewer.id);
             const next = list[i + dir];
             if (!next) { Swal.fire({ toast:true, position:'top', icon:'info', title: dir > 0 ? 'นี่คือรายการสุดท้ายแล้ว' : 'นี่คือรายการแรกแล้ว', timer:1400, showConfirmButton:false }); return; }
-            docViewer.id = next.id; docViewer.tab = 'memo';
+            docViewer.id = next.id; docViewer.tab = isSignatureRound() ? 'memo' : 'c0';
             renderDocViewer();
         }
         document.addEventListener('keydown', e => {
@@ -2627,7 +2632,8 @@ ${autoPrint ? `<script>
             document.getElementById('dvPos').textContent = pos >= 0 ? `${pos + 1} / ${list.length}` : '';
 
             const courses = (sub.courses || []);
-            const tabs = [{ key:'memo', icon:'fa-file-signature', label:'บันทึกข้อความ', sub:'ปะหน้า พร้อมลายเซ็นที่ลงแล้ว' }]
+            // รอบเดิม (ก่อนใช้ระบบลงนาม) ไม่มีบันทึกข้อความ
+            const tabs = (isSignatureRound() ? [{ key:'memo', icon:'fa-file-signature', label:'บันทึกข้อความ', sub:'ปะหน้า พร้อมลายเซ็นที่ลงแล้ว' }] : [])
                 .concat(courses.map((c, i) => ({ key:'c' + i, icon:'fa-file-pdf', label: c.name || ('วิชาที่ ' + (i + 1)), sub: (c.code || '') + (c.fileUrl ? '' : ' • ไม่มีไฟล์') })));
             if (sub.additionalLink) tabs.push({ key:'link', icon:'fa-link', label:'ลิงก์เพิ่มเติม', sub:'เปิดในแท็บใหม่' });
             document.getElementById('dvTabs').innerHTML = tabs.map(t => `
@@ -2677,7 +2683,8 @@ ${autoPrint ? `<script>
         function renderDocViewerActions(sub) {
             const el = document.getElementById('dvActions');
             let memoBtn = `<button type="button" class="custom-button" style="background:#6c757d;" onclick="openMemo('${escapeHtml(sub.id)}', true)"><i class="fa-solid fa-print"></i> พิมพ์บันทึก</button>`;
-            if (docViewer.context === 'admin') memoBtn = `<button type="button" class="custom-button" style="background:#3d8bd9;" onclick="editMemoNumber('${escapeHtml(sub.id)}')"><i class="fa-solid fa-hashtag"></i> เลขที่บันทึก</button>` + memoBtn;
+            if (!isSignatureRound()) memoBtn = '';
+            else if (docViewer.context === 'admin') memoBtn = `<button type="button" class="custom-button" style="background:#3d8bd9;" onclick="editMemoNumber('${escapeHtml(sub.id)}')"><i class="fa-solid fa-hashtag"></i> เลขที่บันทึก</button>` + memoBtn;
             let buttons = '', hint = '';
             if (docViewer.context === 'signer' && currentSigner && isMyQueue(sub)) {
                 hint = 'อ่านเอกสารครบแล้ว ลงนามหรือส่งกลับได้จากที่นี่ ระบบจะเปิดรายการถัดไปให้อัตโนมัติ';
