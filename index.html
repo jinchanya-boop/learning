@@ -1999,7 +1999,11 @@
                     Swal.fire({ title:`สวัสดีค่ะ ${r.name}`, text: r.position, icon:'success', timer:1400, showConfirmButton:false });
                     renderSignerHeader();
                     loadSignerSubmissions();
-                    if (!r.hasSignature) setTimeout(() => promptSignerSignature(true), 1500);
+                    // ✅ [เพิ่มใหม่] ยังใช้รหัสเริ่มต้นที่ผู้ดูแลแจก → ชวนตั้งรหัสของตัวเอง แล้วค่อยชวนเพิ่มลายเซ็น
+                    setTimeout(async () => {
+                        if (r.mustChangePassword) await changeSignerPassword(true);
+                        if (!currentSigner.hasSignature) await promptSignerSignature(true);
+                    }, 1500);
                 }
             } catch (e) { Swal.fire('เกิดข้อผิดพลาด!', e.message, 'error'); }
         }
@@ -2025,9 +2029,48 @@
                         : '<span style="color:#c0392b;font-weight:600;"><i class="fa-solid fa-triangle-exclamation"></i> ยังไม่มีลายเซ็น</span>'}
                     <button type="button" class="custom-button" style="background:#0b7a5a;padding:7px 14px;" onclick="promptSignerSignature(false)">
                         <i class="fa-solid fa-signature"></i> ${s.hasSignature ? 'เปลี่ยนลายเซ็น' : 'เพิ่มลายเซ็น'}</button>
+                    <button type="button" class="custom-button" style="background:#3d8bd9;padding:7px 14px;" onclick="changeSignerPassword(false)">
+                        <i class="fa-solid fa-key"></i> เปลี่ยนรหัสผ่าน</button>
                     <button type="button" class="custom-button" style="background:#6c757d;padding:7px 14px;" onclick="signerLogout()">
                         <i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
                 </div>`;
+        }
+
+        // ✅ [เพิ่มใหม่] ผู้ลงนามตั้ง/เปลี่ยนรหัสผ่านของตัวเอง
+        async function changeSignerPassword(firstTime) {
+            const s = currentSigner;
+            const r = await Swal.fire({
+                title: firstTime ? 'ตั้งรหัสผ่านของท่านเอง' : 'เปลี่ยนรหัสผ่าน',
+                html: `<div style="text-align:left;font-size:0.92em;">
+                    ${firstTime ? '<p style="margin:0 0 10px;color:#555;">ท่านกำลังใช้รหัสเริ่มต้นที่ผู้ดูแลแจก แนะนำให้ตั้งรหัสใหม่ที่ท่านจำได้ ระบบจะเก็บแบบเข้ารหัส ผู้ดูแลเองก็มองไม่เห็น</p>' : `
+                    <label style="font-weight:600;">รหัสผ่านปัจจุบัน</label>
+                    <input id="pwOld" type="password" class="swal2-input" style="margin:4px 0 10px;width:100%;">`}
+                    <label style="font-weight:600;">รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)</label>
+                    <input id="pwNew1" type="password" class="swal2-input" style="margin:4px 0 8px;width:100%;" autocomplete="new-password">
+                    <input id="pwNew2" type="password" class="swal2-input" style="margin:0 0 6px;width:100%;" placeholder="ยืนยันรหัสผ่านใหม่" autocomplete="new-password">
+                </div>`,
+                showCancelButton: true,
+                confirmButtonText: 'บันทึกรหัสผ่าน',
+                cancelButtonText: firstTime ? 'ภายหลัง' : 'ยกเลิก',
+                preConfirm: () => {
+                    const oldPw = firstTime ? s.password : document.getElementById('pwOld').value.trim();
+                    const p1 = document.getElementById('pwNew1').value.trim(), p2 = document.getElementById('pwNew2').value.trim();
+                    if (!oldPw) { Swal.showValidationMessage('กรุณากรอกรหัสผ่านปัจจุบัน'); return false; }
+                    if (p1.length < 6) { Swal.showValidationMessage('รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร'); return false; }
+                    if (p1 !== p2) { Swal.showValidationMessage('รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน'); return false; }
+                    return { oldPw, p1 };
+                }
+            });
+            if (!r.isConfirmed) return;
+            Swal.fire({ title:'กำลังบันทึก...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
+            try {
+                const res = await postToAppsScript(buildPayload({ action:'changeSignerPassword', password: r.value.oldPw, newPassword: r.value.p1 }));
+                if (!res.success) throw new Error(res.message);
+                s.password = r.value.p1;   // ใช้รหัสใหม่ต่อในหน้านี้ทันที
+                await Swal.fire({ icon:'success', title:'เปลี่ยนรหัสผ่านแล้ว', text:'ครั้งต่อไปใช้รหัสใหม่นี้เข้าสู่ระบบ', timer:1800, showConfirmButton:false });
+            } catch (e) {
+                await Swal.fire('เปลี่ยนรหัสผ่านไม่สำเร็จ', e.message, 'error');
+            }
         }
 
         async function promptSignerSignature(firstTime) {
