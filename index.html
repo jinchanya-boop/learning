@@ -753,7 +753,7 @@
         const HEAD_OF_AREA = {
             'ภาษาไทย':                        'นางสาววจีพร แก้วหล้า',
             'คณิตศาสตร์':                      'นางลัดดาวัลย์ ปินตา',
-            'วิทยาศาสตร์และเทคโนโลยี':        'นายธัญวัฒน์ กาบคำ',
+            'วิทยาศาสตร์และเทคโนโลยี':        'นางสาวจริยา ใจยศ',
             'ภาษาต่างประเทศ':                  'นางอทิตยา ปิมปา',
             'สังคมศึกษา ศาสนาและวัฒนธรรม':    'นายณรงค์ สมศักดิ์',
             'สุขศึกษาและพลศึกษา':              'นายศุภชัย บุญประวัติ',
@@ -2025,15 +2025,38 @@
             renderMemoNumberBox();
         }
 
+        // ✅ [เพิ่มใหม่] รายชื่อผู้ลงนามจริงจากชีต "ผู้ลงนาม" (แทนรายชื่อที่เขียนไว้ในโค้ด)
+        let signerDirectory = null;
+        async function loadSignerDirectory() {
+            if (signerDirectory) return signerDirectory;
+            try {
+                const r = await getFromAppsScript({ action:'getSignerDirectory' });
+                if (r.success) signerDirectory = r.data || [];
+            } catch (e) { console.warn('โหลดรายชื่อผู้ลงนามไม่สำเร็จ', e); }
+            return signerDirectory || [];
+        }
+        function signerFor(role, area) {
+            const list = signerDirectory || [];
+            return list.find(s => s.role === role && (role !== 'head' || s.area === area)) || null;
+        }
+        function defaultHeadPosition(area) {
+            return area === 'กิจกรรมพัฒนาผู้เรียน' ? 'หัวหน้างานกิจกรรมพัฒนาผู้เรียน' : (area ? 'หัวหน้ากลุ่มสาระการเรียนรู้' + area : '');
+        }
+
         function renderMemoNumberBox() {
             const box = document.getElementById('memoNumberBox');
             if (!box) return;
             const name = document.getElementById('fullName').value.trim();
-            if (!name) { box.innerHTML = '<span style="color:#888;">กรอกชื่อ-นามสกุลแล้วระบบจะค้นหาเลขที่บันทึกข้อความให้</span>'; return; }
+            const area = document.getElementById('learningArea').value;
+            const head = area ? signerFor('head', area) : null;
+            const headLine = area ? `<br><i class="fa-solid fa-user-tie" style="color:#515ada;"></i> ผู้ลงนามหัวหน้ากลุ่มสาระของคุณ: <b>${head ? escapeHtml(head.name) : '<span style="color:#c0392b;">ยังไม่มีในชีต "ผู้ลงนาม"</span>'}</b>
+                <small style="color:#888;">(ถ้าไม่ถูกต้อง แจ้งผู้ดูแลระบบ)</small>` : '';
+            if (!signerDirectory && area) { loadSignerDirectory().then(() => { if (signerDirectory) renderMemoNumberBox(); }); }
+            if (!name) { box.innerHTML = '<span style="color:#888;">กรอกชื่อ-นามสกุลแล้วระบบจะค้นหาเลขที่บันทึกข้อความให้</span>' + headLine; return; }
             const m = lookupMemoNumber(name);
-            box.innerHTML = m
+            box.innerHTML = (m
                 ? `<i class="fa-solid fa-circle-check" style="color:#27ae60;"></i> เลขที่บันทึกข้อความ <b>${escapeHtml(formatMemoNo(m.memoNo))}</b> ลงวันที่ <b>${escapeHtml(m.date)}</b>`
-                : `<i class="fa-solid fa-circle-info" style="color:#e67e22;"></i> ไม่พบชื่อนี้ในรายการเลขที่บันทึกข้อความของรอบนี้ — ส่งงานได้ตามปกติ ผู้ตรวจจะกรอกเลขที่ให้ภายหลัง`;
+                : `<i class="fa-solid fa-circle-info" style="color:#e67e22;"></i> ไม่พบชื่อนี้ในรายการเลขที่บันทึกข้อความของรอบนี้ — ส่งงานได้ตามปกติ ผู้ตรวจจะกรอกเลขที่ให้ภายหลัง`) + headLine;
         }
 
         async function refreshTeacherSignatureBox() {
@@ -2581,7 +2604,10 @@
         }
 
         // ดูตัวอย่างบันทึก 7.5 จากข้อมูลที่กรอก (ยังไม่มีลายเซ็น)
-        function previewReport75FromForm() {
+        async function previewReport75FromForm() {
+            await loadSignerDirectory();
+            const area = document.getElementById('learningArea').value;
+            const head = signerFor('head', area), deputy = signerFor('deputy'), director = signerFor('director');
             const name = document.getElementById('fullName').value.trim();
             const m = lookupMemoNumber(name);
             const d = {
@@ -2589,8 +2615,9 @@
                 teacherName: name || '....................', position: document.getElementById('teacherPosition').value,
                 learningArea: document.getElementById('learningArea').value,
                 memoNo: m ? m.memoNo : '', memoDate: m ? m.date : '',
-                headName: HEAD_OF_AREA[document.getElementById('learningArea').value] || '',
-                headPosition: '', deputyName: 'นางสาวอริศรา ยากับ', directorName: 'นางรัชนีวรรณ บุญทวี',
+                headName: head ? head.name : '', headPosition: head ? head.position : defaultHeadPosition(area),
+                deputyName: deputy ? deputy.name : '', deputyPosition: deputy ? deputy.position : 'รองผู้อำนวยการกลุ่มงานบริหารวิชาการ',
+                directorName: director ? director.name : '', directorPosition: director ? director.position : 'ผู้อำนวยการโรงเรียนสา',
                 report75: r75Collect(document.getElementById('r75Root'))
             };
             const w = window.open('', '_blank');
@@ -3094,6 +3121,7 @@ ${autoPrint ? `<script>
             updateAllBadges();
             // ✅ [เพิ่มใหม่] ตรวจลายเซ็นและเลขที่บันทึกเมื่อพิมพ์ชื่อ
             document.getElementById('fullName').addEventListener('input', scheduleTeacherSignatureCheck);
+            document.getElementById('learningArea').addEventListener('change', renderMemoNumberBox);
             renderMemoNumberBox();
         });
     </script>
