@@ -294,6 +294,8 @@
             .dv-notes { display: none; }
             .dv-frame-wrap { min-height: 60vh; }
         }
+        .rev-badge { display: inline-block; background: #fdebd0; color: #a04000; border: 1px solid #f5b041; border-radius: 10px;
+                     padding: 1px 8px; font-size: 0.78em; font-weight: 600; white-space: nowrap; margin-top: 3px; }
         .chip.now { background: #fff1d6; color: #b36b00; font-weight: 600; outline: 1px solid #f0c070; }
     </style>
 </head>
@@ -1160,7 +1162,7 @@
             return k(y, t, r) >= k(SIGNATURE_START.year, SIGNATURE_START.term, SIGNATURE_START.round);
         }
         const LEGACY_FILTER_OPTIONS = [['ทั้งหมด','ทั้งหมด'],['รอตรวจ','รอตรวจ 🟡'],['กำลังดำเนินการ','กำลังดำเนินการ 🟠'],['อนุมัติแล้ว','อนุมัติแล้ว ✅'],['รอแก้ไข','รอแก้ไข ❗']];
-        const SIG_FILTER_OPTIONS = [['ทั้งหมด','ทั้งหมด'],['รอหัวหน้าตรวจ','รอหัวหน้ากลุ่มสาระลงนาม'],['รอผู้ตรวจ','รอผู้ตรวจ 🔍'],['รอรองฯตรวจ','รอรองฯ ลงนาม'],['รอผอ.อนุมัติ','รอ ผอ. ลงนาม'],['อนุมัติแล้ว','เอกสารสมบูรณ์ ✅'],['รอแก้ไข','ส่งกลับแก้ไข ❗']];
+        const SIG_FILTER_OPTIONS = [['ทั้งหมด','ทั้งหมด'],['รอหัวหน้าตรวจ','รอหัวหน้ากลุ่มสาระลงนาม'],['รอผู้ตรวจ','รอผู้ตรวจ 🔍'],['รอรองฯตรวจ','รอรองฯ ลงนาม'],['รอผอ.อนุมัติ','รอ ผอ. ลงนาม'],['อนุมัติแล้ว','เอกสารสมบูรณ์ ✅'],['รอแก้ไข','ส่งกลับแก้ไข ❗'],['__revised__','🔁 งานที่ส่งแก้ไขมาใหม่ (ยังไม่สมบูรณ์)']];
         function applyRoundMode() {
             const on = isSignatureRound();
             document.querySelectorAll('.sig-only').forEach(el => { el.style.display = on ? '' : 'none'; });
@@ -1419,17 +1421,20 @@
                     const prev = await getFromAppsScript({ action:'findMySubmission', name: fullNameVal });
                     if (prev.success && prev.exists) {
                         const done = prev.status === 'อนุมัติแล้ว';
+                        const revise = prev.status === 'รอแก้ไข';
                         const ask = await Swal.fire({
                             icon: done ? 'warning' : 'question',
-                            title: 'คุณเคยส่งงานรอบนี้แล้ว',
+                            title: revise ? 'ส่งงานที่แก้ไขแล้ว' : 'คุณเคยส่งงานรอบนี้แล้ว',
                             html: `<div style="text-align:left;font-size:0.95em;">
                                 ส่งเมื่อ <b>${escapeHtml(prev.submissionTimestamp)}</b> • สถานะ ${formatStatus(prev.status)}<br>
                                 ${prev.courses.length ? 'วิชา: ' + prev.courses.map(escapeHtml).join(', ') + '<br>' : ''}
+                                ${revise && prev.reviseNote ? `<div style="background:#fdebd0;padding:8px 10px;border-radius:8px;margin-top:8px;"><b>สิ่งที่ขอให้แก้ไข:</b> ${escapeHtml(prev.reviseNote)}</div>` : ''}
+                                ${revise ? '<p style="margin:8px 0 0;color:#a04000;"><b>แนะนำให้กด "ส่งงานที่แก้ไขแล้ว"</b> ระบบจะบันทึกว่าเป็นการส่งแก้ไข ผู้ตรวจและผู้บริหารจะเห็นป้าย 🔁</p>' : ''}
                                 <p style="margin:10px 0 0;"><b>แทนที่ของเดิม</b> = ไฟล์เก่าจะถูกย้ายไปถังขยะ และเริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ</p>
                                 ${done ? '<p style="color:#c0392b;margin:6px 0 0;">⚠️ งานเดิมลงนามครบแล้ว ถ้าแทนที่ ลายเซ็นทั้งหมดจะถูกล้าง</p>' : ''}
                                 <p style="margin:6px 0 0;color:#666;">ถ้าเป็นวิชาอื่นที่ส่งเพิ่ม ให้เลือก "ส่งเป็นรายการใหม่"</p></div>`,
                             showDenyButton: true, showCancelButton: true,
-                            confirmButtonText: '🔁 แทนที่ของเดิม', denyButtonText: '➕ ส่งเป็นรายการใหม่', cancelButtonText: 'ยกเลิก',
+                            confirmButtonText: revise ? '🔁 ส่งงานที่แก้ไขแล้ว (แทนที่ของเดิม)' : '🔁 แทนที่ของเดิม', denyButtonText: '➕ ส่งเป็นรายการใหม่', cancelButtonText: 'ยกเลิก',
                             confirmButtonColor: '#e67e22', denyButtonColor: '#515ada'
                         });
                         if (ask.isDismissed) return;
@@ -1469,7 +1474,8 @@
             try {
                 const result = await postToAppsScript(fd);
                 if (result.success) {
-                    if (result.replaced) Swal.fire('แทนที่งานเดิมเรียบร้อย!','ไฟล์เก่าถูกย้ายไปถังขยะ และเริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ','success');
+                    if (result.replaced && result.revision) Swal.fire(`ส่งงานที่แก้ไขแล้ว (ครั้งที่ ${result.revision})`,'ระบบแจ้งผู้ตรวจแล้ว และเริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ','success');
+                    else if (result.replaced) Swal.fire('แทนที่งานเดิมเรียบร้อย!','ไฟล์เก่าถูกย้ายไปถังขยะ และเริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ','success');
                     else if (sigRound) Swal.fire('ส่งงานและลงนามเรียบร้อย!','ระบบส่งต่อให้หัวหน้ากลุ่มสาระลงนามแล้ว ติดตามสถานะได้ที่เมนู "สถิติ"','success');
                     else Swal.fire('สำเร็จ!','ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว!','success');
                     this.reset(); setTimestamp(); createCourseBlocks();
@@ -1511,7 +1517,8 @@
             document.getElementById('admin-dashboard').style.display = 'block';
             const fv = document.getElementById('statusFilter').value;
             const normalizeStatus = isSignatureRound() ? normalizeQueueStatus : (st => st || 'รอตรวจ');
-            const filtered = currentAdminSubmissions.filter(s => fv==='ทั้งหมด' || (s && normalizeStatus(s.status)===fv));
+            const filtered = currentAdminSubmissions.filter(s => fv==='ทั้งหมด' ||
+                (fv === '__revised__' ? (s.revision > 0 && normalizeStatus(s.status) !== 'อนุมัติแล้ว') : (s && normalizeStatus(s.status)===fv)));
             document.getElementById('reviewSelectAll').checked = false;
             updateReviewSelectedCount();
             if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">ไม่พบรายการตามเงื่อนไข</td></tr>'; return; }
@@ -1523,7 +1530,7 @@
                 const cb = row.insertCell(); cb.style.textAlign = 'center'; if (!sigRound) cb.style.display = 'none';
                 if (inReview) cb.innerHTML = `<input type="checkbox" class="review-check" value="${escapeHtml(sub.id)}" onchange="updateReviewSelectedCount()" style="width:18px;height:18px;">`;
                 row.insertCell().textContent = sub.submissionTimestamp||'';
-                row.insertCell().innerHTML = `<b>${escapeHtml(sub.fullName||'')}</b><br><small style="color:#888;">${escapeHtml(sub.learningArea||'')}</small>`;
+                row.insertCell().innerHTML = `<b>${escapeHtml(sub.fullName||'')}</b><br><small style="color:#888;">${escapeHtml(sub.learningArea||'')}</small>${sub.revision ? '<br>' + revBadge(sub) : ''}`;
                 row.insertCell().textContent = (sub.courses&&sub.courses.length>0) ? (sub.courses[0].name||'N/A') : 'N/A';
                 row.insertCell().innerHTML = sigRound ? progressChips(sub) : formatStatus(sub.status);
                 const ac = row.insertCell();
@@ -1576,7 +1583,8 @@
                     <span class="icon-bubble"><i class="fa-solid fa-circle-info"></i></span>
                     <h3>รายละเอียดการส่งงาน</h3>
                 </div>
-                <p><strong>ID:</strong> ${sub.id||'N/A'}</p>
+                <p><strong>ID:</strong> ${sub.id||'N/A'} ${revBadge(sub)}</p>
+                ${sub.revision && sub.reviseReason ? `<p style="background:#fdebd0;padding:8px 12px;border-radius:8px;"><strong>🔁 ครั้งก่อนขอให้แก้ไข:</strong> ${escapeHtml(sub.reviseReason)}</p>` : ''}
                 ${!isSignatureRound() ? '' : (rm => `<p><strong>เลขที่บันทึกข้อความ:</strong> ${rm.memoNo ? escapeHtml(formatMemoNo(rm.memoNo)) + ' ลงวันที่ ' + escapeHtml(rm.memoDate || '-') : '<span style="color:#c0392b;">ยังไม่มี</span>'}
                     <small style="color:#888;">(${rm.source === 'saved' ? 'บันทึกไว้แล้ว' : rm.source === 'list' ? 'ดึงจากเมนูเลขที่บันทึกข้อความ' : 'ไม่พบชื่อในรายการ'})</small>
                     <button type="button" class="custom-button mini" style="background:#3d8bd9;" onclick="editMemoNumber('${escapeHtml(sub.id)}')"><i class="fa-solid fa-pen"></i> กรอก/แก้เลขที่</button></p>`)(resolveMemo(sub.fullName, sub.memoNo, sub.memoDate))}
@@ -1871,7 +1879,7 @@
                 row.insertCell().textContent = s.fullName;
                 row.insertCell().textContent = s.courseName;
                 row.insertCell().textContent = s.learningArea;
-                row.insertCell().innerHTML = formatStatus(s.status);
+                row.insertCell().innerHTML = formatStatus(s.status) + (s.revision ? '<br>' + revBadge(s) : '');
                 const cc = row.insertCell();
                 // ✅ [แก้ไข] แยกความเห็นผู้ตรวจ (admin) กับหมายเหตุผู้ลงนาม — ทั้งสองแสดงที่นี่ แต่ไม่อยู่ในบันทึกข้อความ
                 cc.innerHTML = commentBoxesHtml(s) || '<span style="color:#999;font-style:italic;font-size:0.9em;">ยังไม่มีความคิดเห็น</span>';
@@ -2453,7 +2461,7 @@
                 return `<tr data-id="${escapeHtml(sub.id)}">
                     <td style="text-align:center;">${canSign ? `<input type="checkbox" class="signer-check" value="${escapeHtml(sub.id)}" onchange="updateSignerSelectedCount()" style="width:18px;height:18px;">` : ''}</td>
                     <td>${escapeHtml(sub.submissionTimestamp || '')}</td>
-                    <td><b>${escapeHtml(sub.fullName || '')}</b><br><small style="color:#888;">${escapeHtml(sub.position || 'ครู')}</small></td>
+                    <td><b>${escapeHtml(sub.fullName || '')}</b><br><small style="color:#888;">${escapeHtml(sub.position || 'ครู')}</small>${sub.revision ? '<br>' + revBadge(sub) : ''}</td>
                     <td>${escapeHtml(sub.learningArea || '')}</td>
                     <td>${(m => m ? escapeHtml(formatMemoNo(m)) : '<span style="color:#c0392b;font-size:0.85em;">ยังไม่มีเลขที่</span>')(resolveMemo(sub.fullName, sub.memoNo, sub.memoDate).memoNo)}</td>
                     <td>${progressChips(sub)}</td>
@@ -3081,7 +3089,8 @@ ${autoPrint ? `<script>
                 return signerSubmissions.filter(signerView === 'queue' ? isMyQueue : isInMyScope);
             }
             const fv = document.getElementById('statusFilter').value;
-            return currentAdminSubmissions.filter(s => fv === 'ทั้งหมด' || normalizeQueueStatus(s.status) === fv);
+            return currentAdminSubmissions.filter(s => fv === 'ทั้งหมด' ||
+                (fv === '__revised__' ? (s.revision > 0 && normalizeQueueStatus(s.status) !== SIG_STATUS.DONE) : normalizeQueueStatus(s.status) === fv));
         }
         function docViewerSub() {
             const pool = docViewer.context === 'signer' ? signerSubmissions : currentAdminSubmissions;
@@ -3120,7 +3129,7 @@ ${autoPrint ? `<script>
             const list = docViewerList();
             const pos = list.findIndex(s => s.id === sub.id);
             document.getElementById('dvTitle').textContent = sub.fullName || '';
-            document.getElementById('dvSub').innerHTML = `${escapeHtml(sub.learningArea || '')}${sub.memoNo ? ' • ' + escapeHtml(formatMemoNo(sub.memoNo)) : ''} • ${progressChips(sub)}`;
+            document.getElementById('dvSub').innerHTML = `${escapeHtml(sub.learningArea || '')}${sub.memoNo ? ' • ' + escapeHtml(formatMemoNo(sub.memoNo)) : ''} • ${progressChips(sub)} ${revBadge(sub)}`;
             document.getElementById('dvPos').textContent = pos >= 0 ? `${pos + 1} / ${list.length}` : '';
 
             const courses = (sub.courses || []);
@@ -3131,7 +3140,8 @@ ${autoPrint ? `<script>
             document.getElementById('dvTabs').innerHTML = tabs.map(t => `
                 <button type="button" class="dv-tab ${docViewer.tab === t.key ? 'active' : ''}" onclick="showDocViewerTab('${t.key}')">
                     <i class="fa-solid ${t.icon}"></i> ${escapeHtml(t.label)}<small>${escapeHtml(t.sub)}</small></button>`).join('') +
-                `<div class="dv-notes">${commentBoxesHtml(sub)}</div>`;
+                `<div class="dv-notes">${sub.revision && sub.reviseReason ? `<div style="background:#fdebd0;padding:10px 12px;border-radius:8px;border-left:4px solid #e67e22;margin-bottom:6px;">
+                    <b style="color:#a04000;font-size:0.85em;">🔁 ครั้งก่อนขอให้แก้ไข</b><br><span style="color:#7e3a00;font-size:0.9em;">${escapeHtml(sub.reviseReason)}</span></div>` : ''}${commentBoxesHtml(sub)}</div>`;
 
             renderDocViewerActions(sub);
             showDocViewerTab(docViewer.tab);
@@ -3235,6 +3245,12 @@ ${autoPrint ? `<script>
                 else if (document.getElementById('submission-detail-view').style.display === 'block') showSubmissionDetail(id);
                 loadAdminSubmissions(true);
             } catch (e) { Swal.fire('บันทึกไม่สำเร็จ', e.message, 'error'); }
+        }
+
+        // ✅ [เพิ่มใหม่] ป้ายบอกว่าเป็นงานที่ส่งแก้ไขมาใหม่
+        function revBadge(s) {
+            const n = Number(s && s.revision) || 0;
+            return n > 0 ? `<span class="rev-badge" title="ครูส่งงานใหม่หลังถูกส่งกลับแก้ไข">🔁 ส่งแก้ไขครั้งที่ ${n}</span>` : '';
         }
 
         // ✅ [เพิ่มใหม่] กล่องความเห็นในแดชบอร์ด: ผู้ตรวจ (สีเหลือง) + ผู้ลงนาม (สีฟ้า)
