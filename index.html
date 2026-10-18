@@ -1412,10 +1412,36 @@
                 try { signaturePin = await ensureTeacherSignatureReady(fullNameVal); }
                 catch (err) { Swal.fire('ยังส่งไม่ได้', err.message, 'warning'); return; }
             }
+            // ✅ [เพิ่มใหม่] เคยส่งรอบนี้แล้ว → ถามว่าจะแทนที่ของเดิมหรือส่งเป็นรายการใหม่
+            let replaceId = '';
+            if (sigRound) {
+                try {
+                    const prev = await getFromAppsScript({ action:'findMySubmission', name: fullNameVal });
+                    if (prev.success && prev.exists) {
+                        const done = prev.status === 'อนุมัติแล้ว';
+                        const ask = await Swal.fire({
+                            icon: done ? 'warning' : 'question',
+                            title: 'คุณเคยส่งงานรอบนี้แล้ว',
+                            html: `<div style="text-align:left;font-size:0.95em;">
+                                ส่งเมื่อ <b>${escapeHtml(prev.submissionTimestamp)}</b> • สถานะ ${formatStatus(prev.status)}<br>
+                                ${prev.courses.length ? 'วิชา: ' + prev.courses.map(escapeHtml).join(', ') + '<br>' : ''}
+                                <p style="margin:10px 0 0;"><b>แทนที่ของเดิม</b> = ไฟล์เก่าจะถูกย้ายไปถังขยะ และเริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ</p>
+                                ${done ? '<p style="color:#c0392b;margin:6px 0 0;">⚠️ งานเดิมลงนามครบแล้ว ถ้าแทนที่ ลายเซ็นทั้งหมดจะถูกล้าง</p>' : ''}
+                                <p style="margin:6px 0 0;color:#666;">ถ้าเป็นวิชาอื่นที่ส่งเพิ่ม ให้เลือก "ส่งเป็นรายการใหม่"</p></div>`,
+                            showDenyButton: true, showCancelButton: true,
+                            confirmButtonText: '🔁 แทนที่ของเดิม', denyButtonText: '➕ ส่งเป็นรายการใหม่', cancelButtonText: 'ยกเลิก',
+                            confirmButtonColor: '#e67e22', denyButtonColor: '#515ada'
+                        });
+                        if (ask.isDismissed) return;
+                        if (ask.isConfirmed) replaceId = prev.id;
+                    }
+                } catch (err) { console.warn('ตรวจการส่งซ้ำไม่สำเร็จ', err); }
+            }
             Swal.fire({ title:'กำลังส่งข้อมูล...', allowOutsideClick:false, didOpen:()=>Swal.showLoading() });
             const fd = buildPayload({ action:'submitForm' });
             const memoInfo = sigRound ? lookupMemoNumber(fullNameVal) : null;
             fd.append('signaturePin', signaturePin);
+            if (replaceId) fd.append('replaceId', replaceId);
             fd.append('position', document.getElementById('teacherPosition').value);
             fd.append('memoNo', memoInfo ? memoInfo.memoNo : '');
             fd.append('memoDate', memoInfo ? memoInfo.date : '');
@@ -1443,7 +1469,8 @@
             try {
                 const result = await postToAppsScript(fd);
                 if (result.success) {
-                    if (sigRound) Swal.fire('ส่งงานและลงนามเรียบร้อย!','ระบบส่งต่อให้หัวหน้ากลุ่มสาระลงนามแล้ว ติดตามสถานะได้ที่เมนู "สถิติ"','success');
+                    if (result.replaced) Swal.fire('แทนที่งานเดิมเรียบร้อย!','ไฟล์เก่าถูกย้ายไปถังขยะ และเริ่มลงนามใหม่ตั้งแต่หัวหน้ากลุ่มสาระ','success');
+                    else if (sigRound) Swal.fire('ส่งงานและลงนามเรียบร้อย!','ระบบส่งต่อให้หัวหน้ากลุ่มสาระลงนามแล้ว ติดตามสถานะได้ที่เมนู "สถิติ"','success');
                     else Swal.fire('สำเร็จ!','ข้อมูลของคุณถูกส่งเรียบร้อยแล้ว!','success');
                     this.reset(); setTimestamp(); createCourseBlocks();
                     teacherSigState = { name:'', exists:false, pending:null }; refreshTeacherSignatureBox(); renderMemoNumberBox();
