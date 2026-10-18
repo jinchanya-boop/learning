@@ -1580,6 +1580,8 @@
                 ${!isSignatureRound() ? '' : (rm => `<p><strong>เลขที่บันทึกข้อความ:</strong> ${rm.memoNo ? escapeHtml(formatMemoNo(rm.memoNo)) + ' ลงวันที่ ' + escapeHtml(rm.memoDate || '-') : '<span style="color:#c0392b;">ยังไม่มี</span>'}
                     <small style="color:#888;">(${rm.source === 'saved' ? 'บันทึกไว้แล้ว' : rm.source === 'list' ? 'ดึงจากเมนูเลขที่บันทึกข้อความ' : 'ไม่พบชื่อในรายการ'})</small>
                     <button type="button" class="custom-button mini" style="background:#3d8bd9;" onclick="editMemoNumber('${escapeHtml(sub.id)}')"><i class="fa-solid fa-pen"></i> กรอก/แก้เลขที่</button></p>`)(resolveMemo(sub.fullName, sub.memoNo, sub.memoDate))}
+                ${isReport75Round() && normalizeQueueStatus(sub.status) !== SIG_STATUS.DONE ? `<p><strong>รายงาน 7.5:</strong> ${sub.hasReport75 ? 'กรอกแล้ว' : '<span style="color:#c0392b;">ยังไม่มี</span>'}
+                    <button type="button" class="custom-button mini" style="background:#e67e22;" onclick="editReport75('${escapeHtml(sub.id)}', '${escapeHtml(sub.fullName)}', { asAdmin: true })"><i class="fa-solid fa-pen-to-square"></i> กรอก/แก้แทนครู</button></p>` : ''}
                 <p><strong>วันที่ส่ง:</strong> ${sub.submissionTimestamp||'N/A'}</p>
                 <p><strong>ชื่อผู้ส่ง:</strong> ${sub.fullName||'N/A'}</p>
                 <p><strong>กลุ่มสาระฯ:</strong> ${sub.learningArea||'N/A'}</p>
@@ -1997,6 +1999,9 @@
             return m ? { memoNo: m.memoNo, memoDate: m.date, source: 'list' } : { memoNo: '', memoDate: memoDate || '', source: 'none' };
         }
 
+        // แปลงเลขไทย (๐-๙) เป็นเลขอารบิก — ครูหลายท่านพิมพ์ PIN ด้วยแป้นภาษาไทย
+        function normDigits(s) { return String(s || '').trim().replace(/[๐-๙]/g, d => String(d.charCodeAt(0) - 0x0E50)); }
+
         function formatMemoNo(memoNo) {
             return String(memoNo || '').replace(/^วช\s*/, 'วช ');
         }
@@ -2106,11 +2111,11 @@
                     if (!imageBase64) { Swal.showValidationMessage('ไม่พบลายเส้นลายเซ็น'); return false; }
                     const out = { imageBase64 };
                     if (document.getElementById('sigOldPin')) {
-                        out.oldPin = document.getElementById('sigOldPin').value.trim();
+                        out.oldPin = normDigits(document.getElementById('sigOldPin').value);
                         if (!/^\d{4,6}$/.test(out.oldPin)) { Swal.showValidationMessage('กรุณากรอก PIN เดิม'); return false; }
                     }
                     if (document.getElementById('sigPin1')) {
-                        const p1 = document.getElementById('sigPin1').value.trim(), p2 = document.getElementById('sigPin2').value.trim();
+                        const p1 = normDigits(document.getElementById('sigPin1').value), p2 = normDigits(document.getElementById('sigPin2').value);
                         if (!/^\d{4,6}$/.test(p1)) { Swal.showValidationMessage('PIN ต้องเป็นตัวเลข 4–6 หลัก'); return false; }
                         if (p1 !== p2) { Swal.showValidationMessage('PIN ทั้งสองช่องไม่ตรงกัน'); return false; }
                         out.pin = p1;
@@ -2265,7 +2270,7 @@
                 return pin;
             }
             if (s.exists) {
-                const pin = (document.getElementById('sigPinSubmit')?.value || '').trim();
+                const pin = normDigits(document.getElementById('sigPinSubmit')?.value);
                 if (!/^\d{4,6}$/.test(pin)) throw new Error('กรุณากรอก PIN ลายเซ็นก่อนส่งงาน');
                 return pin;
             }
@@ -2729,17 +2734,42 @@
         }
 
         // ครูแก้รายงาน 7.5 หลังส่งงาน (ก่อนหัวหน้ากลุ่มสาระลงนาม) — ยืนยันด้วย PIN ลายเซ็น
-        async function editReport75(id, name) {
-            const p = await Swal.fire({ title: 'แก้รายงาน 7.5', html: `<p style="margin:0 0 8px;">${escapeHtml(name || '')}</p>`,
-                input: 'password', inputLabel: 'PIN ลายเซ็นของคุณ', inputAttributes: { inputmode: 'numeric', maxlength: 6 },
-                showCancelButton: true, confirmButtonText: 'ถัดไป', cancelButtonText: 'ยกเลิก',
-                inputValidator: v => !/^\d{4,6}$/.test(v || '') && 'กรุณากรอก PIN 4–6 หลัก' });
-            if (!p.isConfirmed) return;
-            const pin = p.value;
+        // ✅ [แก้ไข] รองรับงานที่ส่งมาก่อนปรับปรุงระบบ: ครูที่ยังไม่มีลายเซ็น จะได้เซ็นชื่อ + ตั้ง PIN ก่อน
+        //    ผู้ตรวจ (admin) กรอกแทนครูได้ด้วย opts.asAdmin
+        async function editReport75(id, name, opts = {}) {
+            const asAdmin = !!opts.asAdmin && currentSigner && currentSigner.role === 'admin';
+            let pin = '';
+            if (!asAdmin) {
+                Swal.fire({ title: 'กำลังตรวจลายเซ็น...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                let st = {};
+                try { st = await getFromAppsScript({ action: 'getSignatureStatus', name }); } catch (e) {}
+                if (!st.exists || !st.hasPin) {
+                    const go = await Swal.fire({ icon: 'info', title: 'ยังไม่มีลายเซ็นของคุณในระบบ',
+                        html: `<b>${escapeHtml(name || '')}</b><br>งานนี้ส่งมาก่อนเปิดระบบลายเซ็น กรุณาเซ็นชื่อและตั้ง PIN ก่อน (ครั้งเดียว)<br>ลายเซ็นนี้จะใช้ในบันทึกข้อความ 7.5 และการส่งงานครั้งต่อไป`,
+                        showCancelButton: true, confirmButtonText: 'เซ็นชื่อ', cancelButtonText: 'ยกเลิก' });
+                    if (!go.isConfirmed) return;
+                    const v = await openSignatureDialog({ title: `ลายเซ็นของ ${name}`, mode: 'new' });
+                    if (!v) return;
+                    Swal.fire({ title: 'กำลังบันทึกลายเซ็น...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    try {
+                        const s = await postToAppsScript(buildPayload({ action: 'saveSignature', name, imageBase64: v.imageBase64, pin: v.pin }));
+                        if (!s.success) throw new Error(s.message);
+                    } catch (e) { Swal.fire('บันทึกลายเซ็นไม่สำเร็จ', e.message, 'error'); return; }
+                    pin = v.pin;
+                } else {
+                    const p = await Swal.fire({ title: 'กรอก/แก้รายงาน 7.5', html: `<p style="margin:0 0 8px;">${escapeHtml(name || '')}</p>`,
+                        input: 'password', inputLabel: 'PIN ลายเซ็นของคุณ', inputAttributes: { inputmode: 'numeric', maxlength: 6 },
+                        showCancelButton: true, confirmButtonText: 'ถัดไป', cancelButtonText: 'ยกเลิก',
+                        inputValidator: v => !/^\d{4,6}$/.test(normDigits(v)) && 'กรุณากรอก PIN เป็นตัวเลข 4–6 หลัก' });
+                    if (!p.isConfirmed) return;
+                    pin = normDigits(p.value);
+                }
+            }
+            const auth = asAdmin ? { adminPassword: currentSigner.password } : { pin };
             Swal.fire({ title: 'กำลังโหลด...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             let cur;
             try {
-                cur = await postToAppsScript(buildPayload({ action: 'getReport75', submissionId: id, pin }));
+                cur = await postToAppsScript(buildPayload({ action: 'getReport75', submissionId: id, ...auth }));
                 if (!cur.success) throw new Error(cur.message);
             } catch (e) { Swal.fire('เปิดรายงานไม่สำเร็จ', e.message, 'error'); return; }
             const r = await Swal.fire({
@@ -2757,10 +2787,14 @@
             if (!r.isConfirmed) return;
             Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
             try {
-                const res = await postToAppsScript(buildPayload({ action: 'saveReport75', submissionId: id, pin, report75: JSON.stringify(r.value) }));
+                const res = await postToAppsScript(buildPayload({ action: 'saveReport75', submissionId: id, ...auth, report75: JSON.stringify(r.value) }));
                 if (!res.success) throw new Error(res.message);
                 Swal.fire({ icon: 'success', title: 'บันทึกรายงาน 7.5 แล้ว', timer: 1500, showConfirmButton: false });
                 loadAllSubmissions();
+                if (asAdmin) {
+                    await loadAdminSubmissions(true);
+                    if (!document.getElementById('docViewer').hidden && docViewer.id === id) renderDocViewer();
+                }
             } catch (e) { Swal.fire('บันทึกไม่สำเร็จ', e.message, 'error'); }
         }
 
@@ -3142,6 +3176,8 @@ ${autoPrint ? `<script>
             const el = document.getElementById('dvActions');
             let memoBtn = `<button type="button" class="custom-button" style="background:#6c757d;" onclick="openMemo('${escapeHtml(sub.id)}', true)"><i class="fa-solid fa-print"></i> พิมพ์บันทึก</button>`;
             if (!isSignatureRound()) memoBtn = '';
+            else if (docViewer.context === 'admin' && isReport75Round() && normalizeQueueStatus(sub.status) !== SIG_STATUS.DONE)
+                memoBtn = `<button type="button" class="custom-button" style="background:#e67e22;" onclick="editReport75('${escapeHtml(sub.id)}', '${escapeHtml(sub.fullName)}', { asAdmin: true })"><i class="fa-solid fa-pen-to-square"></i> ${sub.hasReport75 ? 'แก้' : 'กรอก'}รายงาน 7.5</button>` + memoBtn;
             else if (docViewer.context === 'admin') memoBtn = `<button type="button" class="custom-button" style="background:#3d8bd9;" onclick="editMemoNumber('${escapeHtml(sub.id)}')"><i class="fa-solid fa-hashtag"></i> เลขที่บันทึก</button>` + memoBtn;
             let buttons = '', hint = '';
             if (docViewer.context === 'signer' && currentSigner && isMyQueue(sub)) {
