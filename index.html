@@ -513,8 +513,10 @@
                     <button type="button" data-n="1" class="active">1 วิชา</button><button type="button" data-n="2">2 วิชา</button><button type="button" data-n="3">3 วิชา</button><button type="button" data-n="4">4 วิชา</button><button type="button" data-n="5">5 วิชา</button><button type="button" data-n="6">6 วิชา</button>
                 </div>
                 <div id="course-blocks-container"></div>
-                <label for="additionalLink">ลิงก์ URL เพิ่มเติม (ถ้ามี):</label>
-                <input type="url" id="additionalLink" name="additionalLink" placeholder="เช่น https://www.example.com/บทเรียน">
+                <label for="additionalLink">ลิงก์ URL (ใช้แทนการแนบไฟล์ได้ — แนบไฟล์หรือใส่ลิงก์อย่างใดอย่างหนึ่ง):</label>
+                <!-- ✅ [แก้ไข] เดิมเป็น type="url" → เบราว์เซอร์บล็อกการส่งเงียบ ๆ ถ้าลิงก์ไม่มี https:// หรือวางหลายลิงก์ -->
+                <input type="text" inputmode="url" id="additionalLink" name="additionalLink" placeholder="เช่น https://drive.google.com/... (ถ้ามีหลายลิงก์ เว้นวรรคคั่น)">
+                <small style="color:#888;display:block;margin:-6px 0 10px;">ถ้าแนบไฟล์แล้ว ช่องนี้เว้นว่างได้ • ใส่ได้หลายลิงก์ (เว้นวรรคหรือขึ้นบรรทัดคั่น) • ถ้าไม่มี https:// ระบบจะเติมให้</small>
                 <!-- ✅ [เพิ่มใหม่] ครั้งที่ 2: แบบรายงานผลการพัฒนาคุณภาพผู้เรียน (เอกสาร 7.5) -->
                 <div class="sig-card r75-only" id="r75Card">
                     <h4><i class="fa-solid fa-chart-column"></i> แบบรายงานผลการพัฒนาคุณภาพผู้เรียนตามการวิเคราะห์ผู้เรียน (เอกสาร 7.5)</h4>
@@ -1291,6 +1293,27 @@
             return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
+        // ✅ [เพิ่มใหม่] จัดรูปลิงก์เพิ่มเติม: ดึงทุกลิงก์จากข้อความ, เติม https:// ให้ถ้าไม่มี, หลายลิงก์คั่นด้วยขึ้นบรรทัด
+        //    คืนค่า { ok, value } — ok=false เมื่อพิมพ์มาแต่ไม่พบอะไรที่เป็นลิงก์เลย
+        function normalizeLinks(raw) {
+            const s = String(raw || '').trim();
+            if (!s) return { ok: true, value: '' };
+            const found = [];
+            s.split(/[\s,]+/).forEach(part => {
+                const p = part.replace(/^[(<"']+|[)>"'.,;]+$/g, '');
+                if (/^https?:\/\/\S+$/i.test(p)) found.push(p);
+                else if (/^(www\.)?[\w-]+(\.[\w-]+)+(\/\S*)?$/i.test(p)) found.push('https://' + p);   // drive.google.com/..., www.xxx.com
+            });
+            const urls = [...new Set(found)];
+            return urls.length ? { ok: true, value: urls.join('\n') } : { ok: false, value: s };
+        }
+        // แสดงลิงก์เพิ่มเติม (รองรับหลายลิงก์ และข้อมูลเก่า) — ทำเป็นลิงก์เฉพาะที่ขึ้นต้นด้วย http(s) เท่านั้น
+        function linksHtml(s) {
+            return String(s || '').split(/\s+/).filter(Boolean).map(u => /^https?:\/\//i.test(u)
+                ? `<a href="${escapeHtml(u)}" target="_blank" rel="noopener">${escapeHtml(u)}</a>` : escapeHtml(u)).join('<br>');
+        }
+        const firstLink = s => String(s || '').split(/\s+/).find(u => /^https?:\/\//i.test(u)) || '';
+
         function setTimestamp() {
             const now = new Date();
             const opts = { year:'numeric', month:'2-digit', day:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false, timeZone:'Asia/Bangkok' };
@@ -1410,6 +1433,16 @@
             // ✅ [เพิ่มใหม่] ต้องมีลายเซ็น + PIN ก่อนส่ง
             const fullNameVal = document.getElementById('fullName').value.trim();
             if (!fullNameVal) { Swal.fire('กรุณากรอกชื่อ-นามสกุล', '', 'warning'); return; }
+            // ✅ [แก้ไข] ตรวจลิงก์เพิ่มเติมเอง แจ้งเตือนชัด ๆ (เดิมเบราว์เซอร์บล็อกการส่งโดยไม่บอก)
+            const linkInput = document.getElementById('additionalLink');
+            const links = normalizeLinks(linkInput.value);
+            if (!links.ok) {
+                Swal.fire({ icon: 'warning', title: 'ลิงก์เพิ่มเติมไม่ถูกต้อง',
+                    html: `ไม่พบลิงก์ในข้อความ "<b>${escapeHtml(links.value)}</b>"<br><br>กรุณาวางลิงก์ เช่น <b>https://drive.google.com/...</b><br>หรือ<b>เว้นว่าง</b>ถ้าไม่มีลิงก์ (แนบไฟล์อย่างเดียวก็ส่งได้)` })
+                    .then(() => linkInput.focus());
+                return;
+            }
+            linkInput.value = links.value;
             const sigRound = isSignatureRound();
             // ✅ [เพิ่มใหม่] ครั้งที่ 2 ต้องกรอกรายงาน 7.5 ให้ครบ
             let report75 = null;
@@ -1464,8 +1497,8 @@
             fd.append('submissionTimestamp', document.getElementById('submissionTimestamp').value);
             fd.append('fullName', document.getElementById('fullName').value.trim());
             fd.append('learningArea', document.getElementById('learningArea').value);
-            fd.append('additionalLink', document.getElementById('additionalLink').value.trim());
-            let hasData = false;
+            fd.append('additionalLink', links.value);
+            let hasData = false, hasFile = false;
             for (let i = 1; i <= 6; i++) {
                 const cc = document.getElementById(`courseCode${i}`).value.trim();
                 const cn = document.getElementById(`courseName${i}`).value.trim();
@@ -1477,10 +1510,12 @@
                     if (f.size > 10*1024*1024) { Swal.fire({ text:`ไฟล์ ${f.name} ใหญ่เกิน 10MB`, icon:'error' }); return; }
                     const b64 = await toBase64(f);
                     fd.append(`file${i}Name`, f.name); fd.append(`file${i}MimeType`, f.type); fd.append(`file${i}Base64`, b64);
-                    hasData = true;
+                    hasData = true; hasFile = true;
                 } else { fd.append(`file${i}Name`,''); fd.append(`file${i}MimeType`,''); fd.append(`file${i}Base64`,''); if (cc||cn) hasData = true; }
             }
             if (!hasData) { Swal.fire('ข้อมูลไม่ครบถ้วน','กรุณากรอกข้อมูลวิชาและ/หรือแนบไฟล์อย่างน้อย 1 รายการ','warning'); return; }
+            // ✅ [เพิ่มใหม่] ต้องมีงานอย่างใดอย่างหนึ่ง: แนบไฟล์ หรือ ใส่ลิงก์ (มีทั้งสองอย่างก็ได้)
+            if (!hasFile && !links.value) { Swal.fire('ยังไม่มีงานที่ส่ง','กรุณาแนบไฟล์ PDF หรือใส่ลิงก์ อย่างใดอย่างหนึ่ง','warning'); return; }
             try {
                 const result = await postToAppsScript(fd);
                 if (result.success) {
@@ -1603,7 +1638,7 @@
                 <p><strong>วันที่ส่ง:</strong> ${sub.submissionTimestamp||'N/A'}</p>
                 <p><strong>ชื่อผู้ส่ง:</strong> ${sub.fullName||'N/A'}</p>
                 <p><strong>กลุ่มสาระฯ:</strong> ${sub.learningArea||'N/A'}</p>
-                <p><strong>ลิงก์เพิ่มเติม:</strong> ${sub.additionalLink ? `<a href="${sub.additionalLink}" target="_blank">${sub.additionalLink}</a>` : 'ไม่มี'}</p>
+                <p><strong>ลิงก์เพิ่มเติม:</strong> ${sub.additionalLink ? linksHtml(sub.additionalLink) : 'ไม่มี'}</p>
                 ${filesHtml}
                 <hr>
                 <p><strong>สถานะปัจจุบัน:</strong> ${formatStatus(sub.status||'รอตรวจ')}</p>
@@ -2506,7 +2541,7 @@
             Swal.fire({
                 title: escapeHtml(sub.fullName || ''), width: 640,
                 html: `<div style="text-align:left;"><ul style="padding-left:18px;">${files || '<li>ไม่มีข้อมูลวิชา</li>'}</ul>
-                    ${sub.additionalLink ? `<p><b>ลิงก์เพิ่มเติม:</b> <a href="${escapeHtml(sub.additionalLink)}" target="_blank" rel="noopener">${escapeHtml(sub.additionalLink)}</a></p>` : ''}
+                    ${sub.additionalLink ? `<p><b>ลิงก์เพิ่มเติม:</b><br>${linksHtml(sub.additionalLink)}</p>` : ''}
                     ${commentBoxesHtml(sub)}</div>`,
                 confirmButtonText: 'ปิด'
             });
@@ -3169,8 +3204,9 @@ ${autoPrint ? `<script>
             frame.onload = () => { if (frame.src !== 'about:blank') { loading.style.display = 'none'; frame.style.visibility = 'visible'; } };
 
             if (key === 'link') {
-                window.open(sub.additionalLink, '_blank', 'noopener');
-                showMsg(`<div style="text-align:center;">เปิดลิงก์เพิ่มเติมในแท็บใหม่แล้ว<br><a href="${escapeHtml(sub.additionalLink)}" target="_blank" rel="noopener">${escapeHtml(sub.additionalLink)}</a></div>`);
+                const first = firstLink(sub.additionalLink);
+                if (first) window.open(first, '_blank', 'noopener');
+                showMsg(`<div style="text-align:center;">${first ? 'เปิดลิงก์แรกในแท็บใหม่แล้ว' : 'ลิงก์เพิ่มเติม'}<br>${linksHtml(sub.additionalLink)}</div>`);
                 return;
             }
             showMsg('<span><i class="fa-solid fa-spinner fa-spin"></i>&nbsp; กำลังเปิดเอกสาร...</span>');
