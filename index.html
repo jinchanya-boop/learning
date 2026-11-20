@@ -604,6 +604,10 @@
                     <button type="button" id="createPdfSummaryBtn" class="custom-button" style="background-color: #ff6b6b;">
                         <i class="fa-solid fa-file-pdf"></i>สร้าง PDF สรุปการส่งงาน
                     </button>
+                    <!-- ✅ [เพิ่มใหม่] รีเซ็ต PIN ลายเซ็นให้ครูที่ลืม PIN -->
+                    <button type="button" class="custom-button" style="background-color:#3d8bd9;" onclick="resetTeacherPin()">
+                        <i class="fa-solid fa-key"></i> รีเซ็ต PIN ครู
+                    </button>
                 </div>
                 <div class="heading-wrapper">
                     <span class="icon-bubble"><i class="fa-solid fa-list-check"></i></span>
@@ -2330,6 +2334,49 @@
                 return pin;
             }
             throw new Error('กรุณาเซ็นชื่อในช่อง "ลายเซ็นผู้ส่ง" ก่อนส่งงาน');
+        }
+
+        // ---------- ✅ [เพิ่มใหม่] ผู้ดูแลระบบ: รีเซ็ต PIN ลายเซ็นให้ครู (ลายเซ็นเดิมไม่เปลี่ยน) ----------
+        async function resetTeacherPin() {
+            if (!currentSigner || currentSigner.role !== 'admin') { Swal.fire('เฉพาะผู้ดูแลระบบ', '', 'warning'); return; }
+            const pw = currentSigner.password;
+            let names = [];
+            try {
+                const r = await postToAppsScript(buildPayload({ action: 'listSignatureNames', password: pw }));
+                if (r.success) names = r.data || [];
+            } catch (e) { console.warn('โหลดรายชื่อไม่สำเร็จ', e); }
+            const suggest = String(Math.floor(1000 + Math.random() * 9000));   // PIN สุ่ม 4 หลัก (แก้ได้)
+            const r = await Swal.fire({
+                title: 'รีเซ็ต PIN ลายเซ็นครู',
+                html: `<div style="text-align:left;font-size:0.92em;">
+                    <p style="margin:0 0 10px;color:#555;">ตั้ง PIN ใหม่ให้ครูที่ลืม PIN — ลายเซ็นเดิมยังใช้ได้ ไม่ต้องเซ็นใหม่ (มีผลทั้งระบบเรียนรู้และระบบส่งแผน)</p>
+                    <label style="font-weight:600;">ชื่อ-นามสกุลครู</label>
+                    <input id="rpName" list="rpNames" class="swal2-input" style="margin:4px 0 10px;width:100%;" placeholder="พิมพ์ชื่อ แล้วเลือกจากรายการ" autocomplete="off">
+                    <datalist id="rpNames">${names.map(n => `<option value="${escapeHtml(n)}">`).join('')}</datalist>
+                    <label style="font-weight:600;">PIN ใหม่ (ตัวเลข 4–6 หลัก)</label>
+                    <input id="rpPin" class="swal2-input" inputmode="numeric" maxlength="6" style="margin:4px 0 6px;width:100%;" value="${suggest}">
+                    <small style="color:#888;">แจ้ง PIN นี้ให้ครู แล้วแนะนำให้ครูเปลี่ยนเป็น PIN ที่จำง่ายภายหลังได้ (กด "เปลี่ยนลายเซ็น")</small>
+                </div>`,
+                showCancelButton: true, confirmButtonText: 'ตั้ง PIN ใหม่', cancelButtonText: 'ยกเลิก',
+                preConfirm: () => {
+                    const name = document.getElementById('rpName').value.trim();
+                    const pin = normDigits(document.getElementById('rpPin').value);
+                    if (!name) { Swal.showValidationMessage('กรุณาระบุชื่อครู'); return false; }
+                    if (names.length && !names.some(n => normalizeName(n) === normalizeName(name))) {
+                        Swal.showValidationMessage('ไม่พบชื่อนี้ในรายการผู้ที่มีลายเซ็น — กรุณาเลือกจากรายการ'); return false;
+                    }
+                    if (!/^\d{4,6}$/.test(pin)) { Swal.showValidationMessage('PIN ต้องเป็นตัวเลข 4–6 หลัก'); return false; }
+                    return { name, pin };
+                }
+            });
+            if (!r.isConfirmed) return;
+            Swal.fire({ title: 'กำลังบันทึก...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const res = await postToAppsScript(buildPayload({ action: 'resetTeacherPin', password: pw, name: r.value.name, newPin: r.value.pin }));
+                if (!res.success) throw new Error(res.message);
+                Swal.fire({ icon: 'success', title: 'ตั้ง PIN ใหม่แล้ว',
+                    html: `${escapeHtml(res.message)}<br><br>PIN ใหม่: <b style="font-size:1.6em;letter-spacing:4px;">${escapeHtml(r.value.pin)}</b><br><small>กรุณาแจ้งครูโดยตรง (ไม่ควรโพสต์ในกลุ่ม)</small>` });
+            } catch (e) { Swal.fire('รีเซ็ต PIN ไม่สำเร็จ', e.message, 'error'); }
         }
 
         // ---------- ผู้ลงนาม: เข้าสู่ระบบ ----------
